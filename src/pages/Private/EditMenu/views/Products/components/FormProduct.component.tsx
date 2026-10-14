@@ -589,7 +589,7 @@ export const FormProduct: FC<Props> = ({ product }) => {
             loading={isPending}
             startIcon={<Save />}
           >
-            Editar
+            Guardar cambios
           </LoadingButton>
         </Box>
       </form>

@@ -68,6 +68,8 @@ export const EditTable = () => {
     defaultValues: table
   });
 
+  const isSaving = loading || updateTableMutation.isPending;
+
   const onSubmit = async (form: ICreateTable) => {
     if (activeTable) {
       const data: UpdateTableDto = {
@@ -78,39 +80,56 @@ export const EditTable = () => {
         chairs: form.chairs
       };
 
-      updateTableMutation.mutate(data);
+      updateTableMutation.mutate(data, {
+        onSuccess: () => {
+          navigate('/tables');
+        }
+      });
     } else {
       await callEndpoint(createTable(form))
         .then((resp) => {
           const { data } = resp;
           dispatch(addTable(data));
           dispatch(setActiveTable(data));
-          enqueueSnackbar('Mesa añadida', { variant: 'success' });
+          enqueueSnackbar('Mesa creada correctamente', { variant: 'success' });
+          navigate('/tables');
         })
         .catch((err) => {
           console.log(err);
-          enqueueSnackbar('Error al crear', { variant: 'error' });
+          enqueueSnackbar('Error al crear la mesa', { variant: 'error' });
         });
     }
   };
 
   return (
     <>
-      <TitlePage title={`${activeTable ? 'Editar' : 'Crear'} mesa`} />
+      <TitlePage
+        title={`${activeTable ? 'Editar' : 'Crear'} mesa`}
+        action={
+          <Button
+            startIcon={<ArrowBack />}
+            onClick={() => navigate('/tables')}
+            variant='outlined'
+            size='small'
+          >
+            Volver a mesas
+          </Button>
+        }
+      />
 
-      <Card sx={{ maxWidth: 350, margin: '0 auto' }}>
-        <CardContent>
+      <Card sx={{ maxWidth: 480, margin: '0 auto', boxShadow: 1, borderRadius: 2 }}>
+        <CardContent sx={{ p: { xs: 2.5, sm: 3 } }}>
           <form onSubmit={handleSubmit(onSubmit)}>
-            <Grid container spacing={1} display='flex' justifyContent='center'>
+            <Grid container spacing={2}>
               <Grid item xs={12}>
                 <TextField
                   autoFocus
-                  margin='dense'
-                  label='Nombre de la mesa'
+                  label='Nombre o número de la mesa'
+                  placeholder='Ej: 1, 2, Terraza A'
                   type='text'
                   fullWidth
                   {...register('name', {
-                    required: 'Este campo es requerido'
+                    required: 'El nombre o número de la mesa es requerido'
                   })}
                   error={!!errors.name}
                   helperText={errors.name?.message}
@@ -119,11 +138,11 @@ export const EditTable = () => {
 
               <Grid item xs={12}>
                 <TextField
-                  margin='dense'
-                  label='Descripción'
+                  label='Descripción o ubicación (opcional)'
+                  placeholder='Ej: Planta baja, junto a la ventana'
                   type='text'
                   fullWidth
-                  {...register('description', {})}
+                  {...register('description')}
                   error={!!errors.description}
                   helperText={errors.description?.message}
                 />
@@ -131,36 +150,36 @@ export const EditTable = () => {
 
               <Grid item xs={12}>
                 <TextField
-                  margin='dense'
-                  label='Asientos'
+                  label='Número de asientos'
                   type='number'
                   fullWidth
+                  inputProps={{ min: 1, max: 50 }}
                   {...register('chairs', {
-                    required: 'Este campo es requerido',
-                    maxLength: { value: 2, message: ' ' },
+                    required: 'El número de asientos es requerido',
+                    min: { value: 1, message: 'Debe tener al menos 1 asiento' },
+                    max: { value: 50, message: 'Máximo 50 asientos' },
                     valueAsNumber: true
                   })}
                   error={!!errors.chairs}
                   helperText={errors.chairs?.message}
                 />
               </Grid>
+
               <Grid item xs={12}>
-                <Stack direction='row' spacing={2} justifyContent='right'>
-                  {loading && (
-                    <Button
-                      color='error'
-                      onClick={() => cancelEndpoint()}
-                      variant='text'
-                    >
-                      Cancelar
-                    </Button>
-                  )}
+                <Stack direction='row' spacing={2} justifyContent='space-between' mt={2}>
+                  <Button
+                    variant='outlined'
+                    onClick={() => navigate('/tables')}
+                    disabled={isSaving}
+                  >
+                    Cancelar
+                  </Button>
                   <LoadingButton
                     variant='contained'
                     type='submit'
-                    loading={loading}
+                    loading={isSaving}
                   >
-                    {activeTable ? `Editar` : 'Crear'}
+                    {activeTable ? 'Guardar cambios' : 'Crear mesa'}
                   </LoadingButton>
                 </Stack>
               </Grid>

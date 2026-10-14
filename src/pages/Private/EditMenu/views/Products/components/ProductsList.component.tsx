@@ -16,7 +16,8 @@ import {
   InputAdornment,
   IconButton
 } from '@mui/material/';
-import { SearchOutlined, ClearOutlined } from '@mui/icons-material';
+import { SearchOutlined, ClearOutlined, FastfoodOutlined } from '@mui/icons-material';
+import { EmptyState } from '@/components/ui';
 
 import { IProduct } from '../../../../../../models';
 import { ProductCard } from './ProductCard.component';
@@ -83,52 +84,50 @@ export const ProductsList: FC<Props> = () => {
       <Box
         sx={{
           display: 'flex',
+          flexDirection: { xs: 'column', sm: 'row' },
           justifyContent: 'space-between',
-          alignItems: 'center',
-          gap: 1
+          alignItems: { xs: 'stretch', sm: 'center' },
+          gap: 2,
+          mb: 3
         }}
       >
         <TextField
           size='small'
-          placeholder='Buscar productos...'
+          placeholder='Buscar productos por nombre...'
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          sx={{ flex: 1, maxWidth: 300 }}
+          sx={{ flex: 1, maxWidth: { xs: '100%', sm: 360 } }}
           InputProps={{
             startAdornment: (
               <InputAdornment position='start'>
-                <SearchOutlined fontSize='small' />
+                <SearchOutlined fontSize='small' color='action' />
               </InputAdornment>
             ),
             endAdornment: searchQuery ? (
               <InputAdornment position='end'>
-                <IconButton size='small' onClick={() => setSearchQuery('')}>
+                <IconButton
+                  size='small'
+                  aria-label='Limpiar búsqueda'
+                  onClick={() => setSearchQuery('')}
+                >
                   <ClearOutlined fontSize='small' />
                 </IconButton>
               </InputAdornment>
             ) : null
           }}
         />
-        {/* {activeCategory && (
-          <Button variant="text" sx={{ mr: 1 }}>
-            Reordenar
-          </Button>
-        )} */}
 
-        <FormControl sx={{ width: 200 }}>
-          <InputLabel id='select-categoria'>Categoria</InputLabel>
+        <FormControl sx={{ width: { xs: '100%', sm: 220 } }} size='small'>
+          <InputLabel id='select-categoria'>Categoría</InputLabel>
           <Select
             id='grouped-select'
             label='Categoría'
             labelId='select-categoria'
-            margin='dense'
-            fullWidth
             value={activeCategory?.id || ''}
             onChange={changeCategory}
-            size='small'
           >
             <MenuItem value=''>
-              <em>Todos</em>
+              <em>Todas las categorías</em>
             </MenuItem>
             {sections.map((section) => [
               <ListSubheader
@@ -150,21 +149,30 @@ export const ProductsList: FC<Props> = () => {
         </FormControl>
       </Box>
 
-      <Box mt={2} mb={4}>
-        <Grid container rowSpacing={1} spacing={1}>
-          {displayedProducts.length === 0 && (
-            <Typography align='center' variant='subtitle1'>
-              No se han registrado productos
-            </Typography>
-          )}
-
-          {displayedProducts.length > 0 &&
-            displayedProducts.map((producto) => (
-              <Grid key={producto.id!} item xs={12} sm={6} lg={3}>
+      <Box mb={4}>
+        {displayedProducts.length === 0 ? (
+          <EmptyState
+            icon={<FastfoodOutlined sx={{ fontSize: 44 }} />}
+            title={
+              searchQuery
+                ? 'Sin coincidencias'
+                : 'No se han registrado productos'
+            }
+            description={
+              searchQuery
+                ? `No encontramos productos que coincidan con "${searchQuery}". Intenta con otro término o limpia la búsqueda.`
+                : 'Esta categoría aún no tiene productos registrados. Usa el botón "Añadir" para registrar el primero.'
+            }
+          />
+        ) : (
+          <Grid container spacing={2}>
+            {displayedProducts.map((producto) => (
+              <Grid key={producto.id!} item xs={12} sm={6} lg={4} xl={3}>
                 <ProductCard producto={producto} />
               </Grid>
             ))}
-        </Grid>
+          </Grid>
+        )}
       </Box>
     </>
   );

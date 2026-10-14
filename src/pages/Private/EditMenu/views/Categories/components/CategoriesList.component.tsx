@@ -12,6 +12,9 @@ import {
   InputLabel
 } from '@mui/material/';
 
+import { CategoryOutlined } from '@mui/icons-material';
+import { EmptyState } from '@/components/ui';
+
 // Component
 import { Category } from './Category.component';
 
@@ -66,23 +69,23 @@ export function CategoriesList() {
 
   return (
     <>
-      <Grid container display='flex' justifyContent='space-between'>
-        <Grid item display='flex' alignItems='center'>
-          <FormControl sx={{ minWidth: 120 }} size='small'>
+      <Grid container display='flex' justifyContent='space-between' alignItems='center' mb={2}>
+        <Grid item>
+          <FormControl sx={{ minWidth: 200 }} size='small'>
             <InputLabel id='demo-select-small-label'>Sección</InputLabel>
             <Select
               labelId='demo-select-small-label'
               id='demo-select-small'
               value={activeSection?.id || ''}
-              label='Estado'
+              label='Sección'
               onChange={handleChangeSection}
             >
               <MenuItem value=''>
-                <em>Todos</em>
+                <em>Todas las secciones</em>
               </MenuItem>
               {sections.map((seccion) => (
                 <MenuItem key={seccion!.id} value={seccion.id!}>
-                  {seccion.name}{' '}
+                  {seccion.name}
                 </MenuItem>
               ))}
             </Select>
@@ -91,14 +94,21 @@ export function CategoriesList() {
       </Grid>
 
       <Box mt={2}>
-        <Grid container rowSpacing={1} spacing={1}>
-          {filteredCategories.length > 0 &&
-            filteredCategories.map((categoria) => (
-              <Grid key={categoria.id} item xs={12} sm={4} lg={3}>
+        {filteredCategories.length === 0 ? (
+          <EmptyState
+            icon={<CategoryOutlined sx={{ fontSize: 44 }} />}
+            title='No hay categorías'
+            description='No se encontraron categorías en esta sección. Añade una nueva categoría con el botón superior.'
+          />
+        ) : (
+          <Grid container spacing={2}>
+            {filteredCategories.map((categoria) => (
+              <Grid key={categoria.id} item xs={12} sm={6} md={4} lg={3}>
                 <Category categoria={categoria} />
               </Grid>
             ))}
-        </Grid>
+          </Grid>
+        )}
       </Box>
     </>
   );

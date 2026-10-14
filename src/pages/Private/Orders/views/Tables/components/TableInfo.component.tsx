@@ -96,7 +96,7 @@ export const TableInfo = ({ table }: Props) => {
               </Typography>
             </Box>
           </Box>
-          <Stack direction='row' spacing={2} alignItems='center'>
+          <Stack direction='row' spacing={1} alignItems='center'>
             {ordersTable.length >= 1 && (
               <Button
                 variant='contained'
@@ -108,6 +108,13 @@ export const TableInfo = ({ table }: Props) => {
                 Añadir Pedido
               </Button>
             )}
+            <IconButton
+              size='small'
+              aria-label='Cerrar panel de mesa'
+              onClick={closeDrawer}
+            >
+              <CloseOutlined fontSize='small' />
+            </IconButton>
           </Stack>
         </Stack>
 

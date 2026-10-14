@@ -9,6 +9,8 @@ interface EmptyStateProps {
   actionText?: string;
   onAction?: () => void;
   actionIcon?: ReactNode;
+  action?: ReactNode;
+  children?: ReactNode;
 }
 
 export const EmptyState: FC<EmptyStateProps> = ({
@@ -17,7 +19,9 @@ export const EmptyState: FC<EmptyStateProps> = ({
   description,
   actionText,
   onAction,
-  actionIcon
+  actionIcon,
+  action,
+  children
 }) => {
   return (
     <Paper
@@ -63,11 +67,13 @@ export const EmptyState: FC<EmptyStateProps> = ({
         <Typography
           variant='body2'
           color='text.secondary'
-          sx={{ maxWidth: 420, mb: actionText ? 2.5 : 0 }}
+          sx={{ maxWidth: 420, mb: (actionText || action || children) ? 2.5 : 0 }}
         >
           {description}
         </Typography>
       )}
+
+      {action}
 
       {actionText && onAction && (
         <Button
@@ -81,6 +87,8 @@ export const EmptyState: FC<EmptyStateProps> = ({
           {actionText}
         </Button>
       )}
+
+      {children}
     </Paper>
   );
 };

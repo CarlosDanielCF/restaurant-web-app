@@ -49,10 +49,9 @@ export const ProductCard: FC<Props> = ({ producto }) => {
   const navigate = useNavigate();
   const theme = useTheme();
 
-  const isXs = useMediaQuery(theme.breakpoints.down('xs'));
-  const isMd = useMediaQuery(theme.breakpoints.down('md'));
+  const isSm = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const ImageWidth = isXs ? 80 : isMd ? 120 : 120;
+  const imageWidth = isSm ? 90 : 110;
 
   const popupState = usePopupState({
     variant: 'popover',
@@ -88,16 +87,24 @@ export const ProductCard: FC<Props> = ({ producto }) => {
       <Card
         sx={{
           width: '100%',
-          height: '100%' // Hace que todos los elementos tengan la misma altura
+          height: '100%',
+          transition: 'all 0.2s ease-in-out',
+          '&:hover': {
+            transform: 'translateY(-2px)',
+            boxShadow: theme.shadows[2]
+          }
         }}
       >
         <CardContent
           sx={{
             width: '100%',
-            gap: 2,
+            p: { xs: 1.5, sm: 2 },
+            '&:last-child': { pb: { xs: 1.5, sm: 2 } },
+            gap: 1.5,
             height: '100%',
             display: 'flex',
-            flexDirection: 'row'
+            flexDirection: 'row',
+            alignItems: 'flex-start'
           }}
         >
           <img
@@ -106,16 +113,17 @@ export const ProductCard: FC<Props> = ({ producto }) => {
                 ? producto.images
                 : '/static/images/products/no-image.png'
             }
-            alt='Product'
+            alt={producto.name}
             style={{
-              width: ImageWidth,
-              height: ImageWidth * (9 / 16),
+              width: imageWidth,
+              height: Math.round(imageWidth * 0.75),
               objectFit: 'cover',
-              aspectRatio: 16 / 9,
-              borderRadius: 7
+              borderRadius: 8,
+              border: '1px solid #e2e8f0',
+              flexShrink: 0
             }}
           />
-          <Stack direction='column' spacing={1} width='100%'>
+          <Stack direction='column' spacing={0.5} width='100%' minWidth={0}>
             <Box
               sx={{
                 display: 'flex',
@@ -123,45 +131,71 @@ export const ProductCard: FC<Props> = ({ producto }) => {
                 alignItems: 'center'
               }}
             >
-              {producto.isActive && (
+              {producto.isActive ? (
                 <LabelProductStatus status={producto.status} />
-              )}
-              {!producto.isActive && (
-                <Label color={producto.isActive ? 'success' : 'error'}>
-                  {producto.isActive ? 'Activo' : 'Eliminado'}
-                </Label>
+              ) : (
+                <Label color='error'>Inactivo</Label>
               )}
 
-              <IconButton {...bindTrigger(popupState)}>
-                <MoreHoriz />
+              <IconButton
+                size='small'
+                aria-label={`Opciones de ${producto.name}`}
+                {...bindTrigger(popupState)}
+              >
+                <MoreHoriz fontSize='small' />
               </IconButton>
             </Box>
 
             <Typography
-              variant='h6'
+              variant='subtitle1'
               onClick={navitateToEditProduct}
               sx={{
+                fontWeight: 600,
+                fontSize: '0.95rem',
+                lineHeight: 1.3,
                 cursor: 'pointer',
+                color: 'text.primary',
                 '&:hover': {
+                  color: 'primary.main',
                   textDecoration: 'underline'
-                }
+                },
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical'
               }}
             >
               {producto.name}
             </Typography>
-            <Typography variant='body1'>
+
+            <Typography
+              variant='body1'
+              sx={{
+                fontWeight: 700,
+                color: 'primary.main',
+                fontSize: '1rem'
+              }}
+            >
               {formatMoney(producto.price)}
             </Typography>
 
-            <Typography fontSize='0.8rem' color='text.secondary' mt={1}>
-              {producto.category.name}
-            </Typography>
-            <Typography fontSize='0.8rem' color='text.secondary'>
-              {producto.productionArea.name}
-            </Typography>
-            {/* <Typography fontSize='0.8rem' color='text.secondary'> */}
-            {/*   {producto.quantity} disponibles */}
-            {/* </Typography> */}
+            <Box sx={{ mt: 'auto', pt: 0.5 }}>
+              <Typography
+                fontSize='0.75rem'
+                color='text.secondary'
+                noWrap
+              >
+                {producto.category.name}
+              </Typography>
+              <Typography
+                fontSize='0.75rem'
+                color='text.disabled'
+                noWrap
+              >
+                {producto.productionArea.name}
+              </Typography>
+            </Box>
           </Stack>
         </CardContent>
       </Card>
