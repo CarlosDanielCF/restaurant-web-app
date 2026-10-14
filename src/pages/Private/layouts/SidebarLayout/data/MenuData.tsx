@@ -26,6 +26,8 @@ const generalSection: MenuSection = {
   title: '',
   // allowedRoles: [ValidRoles.admin],
   items: [
+    {title:'Documentos internos',icon:<ListAltOutlined fontSize='small' />,to:'/internal-documents',allowedRoles:[Roles.OWNER,Roles.ADMIN,Roles.WAITER]},
+    {title:'Reportes operativos',icon:<ListAltOutlined fontSize='small' />,to:'/operational-reports',allowedRoles:[Roles.OWNER,Roles.ADMIN,Roles.WAITER,Roles.COOK]},
     {title:'Cobros y rendición',icon:<TableRestaurantOutlinedIcon fontSize='small' />,to:'/finance',allowedRoles:[Roles.OWNER,Roles.ADMIN,Roles.WAITER]},
     {title:'Atención, carta y reservas',icon:<TableRestaurantOutlinedIcon fontSize='small' />,to:'/attention',allowedRoles:[Roles.OWNER,Roles.ADMIN,Roles.WAITER,Roles.COOK]},
     {

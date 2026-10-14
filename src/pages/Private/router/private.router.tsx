@@ -1,3 +1,5 @@
+import { DocumentsPage } from '../Insights/DocumentsPage';
+import { ReportsPage } from '../Insights/ReportsPage';
 import { FinancePage } from '../Finance/FinancePage';
 import { KitchenPage } from '../Operations/KitchenPage';
 import { OperationsPage } from '../Operations/Operations.page';
@@ -28,6 +30,8 @@ export const PrivateRouter: RouteObject[] = [
     path: '/',
     element: <SidebarLayout />,
     children: [
+      {path:'internal-documents',element:<Auth allowedRoles={[Roles.OWNER,Roles.ADMIN,Roles.WAITER]} />,children:[{index:true,element:<DocumentsPage />}]},
+      {path:'operational-reports',element:<ReportsPage />},
       {path:'finance',element:<Auth allowedRoles={[Roles.OWNER,Roles.ADMIN,Roles.WAITER]} />,children:[{index:true,element:<FinancePage />}]},
       {path:'attention',element:<OperationsPage />},
       {path:'kitchen',element:<Auth allowedRoles={[Roles.OWNER,Roles.ADMIN,Roles.COOK]} />,children:[{index:true,element:<KitchenPage />}]},

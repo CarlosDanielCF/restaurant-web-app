@@ -1,3 +1,19 @@
+# Estado vigente — Ciclo D, Fase 9 (2026-10-14)
+
+Rama `codex/phase-9`, directamente desde F8 aprobado `9f2c7d0a30976f4a40ad9b245ad4537da7dc055e`. Sin merge a main/Gemini; Barrera A abierta. Pendiente revisión del Arquitecto. No F10 ni release.
+
+Implementado frontend funcional mínimo de documentos internos y reportes. Rutas `/internal-documents` y `/operational-reports`: cuenta previa, ticket con pagos parciales/mixtos, historial persistente, reimpresión auditada, impresión A4/80mm; 17 consultas operativas con filtros, paginación y permisos del servidor. Snapshot incluye logo y datos históricos; propinas, gratuidades y saldos diferenciados. No rediseño global.
+
+Contratos y handoff: [PHASE9.md](PHASE9.md). Requiere backend F9 y migración aditiva 15 en `restaurante_app`. Fecha de venta aprobada por PO: confirmación del consumo/envío, incluidas bebidas. Métodos corresponden a cobros, sin duplicar ventas por pagos mixtos/cuotas.
+
+Validado: typecheck/build, lint de pantallas nuevas/router/script, Chromium 1440×900, 900×1100 y 390×844; PDF A4 y térmico con extracción de texto y revisión visual; regresión de navegador F8 y F6–7. Backend pareado: 92 unitarias y 137 HTTP/MySQL correctas. Sin errores JavaScript nuevos de F9.
+
+Deuda histórica: MenuData conserva exactamente los cuatro errores de símbolos no utilizados presentes en F8. Avisos de bundle, recursos externos inaccesibles y auth-renew401/cash-register404 heredados. No impresora física, CSV opcional no implementado. HTTP y browser deben ejecutarse secuencialmente por fixtures históricos compartidos. No validación con dispositivos físicos/conexiones independientes.
+
+---
+
+## Registro histórico — Fase 8
+
 # Estado — Ciclo C, Fase 8 (2026-10-14)
 
 Rama `codex/phase-8` desde F6–7 aprobado `71e11459a2d5a698a9fe63b07da3c8644a0aa90c`. Sin integración a main/Gemini; Barrera A abierta y revisión del Arquitecto pendiente. No Fase 9 ni release.

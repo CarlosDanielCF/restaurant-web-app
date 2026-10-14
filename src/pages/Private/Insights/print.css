@@ -1,0 +1,93 @@
+.internal-document {
+  background: white;
+  color: #111;
+  padding: 16px;
+  max-width: 900px;
+  margin: auto;
+  overflow-wrap: anywhere;
+  font:
+    14px Arial,
+    sans-serif;
+}
+.internal-document h1 {
+  font-size: 20px;
+}
+.internal-document h2 {
+  font-size: 18px;
+}
+.internal-document h3 {
+  font-size: 15px;
+}
+.internal-document table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.internal-document td,
+.internal-document th {
+  border-bottom: 1px solid #ccc;
+  padding: 5px;
+  text-align: left;
+  vertical-align: top;
+}
+.internal-document.thermal {
+  width: 72mm;
+  max-width: 100%;
+  font-size: 11px;
+  padding: 3mm;
+}
+.internal-document.thermal th,
+.internal-document.thermal td {
+  padding: 2px;
+}
+#print-internal-document {
+  display: none;
+}
+@media print {
+  html.internal-print-mode,
+  body.internal-print-mode {
+    display: block !important;
+    width: 190mm !important;
+    flex: none !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    margin: 0 !important;
+  }
+  html.internal-print-mode:has(.thermal),
+  body.internal-print-mode:has(.thermal) {
+    width: 72mm !important;
+  }
+  #print-internal-document {
+    width: auto;
+    height: auto;
+  }
+  @page receipt {
+    size: 80mm 297mm;
+    margin: 4mm;
+  }
+  .internal-document.thermal {
+    page: receipt;
+    width: 72mm;
+  }
+
+  @page {
+    margin: 10mm;
+  }
+  body.internal-print-mode > * {
+    display: none !important;
+  }
+  body.internal-print-mode > #print-internal-document {
+    display: block !important;
+  }
+  .internal-document {
+    padding: 0;
+    width: 190mm;
+    max-width: none;
+  }
+  .internal-document tr {
+    break-inside: avoid;
+  }
+  .internal-document thead {
+    display: table-header-group;
+  }
+}
