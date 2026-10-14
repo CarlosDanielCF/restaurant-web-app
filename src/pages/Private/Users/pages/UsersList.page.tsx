@@ -6,8 +6,6 @@ import { resetActiveUser } from '../../../../redux';
 import AddTwoToneIcon from '@mui/icons-material/AddTwoTone';
 import { UsersTable } from '../components/UsersTable/UsersTable.component';
 import { TitlePage } from '../../components/TitlePage.component';
-import NiceModal from '@ebay/nice-modal-react';
-import { InviteUserModal } from '../components/InviteUserModal.component';
 
 export const UsersList = () => {
   const navigate = useNavigate();
@@ -18,9 +16,6 @@ export const UsersList = () => {
     navigate('add');
   };
 
-  const openInviteUserModal = () => {
-    NiceModal.show(InviteUserModal);
-  };
 
   return (
     <>
@@ -32,18 +27,11 @@ export const UsersList = () => {
               sx={{ mt: { xs: 2, md: 0 } }}
               variant='contained'
               startIcon={<AddTwoToneIcon fontSize='small' />}
-              onClick={openInviteUserModal}
+              onClick={createUser}
             >
-              Invitar usuario
+              Crear trabajador
             </Button>
-            {/* <Button */}
-            {/*   sx={{ mt: { xs: 2, md: 0 } }} */}
-            {/*   variant='contained' */}
-            {/*   startIcon={<AddTwoToneIcon fontSize='small' />} */}
-            {/*   onClick={createUser} */}
-            {/* > */}
-            {/*   Añadir */}
-            {/* </Button> */}
+
           </Stack>
         }
       />

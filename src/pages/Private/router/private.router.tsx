@@ -35,17 +35,17 @@ export const PrivateRouter: RouteObject[] = [
       BillsRouter,
       {
         path: PrivateRoutes.USERS,
-        element: <Auth allowedRoles={[Roles.ADMIN]} />,
+        element: <Auth allowedRoles={[Roles.OWNER, Roles.ADMIN]} />,
         children: [UsersRouter]
       },
       {
         path: PrivateRoutes.REPORTS,
-        element: <Auth allowedRoles={[Roles.ADMIN]} />,
+        element: <Auth allowedRoles={[Roles.OWNER, Roles.ADMIN]} />,
         children: [ReportsRouter]
       },
       {
         path: '/financial',
-        element: <Auth allowedRoles={[Roles.ADMIN]} />,
+        element: <Auth allowedRoles={[Roles.OWNER, Roles.ADMIN]} />,
         children: [BalanceRouter]
       },
       SuppliersRouter,
@@ -74,7 +74,7 @@ export const PrivateRouter: RouteObject[] = [
   },
   {
     path: 'restaurant',
-    element: <Auth allowedRoles={[Roles.ADMIN]} />,
+    element: <Auth allowedRoles={[Roles.OWNER, Roles.ADMIN]} />,
     children: [RestaurantRouter]
   }
 ];

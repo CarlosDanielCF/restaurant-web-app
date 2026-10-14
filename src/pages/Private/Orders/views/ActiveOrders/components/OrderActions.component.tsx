@@ -1,3 +1,6 @@
+import { useSelector } from 'react-redux';
+import { selectAuth } from '@/redux';
+import { Roles } from '@/models/roles';
 import { FC, useCallback } from 'react';
 import { CardActions, Button, Stack, alpha, useTheme } from '@mui/material';
 import { PlayCircleOutline, Undo, Check } from '@mui/icons-material';
@@ -43,6 +46,8 @@ export const OrderActions: FC<Props> = ({
   const handleStartClick = useCallback(() => {
     onStartOrder(order);
   }, [onStartOrder, order]);
+
+  if (useSelector(selectAuth).user?.role.name === Roles.COOK) return null;
 
   if (detailStatusSection === OrderDetailStatus.PENDING) {
     return (

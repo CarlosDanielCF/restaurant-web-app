@@ -1,4 +1,5 @@
-import { Navigate, useNavigate, useParams } from 'react-router-dom';
+import { TypeIdentification } from '@/models/common.model';
+import { Navigate, useParams } from 'react-router-dom';
 import {
   selectUsers,
   updateUser
@@ -32,7 +33,6 @@ import { TitlePage } from '../../../components/TitlePage.component';
 import { useRestaurantStore } from '@/pages/Private/Common/store/restaurantStore';
 
 export const EditUser = () => {
-  const navigate = useNavigate();
 
   const params = useParams();
 
@@ -43,7 +43,7 @@ export const EditUser = () => {
   const { isPending, data: userToUpdate, refetch } = useUser(params.id);
   const { restaurant } = useRestaurantStore((state) => state);
 
-  if (!userToUpdate) navigate('/users');
+
 
   const { enqueueSnackbar } = useSnackbar();
 
@@ -71,8 +71,8 @@ export const EditUser = () => {
     email: userToUpdate?.person.email || '',
     numPhone: userToUpdate?.person.numPhone || '',
     identification: {
-      type: userToUpdate!.person.identification!.type!,
-      num: userToUpdate!.person.identification!.num || ''
+      type: userToUpdate?.person.identification?.type || TypeIdentification.CEDULA,
+      num: userToUpdate?.person.identification?.num || ''
     },
     username: userToUpdate?.username || '',
     role: {
@@ -92,11 +92,10 @@ export const EditUser = () => {
       ...dataUser,
       typeIdentification: identification.type,
       numberIdentification: identification.num,
-      rol: form.role.name
     };
 
     updateUserMutation
-      .mutateAsync({ id: userToUpdate!.id, ...userUpdated })
+      .mutateAsync({ id: userToUpdate!.id, expectedVersion: userToUpdate!.version, ...userUpdated })
       .then((data: IUser) => {
         dispatch(updateUser(data));
         refetch();
@@ -111,7 +110,7 @@ export const EditUser = () => {
 
   const submitChangeStatus = () => {
     updateUserMutation
-      .mutateAsync({ id: userToUpdate!.id, isActive: !userToUpdate!.isActive })
+      .mutateAsync({ id: userToUpdate!.id, expectedVersion: userToUpdate!.version, isActive: !userToUpdate!.isActive })
       .then((data: IUser) => {
         dispatch(updateUser(data));
         refetch();
@@ -129,13 +128,14 @@ export const EditUser = () => {
 
     resetPasswordMutation
       .mutateAsync(data)
-      .then((resp) => {})
+      .then((resp) => { window.prompt('Enlace de un solo uso. Compártalo de forma privada con el trabajador (30 minutos):', resp.recoveryUrl); })
       .catch((err) => {
         console.log(err);
         enqueueSnackbar('Error al resetear contraseña', { variant: 'error' });
       });
   }
   //
+  if (isPending) return <Typography>Cargando trabajador...</Typography>;
   if (!userToUpdate) return <Navigate to='/users' replace />;
 
   return (
@@ -187,7 +187,7 @@ export const EditUser = () => {
                   onClick={onReset}
                   loading={resetPasswordMutation.isPending}
                 >
-                  Restablecer contraseña
+                  Generar enlace de acceso
                 </LoadingButton>
               </Stack>
             </CardContent>

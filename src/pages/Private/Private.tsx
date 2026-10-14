@@ -1,4 +1,4 @@
-import { Navigate, useNavigate, useRoutes } from 'react-router-dom';
+import { Navigate, useNavigate, useRoutes, useLocation } from 'react-router-dom';
 
 import { useAppSelector, useMenu } from '../../hooks';
 
@@ -44,6 +44,8 @@ export const Private = () => {
   const { user } = useAppSelector(selectAuth);
 
   const navigate = useNavigate();
+  const location = useLocation();
+  useEffect(()=>{if(user?.role.name===Roles.COOK && ['/', '/orders','/orders/'].includes(location.pathname)) navigate('/orders/actives',{replace:true});},[user?.role.name,location.pathname,navigate]);
 
   // Load all menu
   const menuQuery = useMenu();

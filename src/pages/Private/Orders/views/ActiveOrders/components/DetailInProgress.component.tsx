@@ -1,3 +1,4 @@
+import { store as securityStore } from '@/redux/store';
 import { FC, useState, useCallback, useMemo, useEffect, useRef } from 'react';
 
 import {
@@ -458,7 +459,7 @@ export const DetailInProgress: FC<Props> = ({
                 {detail.status === OrderDetailStatus.PENDING && (
                   <IconButton
                     size='small'
-                    onClick={handleMarkInProgress}
+                    disabled={securityStore.getState().auth.user?.role.name === 'COCINERO'} onClick={handleMarkInProgress}
                     sx={{
                       '&:hover': {
                         bgcolor: alpha(theme.palette.info.main, 0.08)
@@ -471,7 +472,7 @@ export const DetailInProgress: FC<Props> = ({
                 {detail.status === OrderDetailStatus.IN_PROGRESS && (
                   <IconButton
                     size='small'
-                    onClick={handleMarkPending}
+                    disabled={securityStore.getState().auth.user?.role.name === 'COCINERO'} onClick={handleMarkPending}
                     sx={{
                       '&:hover': {
                         bgcolor: alpha(theme.palette.warning.main, 0.08)
@@ -487,7 +488,7 @@ export const DetailInProgress: FC<Props> = ({
                   <IconButton
                     size='small'
                     onClick={handleAddOne}
-                    disabled={detail.readyQuantity >= detail.quantity}
+                    disabled={securityStore.getState().auth.user?.role.name === 'COCINERO' || detail.readyQuantity >= detail.quantity}
                     sx={{
                       color: theme.palette.primary.main,
                       '&:hover': {
@@ -506,7 +507,7 @@ export const DetailInProgress: FC<Props> = ({
             {/* Edit Button */}
             {detail.status !== OrderDetailStatus.DELIVERED && (
               <IconButton
-                onClick={editDetail}
+                disabled={securityStore.getState().auth.user?.role.name === 'COCINERO'} onClick={editDetail}
                 size='small'
                 sx={{
                   color: theme.palette.text.secondary,

@@ -13,12 +13,15 @@ export interface IRole {
 }
 
 export interface RestaurantRole {
+  version: number;
+  isActive: boolean;
   id: number;
   restaurant: Restaurant;
   role: IRole;
 }
 
 export interface IUser {
+  version?: number;
   id: string;
   username: string;
   person: IPerson;

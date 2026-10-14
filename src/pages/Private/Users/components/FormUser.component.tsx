@@ -145,6 +145,7 @@ export const FormUser: FC<Props> = ({
             />
           </Grid>
 
+          {isNew && (
           <Grid item xs={12} sm={6}>
             <FormControl fullWidth>
               <Controller
@@ -164,15 +165,15 @@ export const FormUser: FC<Props> = ({
                       error={!!errors.role?.name?.message}
                     >
                       <MenuItem value={Roles.ADMIN}>Administrador</MenuItem>
-                      <MenuItem value={Roles.WAITER}>Mesero</MenuItem>
-                      <MenuItem value={Roles.COOK}>Despachador</MenuItem>
-                      <MenuItem value={Roles.CASHIER}>Cajero</MenuItem>
+                      <MenuItem value={Roles.WAITER}>Mozo</MenuItem>
+                      <MenuItem value={Roles.COOK}>Cocinero</MenuItem>
                     </Select>
                   </>
                 )}
               />
             </FormControl>
           </Grid>
+          )}
 
           <Grid item xs={12} sm={6}>
             <TextField

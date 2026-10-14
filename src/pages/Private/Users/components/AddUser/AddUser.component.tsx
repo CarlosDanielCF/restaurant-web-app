@@ -27,7 +27,7 @@ const initialUser: CreateUser = {
   lastName: '',
   email: '',
   role: {
-    name: 'mesero'
+    name: 'MOZO'
   },
   numPhone: '',
   identification: {
@@ -66,7 +66,9 @@ export const AddUser = () => {
       email: form.email!
     };
 
-    mutateAsync(newUser);
+    const created = await mutateAsync(newUser);
+    navigate(`/users/edit/${created.id}`);
+    enqueueSnackbar('Trabajador creado. Genere un enlace de acceso para que establezca su contraseña.', {variant:'info'});
 
     // await callEndpoint(createUser(newUser))
     //   .then((res) => {

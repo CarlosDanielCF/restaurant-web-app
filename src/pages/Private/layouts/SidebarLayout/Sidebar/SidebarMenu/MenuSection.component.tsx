@@ -143,7 +143,7 @@ export const MenuSection: FC<Props> = ({ section }) => {
   if (
     section.allowedRoles &&
     user?.role.name &&
-    !section.allowedRoles.includes(user.role.name as Roles)
+    user?.role.name !== Roles.OWNER && !section.allowedRoles.includes(user.role.name as Roles)
   ) {
     return null;
   }

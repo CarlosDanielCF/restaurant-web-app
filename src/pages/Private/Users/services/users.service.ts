@@ -69,14 +69,9 @@ export const updateUser = async (
   return resp.data;
 };
 
-export const resetPasswordUser = async (
-  data: ResetPasswordUserDto
-): Promise<IUser> => {
-  const resp = await restauranteApi.patch<IUser>(
-    `auth/reset-password-user`,
-    data
-  );
-
+export interface RecoveryLink { recoveryUrl: string; expiresAt: string; }
+export const resetPasswordUser = async (data: ResetPasswordUserDto): Promise<RecoveryLink> => {
+  const resp = await restauranteApi.patch<RecoveryLink>('auth/reset-password-user', data);
   return resp.data;
 };
 

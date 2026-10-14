@@ -1,3 +1,4 @@
+import { useRestaurantImage } from '@/hooks/useRestaurantImage';
 import { useContext, useRef, useState } from 'react';
 import { SidebarContext } from '../../../Common/contexts/SidebarContext';
 
@@ -99,6 +100,7 @@ const Title = () => {
     handleClose();
   };
 
+  const logoUrl = useRestaurantImage(restaurant?.logo);
   return (
     <>
       <Box
@@ -112,7 +114,7 @@ const Title = () => {
         <Box display='flex' alignItems='center' gap={2}>
           {restaurant?.logo && (
             <img
-              src={restaurant!.logo}
+              src={logoUrl}
               alt='logo'
               width='60px'
               style={{ borderRadius: 8 }}

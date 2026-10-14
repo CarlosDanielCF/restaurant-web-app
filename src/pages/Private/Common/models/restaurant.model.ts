@@ -1,4 +1,8 @@
 export interface Restaurant {
+  version: number;
+  timeZone: string;
+  currency: string;
+  yapeQr: string;
   id: string;
   name: string;
   logo: string;

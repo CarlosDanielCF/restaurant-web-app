@@ -393,7 +393,7 @@ function SidebarMenuMobile() {
               ))}
 
               {user &&
-                user.role.name === 'admin' &&
+                ['DUENO','ADMINISTRADOR'].includes(user.role.name) &&
                 navItemsAdmin2.map((item, index) => (
                   <ListItem component='div' key={item.to}>
                     <ListItemButton

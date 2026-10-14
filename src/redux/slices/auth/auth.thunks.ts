@@ -42,7 +42,8 @@ export const startLogin =
 
 export const startLogout =
   (msg: string = ''): AppThunk =>
-  (dispatch) => {
+  async (dispatch) => {
+    try { await restauranteApi.post('/auth/logout'); } catch { /* Always clear this device even when offline. */ }
     dispatch(onLogout(msg));
     //dispatch(onLogoutChat());
     localStorage.clear();

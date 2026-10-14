@@ -95,7 +95,8 @@ export const EditUserRole = NiceModal.create<Props>(({ user }) => {
     updateUserRole.mutateAsync(
       {
         userId: user.id,
-        roleId: roleId!
+        roleId: roleId!,
+        expectedVersion: user.version
       },
       {
         onSuccess: () => {
@@ -150,7 +151,7 @@ export const EditUserRole = NiceModal.create<Props>(({ user }) => {
               onChange={handleChangeRole}
               required
             >
-              {rolesQuery.data?.map((role) => (
+              {rolesQuery.data?.filter(role => role.name !== 'DUENO').map((role) => (
                 <MenuItem value={role.id} key={role.id}>
                   {role.description}
                 </MenuItem>

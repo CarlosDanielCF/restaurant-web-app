@@ -41,7 +41,7 @@ export const NavItemButton: FC<Props> = ({ item }) => {
 
   if (
     item.allowedRoles &&
-    !item.allowedRoles.includes(user?.role.name as Roles)
+    user?.role.name !== Roles.OWNER && !item.allowedRoles.includes(user?.role.name as Roles)
   ) {
     return null;
   }

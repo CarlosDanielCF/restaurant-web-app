@@ -1,3 +1,4 @@
+import { useRestaurantImage } from '@/hooks/useRestaurantImage';
 import { FC, useState, useEffect } from 'react';
 
 import { LoadingButton } from '@mui/lab';
@@ -63,6 +64,7 @@ interface Props {
 }
 
 export const FormProductImage: FC<Props> = ({ product }) => {
+  const productImage = useRestaurantImage(product.images);
   const { register, handleSubmit, watch } = useForm<{ file: FileList }>({});
 
   const [image, setImage] = useState<string>();
@@ -83,7 +85,7 @@ export const FormProductImage: FC<Props> = ({ product }) => {
   };
 
   const onSubmit = async (data: { file: FileList }) => {
-    if (data.file.length === 0) {
+    if (!data.file?.length) {
       enqueueSnackbar('Debe seleccionar una imagen', { variant: 'error' });
       return;
     }
@@ -97,7 +99,7 @@ export const FormProductImage: FC<Props> = ({ product }) => {
   };
 
   useEffect(() => {
-    if (watch('file')?.length === 0) return;
+    if (!watch('file')?.length) return;
 
     convert2base64(watch('file')[0]);
   }, [watch('file')]);
@@ -110,7 +112,7 @@ export const FormProductImage: FC<Props> = ({ product }) => {
             <Avatar
               variant='rounded'
               alt={product.name}
-              src={image || product?.images}
+              src={image || productImage}
             />
           ) : (
             <label htmlFor='icon-button-file'>
@@ -145,7 +147,7 @@ export const FormProductImage: FC<Props> = ({ product }) => {
             <input
               id='icon-button-file'
               type='file'
-              accept='image/*'
+              accept='image/png,image/jpeg,image/webp'
               {...register('file')}
               hidden
             />

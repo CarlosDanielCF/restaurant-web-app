@@ -1,3 +1,4 @@
+import { useRestaurantImage } from '@/hooks/useRestaurantImage';
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { useProduct } from '../../../../Private/EditMenu/hooks/useProducts';
@@ -28,6 +29,7 @@ export const Product = () => {
   const { id = '' } = useParams();
 
   const { data: product, isPending } = useProduct(id);
+  const productImage = useRestaurantImage(product?.images);
 
   if (isPending) return <div>Cargando...</div>;
 
@@ -41,7 +43,7 @@ export const Product = () => {
         <Grid item xs={12} md={6}>
           <StyledProductImg
             alt={product.name}
-            src={product.images || '/static/images/products/no-image.png'}
+            src={productImage || '/static/images/products/no-image.png'}
           />
         </Grid>
 

@@ -1,3 +1,4 @@
+import { store } from '@/redux/store';
 import { Manager, Socket } from 'socket.io-client';
 import { useEffect, useState, useCallback } from 'react';
 import { useRestaurantStore } from '@/pages/Private/Common/store/restaurantStore';
@@ -24,8 +25,21 @@ export const useSocket = (serverPath: string) => {
 
     const socketTemp = manager.socket('/');
 
-    setSocket(socketTemp);
-  }, [serverPath]);
+    const emit = socketTemp.emit.bind(socketTemp);
+    socketTemp.emit = ((event: string, ...args: unknown[]) => {
+      if (['create-order','add-order-detail','update-order','update-order-detail'].includes(event) && args[0] && typeof args[0] === 'object') {
+        const data: Record<string, unknown> = {...args[0]};
+        const state = store.getState().orders;
+        const id = data.orderId || data.id;
+        const order = state.activeOrder?.id === id ? state.activeOrder : state.orders.find(item=>item.id===id);
+        if (event !== 'create-order') data.expectedVersion ??= order?.version;
+        if (['create-order','add-order-detail'].includes(event)) data.idempotencyKey ??= crypto.randomUUID();
+        args[0]=data;
+      }
+      return emit(event,...args);
+    }) as typeof socketTemp.emit;
+    setSocket(previous => { previous?.disconnect(); return socketTemp; });
+  }, [serverPath, restaurant?.id]);
 
   const desconectarSocket = useCallback(() => {
     socket?.disconnect();

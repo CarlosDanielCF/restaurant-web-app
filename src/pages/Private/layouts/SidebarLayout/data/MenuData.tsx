@@ -30,56 +30,56 @@ const generalSection: MenuSection = {
       title: 'Dashboard',
       icon: <DashboardOutlinedIcon fontSize='small' />,
       to: '/reports',
-      allowedRoles: [Roles.ADMIN]
+      allowedRoles: [Roles.OWNER, Roles.ADMIN]
     },
     {
       title: 'Restaurante',
       icon: <Storefront fontSize='small' />,
       to: '/restaurant',
       label: 'Nuevo',
-      allowedRoles: [Roles.ADMIN]
+      allowedRoles: [Roles.OWNER, Roles.ADMIN]
     },
     {
       title: 'Pedidos',
       icon: <AssignmentOutlined fontSize='small' />,
       to: '/orders/',
-      allowedRoles: [Roles.ADMIN, Roles.WAITER]
+      allowedRoles: [Roles.OWNER, Roles.ADMIN, Roles.WAITER]
     },
     {
       title: 'Mesas',
       icon: <TableRestaurantOutlinedIcon fontSize='small' />,
       to: '/orders/tables',
-      allowedRoles: [Roles.ADMIN, Roles.WAITER]
+      allowedRoles: [Roles.OWNER, Roles.ADMIN, Roles.WAITER]
     },
     {
       title: 'Preparación de pedidos',
       icon: <SoupKitchenOutlined fontSize='small' />,
       to: '/orders/actives',
-      allowedRoles: [Roles.ADMIN, Roles.COOK]
+      allowedRoles: [Roles.OWNER, Roles.ADMIN, Roles.COOK]
     },
     {
       title: 'Lista de pedidos',
       icon: <ListAltOutlined fontSize='small' />,
       to: '/orders/list',
-      allowedRoles: [Roles.ADMIN, Roles.WAITER]
+      allowedRoles: [Roles.OWNER, Roles.ADMIN, Roles.WAITER]
     },
     {
       title: 'Menú del restaurante',
       icon: <MenuBookOutlined fontSize='small' />,
       to: '/menu/sections',
-      allowedRoles: [Roles.ADMIN]
+      allowedRoles: [Roles.OWNER, Roles.ADMIN]
     },
     {
       title: 'Gestión de mesas',
       icon: <TableRestaurantOutlinedIcon fontSize='small' />,
       to: '/tables',
-      allowedRoles: [Roles.ADMIN]
+      allowedRoles: [Roles.OWNER, Roles.ADMIN]
     },
     {
       title: 'Gestión de usuarios',
       icon: <PeopleOutlineIcon fontSize='small' />,
       to: '/users',
-      allowedRoles: [Roles.ADMIN]
+      allowedRoles: [Roles.OWNER, Roles.ADMIN]
     }
   ]
 };
@@ -122,7 +122,7 @@ const ordersSection = {
 
 const managementSection = {
   title: 'Administración',
-  allowedRoles: [Roles.ADMIN],
+  allowedRoles: [Roles.OWNER, Roles.ADMIN],
   items: [
     {
       title: 'Menú del restaurante',

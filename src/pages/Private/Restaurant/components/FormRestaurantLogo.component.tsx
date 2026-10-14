@@ -1,3 +1,4 @@
+import { useRestaurantImage } from '@/hooks/useRestaurantImage';
 import { FC, useState, useEffect } from 'react';
 
 import { LoadingButton } from '@mui/lab';
@@ -68,6 +69,7 @@ interface Props {
 export const FormRestaurantLogo: FC<Props> = ({ restaurant }) => {
   const { register, handleSubmit, watch } = useForm<{ file: FileList }>({});
 
+  const savedImage = useRestaurantImage(restaurant.logo);
   const [image, setImage] = useState<string>();
   const { enqueueSnackbar } = useSnackbar();
 
@@ -86,7 +88,7 @@ export const FormRestaurantLogo: FC<Props> = ({ restaurant }) => {
   };
 
   const onSubmit = async (data: { file: FileList }) => {
-    if (data.file.length === 0) {
+    if (!data.file?.length) {
       enqueueSnackbar('Debe seleccionar una imagen', { variant: 'error' });
       return;
     }
@@ -99,7 +101,7 @@ export const FormRestaurantLogo: FC<Props> = ({ restaurant }) => {
   };
 
   useEffect(() => {
-    if (watch('file')?.length === 0) return;
+    if (!watch('file')?.length) return;
 
     convert2base64(watch('file')[0]);
   }, [watch('file')]);
@@ -113,7 +115,7 @@ export const FormRestaurantLogo: FC<Props> = ({ restaurant }) => {
               <Avatar
                 variant='rounded'
                 alt={restaurant.name}
-                src={image || restaurant?.logo}
+                src={image || savedImage}
               />
             ) : (
               <label htmlFor='icon-button-file'>
@@ -148,7 +150,7 @@ export const FormRestaurantLogo: FC<Props> = ({ restaurant }) => {
               <input
                 id='icon-button-file'
                 type='file'
-                accept='image/*'
+                accept='image/png,image/jpeg,image/webp'
                 {...register('file')}
                 hidden
               />

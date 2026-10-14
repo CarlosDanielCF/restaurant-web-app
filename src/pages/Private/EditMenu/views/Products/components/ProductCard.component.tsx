@@ -1,3 +1,4 @@
+import { useRestaurantImage } from '@/hooks/useRestaurantImage';
 import { FC } from 'react';
 
 import {
@@ -46,6 +47,7 @@ interface Props {
 }
 
 export const ProductCard: FC<Props> = ({ producto }) => {
+  const productImage = useRestaurantImage(producto.images);
   const navigate = useNavigate();
   const theme = useTheme();
 
@@ -102,8 +104,8 @@ export const ProductCard: FC<Props> = ({ producto }) => {
         >
           <img
             src={
-              producto.images
-                ? producto.images
+              productImage
+                ? productImage
                 : '/static/images/products/no-image.png'
             }
             alt='Product'

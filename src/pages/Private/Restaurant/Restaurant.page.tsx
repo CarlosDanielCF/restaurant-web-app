@@ -1,3 +1,4 @@
+import { SecuritySettings } from './components/SecuritySettings.component';
 import { TitlePage } from '../components';
 import {
   Container,
@@ -279,6 +280,7 @@ const Restaurant = () => {
           )}
         </Grid>
 
+        <SecuritySettings />
         <Grid container spacing={2} mt={2}>
           <Grid item xs={12}>
             <ProductionAreasList />

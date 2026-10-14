@@ -89,7 +89,7 @@ const ResetPassword = () => {
   }>({ status: false });
 
   const passwordMessage =
-    'The password must have a Uppercase, lowercase letter and a number';
+    'Use de 12 a 72 caracteres, con mayúscula, minúscula y número';
 
   const [passwordValid, setPasswordValid] = useState<boolean>(true);
   const [samePassword, setSamePassword] = useState<boolean>(true);
@@ -103,16 +103,16 @@ const ResetPassword = () => {
     validSamePassword(password, String(data.get('password2')));
 
     // TODO: Send data to backend
-    if (samePassword && passwordValid && token) {
+    if (password === String(data.get('password2')) && isValidPassword(password) && token) {
       onSubmit(token, password);
     }
   };
 
   const isValidPassword = (password: string) => {
     const validPassword =
-      /(?:(?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/.test(password);
+      /^(?=.*\d)(?=.*[A-Z])(?=.*[a-z]).+$/.test(password);
 
-    return validPassword;
+    return validPassword && password.length >= 12 && password.length <= 72;
   };
 
   const validSamePassword = (password1: string, password2: string) => {

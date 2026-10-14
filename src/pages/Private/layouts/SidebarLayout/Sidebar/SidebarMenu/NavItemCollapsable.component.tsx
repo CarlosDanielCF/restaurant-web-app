@@ -32,7 +32,7 @@ export const NavItemCollapsable: FC<Props> = ({ navItem }) => {
 
   if (
     navItem.allowedRoles &&
-    !navItem.allowedRoles.includes(user?.role.name as Roles)
+    user?.role.name !== Roles.OWNER && !navItem.allowedRoles.includes(user?.role.name as Roles)
   ) {
     return null;
   }

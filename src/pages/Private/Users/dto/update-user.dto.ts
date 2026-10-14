@@ -1,6 +1,7 @@
 import { TypeIdentification } from '../../../../models/common.model';
 
 export interface UpdateUserDto {
+  expectedVersion?: number;
   id: string;
   username?: string;
   email?: string;

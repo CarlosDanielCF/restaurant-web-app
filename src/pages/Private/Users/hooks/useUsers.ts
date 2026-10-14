@@ -1,3 +1,4 @@
+import { RecoveryLink } from '../services/users.service';
 import { useEffect, useState } from 'react';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -205,11 +206,11 @@ export const useChangePasswordUser = () => {
 export const useResetPasswordUser = () => {
   const { enqueueSnackbar } = useSnackbar();
 
-  return useMutation<IUser, unknown, ResetPasswordUserDto>({
+  return useMutation<RecoveryLink, unknown, ResetPasswordUserDto>({
     mutationFn: (data: ResetPasswordUserDto) => resetPasswordUser(data),
-    onSuccess: (data: IUser) => {
+    onSuccess: (data: RecoveryLink) => {
       enqueueSnackbar(
-        'La contraseña fue cambiada al número de identificación',
+        'Enlace de acceso generado; vence en 30 minutos',
         { variant: 'success' }
       );
     },

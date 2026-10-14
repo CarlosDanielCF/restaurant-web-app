@@ -51,6 +51,7 @@ export enum OrderStatusSpanish {
  * @version v1.1 22-12-2023 Adds the field bills and remove invoices
  */
 export interface Order {
+  version: number;
   notes: string;
   deliveryTime: Date;
   createdAt: Date;

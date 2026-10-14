@@ -1,3 +1,4 @@
+import { useRestaurantImage } from '@/hooks/useRestaurantImage';
 import { Card, Typography, Box, styled, Link } from '@mui/material/';
 import { FC } from 'react';
 import { IProduct } from '../../../../../../models';
@@ -30,6 +31,7 @@ const StyledProductImg = styled('img')({
  * @version 1.0 15/03/2025
  */
 export const Product: FC<Props> = ({ product, onClick }) => {
+  const productImage = useRestaurantImage(product.images);
   const addProductoToOrder = () => {
     NiceModal.show(ModalAddDetail, { detail: { product, quantity: 1 } });
   };
@@ -60,7 +62,7 @@ export const Product: FC<Props> = ({ product, onClick }) => {
 
           <StyledProductImg
             alt={product.name}
-            src={product.images || '/static/images/products/no-image.png'}
+            src={productImage || '/static/images/products/no-image.png'}
           />
         </Box>
 

@@ -1,3 +1,4 @@
+import { KitchenAvailability } from '../../../Restaurant/components/KitchenAvailability.component';
 import {
   Container,
   Stack,
