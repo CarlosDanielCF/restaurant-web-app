@@ -70,6 +70,8 @@ export interface Operator {
   lastName: string;
 }
 export interface Line {
+  confirmedQuantity: string;
+  restoredQuantity: string;
   id: string;
   quantity: string;
   appliedUnitPrice: string;

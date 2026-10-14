@@ -55,7 +55,7 @@ const generalSection: MenuSection = {
     {
       title: 'Preparación de pedidos',
       icon: <SoupKitchenOutlined fontSize='small' />,
-      to: '/orders/actives',
+      to: '/kitchen',
       allowedRoles: [Roles.OWNER, Roles.ADMIN, Roles.COOK]
     },
     {
@@ -105,7 +105,7 @@ const ordersSection = {
     {
       title: 'Preparación de pedidos',
       icon: <SoupKitchenOutlined fontSize='small' />,
-      to: '/orders/actives'
+      to: '/kitchen'
       // allowedRoles: [ValidRoles.mesero],
     },
     {

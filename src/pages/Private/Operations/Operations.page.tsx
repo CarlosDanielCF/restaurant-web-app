@@ -32,7 +32,8 @@ export type Run = (
   method?: 'post' | 'patch'
 ) => Promise<boolean>;
 export function OperationsPage() {
-  const role = useSelector(selectAuth).user?.role.name;
+  const user = useSelector(selectAuth).user;
+  const role = user?.role.name;
   const cook = role === 'COCINERO',
     manager = ['DUENO', 'ADMINISTRADOR'].includes(role || '');
   const [tab, setTab] = useState(cook ? 2 : 0);
@@ -98,6 +99,7 @@ export function OperationsPage() {
       'catalog.changed',
       'attention.changed',
       'reservation.changed',
+      'kitchen.changed',
       'connect'
     ])
       socket?.on(event, changed);
@@ -106,6 +108,7 @@ export function OperationsPage() {
         'catalog.changed',
         'attention.changed',
         'reservation.changed',
+        'kitchen.changed',
         'connect'
       ])
         socket?.off(event, changed);
@@ -117,22 +120,38 @@ export function OperationsPage() {
     setBusy(true);
     setError('');
     setMessage('');
-    const signature = JSON.stringify({ path, body, method });
+    const { expectedVersion: _version, ...intent } = body as Record<
+      string,
+      unknown
+    >;
+    void _version;
+    const signature = JSON.stringify({ path, body: intent, method });
+    const storageKey = `pending-operations:${restaurant?.id}:${user?.id}`;
+    let pending: Record<string, string> = {};
+    try {
+      pending = JSON.parse(sessionStorage.getItem(storageKey) || '{}');
+    } catch {
+      /* Ignore invalid local cache. */
+    }
     const key =
       retry.current?.signature === signature
         ? retry.current.key
-        : crypto.randomUUID();
+        : pending[signature] || crypto.randomUUID();
     retry.current = { signature, key };
+    pending[signature] = key;
+    sessionStorage.setItem(storageKey, JSON.stringify(pending));
     try {
-      await restauranteApi.request({
+      const result = await restauranteApi.request({
         method,
         url: path,
         data: body,
         headers: { 'Idempotency-Key': key }
       });
       retry.current = undefined;
+      delete pending[signature];
+      sessionStorage.setItem(storageKey, JSON.stringify(pending));
       await refresh();
-      setMessage('Operación guardada');
+      setMessage(result.data?.warning || 'Operación guardada');
       return true;
     } catch (e) {
       const response = e as { data?: { message?: string | string[] } };
@@ -154,8 +173,9 @@ export function OperationsPage() {
       <Stack spacing={2} py={2}>
         <Typography variant='h4'>Atención del restaurante</Typography>
         <Typography>
-          Zona horaria: {restaurant?.timeZone}. Los consumos son borradores;
-          todavía no se envían a cocina ni generan cobros.
+          Zona horaria: {restaurant?.timeZone}. Agregue consumos y confirme los
+          nuevos envíos. La salida se registra por mozo, independientemente del
+          pago.
         </Typography>
         {(!online || !loaded) && (
           <Alert severity='warning'>

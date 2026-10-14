@@ -4,7 +4,6 @@ import {
   EditOrder,
   MenuAddProductsOrder,
   ReceiptOrder,
-  ActiveOrders,
   OrdersDashboard
 } from '../views';
 import { PrivateRoutes } from '../../../../models/routes.model';
@@ -27,7 +26,7 @@ export const OrderRouter: RouteObject = {
     },
     {
       path: 'actives',
-      element: <ActiveOrders />
+      element: <Navigate to="/kitchen" replace />
     },
     {
       path: 'list',

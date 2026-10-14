@@ -1,3 +1,4 @@
+import { FulfillmentPanel } from './FulfillmentPanel';
 import { useRestaurantStore } from '../Common/store/restaurantStore';
 import { useState } from 'react';
 import {
@@ -131,6 +132,7 @@ export function AttentionWorkspace({
   const [client, setClient] = useState('');
   const [reason, setReason] = useState('');
   const [sourceAccount, setSourceAccount] = useState('');
+  const [replaceLine, setReplaceLine] = useState('');
   const [sourceType, setSourceType] = useState<'PRODUCT' | 'DAILY_MENU'>(
     'PRODUCT'
   );
@@ -147,6 +149,7 @@ export function AttentionWorkspace({
   const menu = menus.find((m) => m.id === sourceId);
   function selectAccount(id: string) {
     setSelected(id);
+    setReplaceLine('');
     const next = accounts.find((a) => a.id === id);
     setTableIds(next?.tables.map((t) => t.id) || []);
     setResponsible(next?.responsibleUserId || '');
@@ -164,6 +167,7 @@ export function AttentionWorkspace({
     if (!account) return;
     const body = {
       expectedVersion: account.version,
+      ...(replaceLine ? { reason } : {}),
       sourceType,
       sourceId,
       quantity,
@@ -186,9 +190,15 @@ export function AttentionWorkspace({
             )
           })
     };
-    if (await run(`/attention-accounts/${account.id}/lines`, body)) {
+    if (
+      await run(
+        `/attention-accounts/${account.id}/lines${replaceLine ? `/${replaceLine}/replace` : ''}`,
+        body
+      )
+    ) {
       setNotes('');
       setQuantity(1);
+      setReplaceLine('');
     }
   }
   return (
@@ -328,7 +338,7 @@ export function AttentionWorkspace({
                               )
                             }
                           >
-                            Cancelar borrador con motivo indicado
+                            Cancelar consumo con motivo indicado
                           </Button>
                         )}
                     </CardContent>
@@ -337,17 +347,43 @@ export function AttentionWorkspace({
               </Stack>
             </CardContent>
           </Card>
+          <FulfillmentPanel key={account.id} account={account} run={run} />
           {account.attentionStatus === 'OPEN' && (
             <>
               <Card>
                 <CardContent>
                   <Stack spacing={2}>
                     <Typography variant='h6'>
-                      Agregar consumo a la cuenta
+                      Agregar o sustituir consumo
                     </Typography>
+                    <TextField
+                      select
+                      label='Operación del consumo'
+                      value={replaceLine}
+                      onChange={(e) => setReplaceLine(e.target.value)}
+                    >
+                      <MenuItem value=''>Agregar nuevo consumo</MenuItem>
+                      {account.lines
+                        .filter((l) => l.status === 'ACTIVE')
+                        .map((l) => (
+                          <MenuItem key={l.id} value={l.id}>
+                            Sustituir {l.productSnapshot.name} ({l.quantity})
+                          </MenuItem>
+                        ))}
+                    </TextField>
+                    {replaceLine && (
+                      <Typography>
+                        La sustitución cancela toda la línea anterior y solicita
+                        las nuevas unidades indicadas, incluso si hubo salidas
+                        previas. Requiere el motivo indicado abajo; no recupera
+                        porciones automáticamente. Para cambiar solo
+                        instrucciones use Observaciones.
+                      </Typography>
+                    )}
                     <Typography>
-                      Cualquier mozo puede agregar. Esto no confirma una comanda
-                      ni descuenta disponibilidad.
+                      Cualquier mozo puede agregar consumos en borrador, sin
+                      descontar porciones. Sustituir comida ya enviada confirma
+                      la sustitución y descuenta sus nuevas porciones.
                     </Typography>
                     <TextField
                       select
@@ -494,10 +530,14 @@ export function AttentionWorkspace({
                     />
                     <Button
                       variant='contained'
-                      disabled={!sourceId}
+                      disabled={
+                        !sourceId || (!!replaceLine && reason.trim().length < 2)
+                      }
                       onClick={() => void add()}
                     >
-                      Agregar consumo
+                      {replaceLine
+                        ? 'Sustituir consumo con motivo'
+                        : 'Agregar consumo'}
                     </Button>
                   </Stack>
                 </CardContent>
