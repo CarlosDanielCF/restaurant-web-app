@@ -1,11 +1,10 @@
-import { FC, useState, useEffect } from 'react';
+import { FC, useEffect } from 'react';
 
 import {
   Box,
   Card,
   IconButton,
   LinearProgress,
-  Switch,
   Table,
   TableBody,
   TableCell,
@@ -15,8 +14,6 @@ import {
   TableRow,
   Tooltip,
   Typography,
-  FormControlLabel,
-  TableSortLabel,
   Paper,
   InputBase,
   CircularProgress,
@@ -24,19 +21,13 @@ import {
 } from '@mui/material';
 import EditTwoToneIcon from '@mui/icons-material/EditTwoTone';
 import DeleteTwoToneIcon from '@mui/icons-material/DeleteTwoTone';
-import {
-  resetActiveUser,
-  selectUsers,
-  setActiveUser
-} from '../../../../../redux/slices/users/users.slice';
-import { useSelector, useDispatch } from 'react-redux';
 import { IUser } from '../../../../../models/auth.model';
-import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/material/';
 import { Label } from '../../../../../components/ui';
 import { useUsers } from '../../hooks/useUsers';
 import SearchIcon from '@mui/icons-material/Search';
 import { selectAuth } from '../../../../../redux';
+import { useSelector } from 'react-redux';
 import { useRestaurantStore } from '@/pages/Private/Common/store/restaurantStore';
 import NiceModal from '@ebay/nice-modal-react';
 import { EditUserRole } from '../EditUserRole.component';
@@ -213,7 +204,7 @@ export const UserMobileCard: FC<{ user: IUser }> = ({ user }) => {
 
 interface Props {}
 
-export const UsersTable: FC<Props> = ({}) => {
+export const UsersTable: FC<Props> = () => {
   const {
     usersQuery,
     page,
