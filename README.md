@@ -91,3 +91,7 @@ Resumen de nuevo pedido
 ## Reporte de productos más vendidos
 
 ![image](https://github.com/SantiagoQP23/sistema-restaurante-app/assets/44738574/63a0fe59-7abe-405f-ad42-51f85a458ee4)
+
+## Ciclo B — Finanzas
+
+Pantalla funcional `/finance` y contratos de integración: [PHASE67.md](PHASE67.md). Rama de revisión `codex/phase-6-7`; no supone aprobación de Barrera A.

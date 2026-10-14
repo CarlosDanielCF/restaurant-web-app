@@ -1,3 +1,4 @@
+import { FinancePage } from '../Finance/FinancePage';
 import { KitchenPage } from '../Operations/KitchenPage';
 import { OperationsPage } from '../Operations/Operations.page';
 import { Navigate, RouteObject } from 'react-router-dom';
@@ -27,6 +28,7 @@ export const PrivateRouter: RouteObject[] = [
     path: '/',
     element: <SidebarLayout />,
     children: [
+      {path:'finance',element:<Auth allowedRoles={[Roles.OWNER,Roles.ADMIN,Roles.WAITER]} />,children:[{index:true,element:<FinancePage />}]},
       {path:'attention',element:<OperationsPage />},
       {path:'kitchen',element:<Auth allowedRoles={[Roles.OWNER,Roles.ADMIN,Roles.COOK]} />,children:[{index:true,element:<KitchenPage />}]},
       // MenuRouter,
