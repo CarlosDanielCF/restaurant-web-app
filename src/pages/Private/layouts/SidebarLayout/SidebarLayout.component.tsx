@@ -1,9 +1,16 @@
-import { FC, ReactNode } from 'react';
-import { Box, useTheme, CssBaseline } from '@mui/material';
+import { FC, ReactNode, useContext, useEffect } from 'react';
+import {
+  Box,
+  useTheme,
+  CssBaseline,
+  IconButton,
+  useMediaQuery
+} from '@mui/material';
 import { Outlet } from 'react-router-dom';
 
 import Sidebar from './Sidebar/Sidebar.component';
-import Header from './Header/Header.component';
+import MenuIcon from '@mui/icons-material/Menu';
+import { SidebarContext } from '../../Common/contexts/SidebarContext';
 
 interface SidebarLayoutProps {
   children?: ReactNode;
@@ -12,6 +19,12 @@ interface SidebarLayoutProps {
 
 const SidebarLayout: FC<SidebarLayoutProps> = () => {
   const theme = useTheme();
+  const mobile = useMediaQuery(theme.breakpoints.down('lg'));
+  const { closeSidebar, toggleSidebar } = useContext(SidebarContext);
+  useEffect(() => {
+    if (mobile) closeSidebar();
+    // Close the desktop navigation when entering a small viewport.
+  }, [mobile]);
 
   return (
     <>
@@ -33,6 +46,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = () => {
             flexDirection: 'column',
             flex: 1,
             width: '100%',
+            minWidth: 0,
             overflow: 'auto',
             height: '100vh',
             transition: theme.transitions.create(['margin', 'width'], {
@@ -41,6 +55,13 @@ const SidebarLayout: FC<SidebarLayoutProps> = () => {
             })
           }}
         >
+          {mobile && (
+            <Box sx={{ px: 1, pt: 1 }}>
+              <IconButton aria-label='Abrir navegación' onClick={toggleSidebar}>
+                <MenuIcon />
+              </IconButton>
+            </Box>
+          )}
           <Outlet />
         </Box>
       </Box>

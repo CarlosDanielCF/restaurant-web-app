@@ -43,6 +43,7 @@ import NiceModal from '@ebay/nice-modal-react';
 import { ModalSelectDefaultVariant } from './components/ModalSelectDefaultVariant.component';
 
 export interface ProductForm {
+  kind:'FOOD'|'DRINK';
   name: string;
   price: number;
   categoryId: string;
@@ -64,6 +65,7 @@ export interface ProductForm {
 }
 
 const initialForm: ProductForm = {
+  kind:'FOOD',
   name: '',
   description: '',
   price: 0,
@@ -232,6 +234,7 @@ export const CreateProduct = () => {
                             />
                           </Grid>
                           <Grid item xs={12}>
+                            <TextField select fullWidth label='Clasificación' defaultValue='FOOD' {...register('kind')}><MenuItem value='FOOD'>Comida</MenuItem><MenuItem value='DRINK'>Bebida</MenuItem></TextField>
                             <InputLabel>Descripcion</InputLabel>
                             <TextField
                               multiline
@@ -262,11 +265,12 @@ export const CreateProduct = () => {
                                     })}
                                     error={!!errors.categoryId}
                                   >
-                                    <InputLabel htmlFor='grouped-select'>
+                                    <InputLabel id='category-label'>
                                       Categoría
                                     </InputLabel>
                                     <Select
                                       id='grouped-select'
+                                      labelId='category-label'
                                       label='Categoría'
                                       margin='dense'
                                       fullWidth
@@ -317,9 +321,7 @@ export const CreateProduct = () => {
                                 <>
                                   <FormControl
                                     fullWidth
-                                    {...register('productionAreaId', {
-                                      required: 'Este campo es requerido'
-                                    })}
+                                    {...register('productionAreaId')}
                                     error={!!errors.productionAreaId}
                                   >
                                     <InputLabel id='select-area'>
@@ -334,6 +336,7 @@ export const CreateProduct = () => {
                                       onChange={onChange}
                                       onBlur={onBlur}
                                     >
+                                      <MenuItem value=''>Sin área específica</MenuItem>
                                       {productionAreas.map((area) => (
                                         <MenuItem key={area.id} value={area.id}>
                                           {area.name}
@@ -430,8 +433,8 @@ export const CreateProduct = () => {
                               {...register('price', {
                                 required: 'Este campo es requerido',
                                 min: {
-                                  value: 0.25,
-                                  message: 'El valor debe ser mayor a $0.25'
+                                  value: 0,
+                                  message: 'El precio no puede ser negativo'
                                 },
                                 valueAsNumber: true
                               })}
@@ -477,7 +480,7 @@ export const CreateProduct = () => {
                               <FormControlLabel
                                 control={<Checkbox />}
                                 {...register('trackStock')}
-                                label='Manejar inventario'
+                                label='Controlar porciones'
                               />
                             </Box>
                           </Grid>

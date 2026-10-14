@@ -85,15 +85,13 @@ export const FormProduct: FC<Props> = ({ product }) => {
   const navigate = useNavigate();
 
   const getUpdateProductDto = (product: IProduct) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { options, images, productionArea, category, tags, ...restProduct } =
-      product;
     const updateProductDto: UpdateProductDto = {
-      ...restProduct,
-      categoryId: category.id,
-      productionAreaId: productionArea.id
+      id:product.id,name:product.name,price:product.price,description:product.description,
+      categoryId:product.category.id,productionAreaId:product.productionArea?.id,
+      unitCost:product.unitCost,quantity:product.quantity,isActive:product.isActive,
+      isPublic:product.isPublic,status:product.status,iva:product.iva,
+      expectedVersion:(product as IProduct & {version:number}).version
     };
-    console.log({ updateProductDto });
     return updateProductDto;
   };
 

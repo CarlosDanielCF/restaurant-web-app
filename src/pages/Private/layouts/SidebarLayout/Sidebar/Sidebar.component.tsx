@@ -14,7 +14,8 @@ import {
   ListItemIcon,
   ListItemText,
   List,
-  ListSubheader
+  ListSubheader,
+  useMediaQuery
 } from '@mui/material';
 
 import MuiDrawer from '@mui/material/Drawer';
@@ -190,6 +191,7 @@ function Sidebar() {
 
   const { user: userState } = useAppSelector(selectAuth);
   const theme = useTheme();
+  const mobile = useMediaQuery(theme.breakpoints.down('lg'));
 
   return (
     <>
@@ -251,9 +253,9 @@ function Sidebar() {
           zIndex: theme.zIndex.drawer + 3
         }}
         anchor={theme.direction === 'rtl' ? 'right' : 'left'}
-        open={sidebarToggle}
+        open={sidebarToggle && mobile}
         onClose={closeSidebar}
-        variant='persistent'
+        variant='temporary'
         elevation={10}
         color='inherit'
       >

@@ -17,7 +17,7 @@ const versions = new Map<string, number>();
 function collectVersions(value: unknown) {
   if (!value || typeof value !== 'object') return;
   const record = value as Record<string, unknown>;
-  if (typeof record.id === 'string' && typeof record.version === 'number' && Number.isInteger(record.version)) versions.set(record.id, record.version);
+  if ((typeof record.id === 'string' || typeof record.id === 'number') && typeof record.version === 'number' && Number.isInteger(record.version)) versions.set(String(record.id), record.version);
   if (Array.isArray(value)) value.forEach(collectVersions);
   else Object.values(value).forEach(collectVersions);
 }
@@ -36,8 +36,8 @@ restauranteApi.interceptors.request.use((config) => {
   }
 
   const path = (config.url || '').replace(/^\//, '');
-  if (config.method === 'post' && !config.headers['Idempotency-Key']) config.headers['Idempotency-Key'] = crypto.randomUUID();
-  if (['patch','delete'].includes(config.method || '') && (path.startsWith('users/') || path.startsWith('restaurant/'))) {
+  if (['post','patch'].includes(config.method || '') && !config.headers['Idempotency-Key']) config.headers['Idempotency-Key'] = crypto.randomUUID();
+  if (['patch','delete'].includes(config.method || '') && (path.startsWith('users/') || path.startsWith('restaurant/') || path.startsWith('products/') || path.startsWith('product-options/'))) {
     const id = path.startsWith('restaurant/') ? restaurant?.id : path === 'users/user-role' ? config.data?.userId : path.split('/')[1];
     const version = id ? versions.get(id) : undefined;
     if (config.data instanceof FormData || config.method === 'delete') {

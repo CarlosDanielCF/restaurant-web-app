@@ -1,3 +1,4 @@
+import { OperationsPage } from '../Operations/Operations.page';
 import { Navigate, RouteObject } from 'react-router-dom';
 
 import SidebarLayout from '../layouts/SidebarLayout/SidebarLayout.component';
@@ -25,10 +26,11 @@ export const PrivateRouter: RouteObject[] = [
     path: '/',
     element: <SidebarLayout />,
     children: [
+      {path:'attention',element:<OperationsPage />},
       // MenuRouter,
       OrderRouter,
       InvoiceRouter,
-      MenuEditRouter,
+      {element:<Auth allowedRoles={[Roles.OWNER,Roles.ADMIN]} />,children:[MenuEditRouter]},
       ClientsRouter,
       TablesRouter,
       UserRouter,
@@ -56,19 +58,19 @@ export const PrivateRouter: RouteObject[] = [
       },
       {
         path: '/auth/login',
-        element: <Navigate to={PrivateRoutes.ORDERS} />
+        element: <Navigate to="/attention" />
       },
       {
         path: '',
-        element: <Navigate to={PrivateRoutes.ORDERS} />
+        element: <Navigate to="/attention" />
       },
       {
         path: 'ORD.ORDERS',
-        element: <Navigate to={PrivateRoutes.ORDERS} />
+        element: <Navigate to="/attention" />
       },
       {
         path: '*',
-        element: <Navigate to={PrivateRoutes.ORDERS} />
+        element: <Navigate to="/attention" />
       }
     ]
   },

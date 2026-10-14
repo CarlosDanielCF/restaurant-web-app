@@ -1,9 +1,8 @@
-import { RouteObject } from 'react-router-dom';
+import { Navigate, RouteObject } from 'react-router-dom';
 import {
   ListOrders,
   EditOrder,
   MenuAddProductsOrder,
-  AddOrder,
   ReceiptOrder,
   ActiveOrders,
   OrdersDashboard
@@ -11,8 +10,6 @@ import {
 import { PrivateRoutes } from '../../../../models/routes.model';
 
 import { lazy } from 'react';
-import { Menu } from '../../Menu';
-import { Tables } from '../views/Tables/Tables.view';
 
 const Orders = lazy(() => import('../Orders.page'));
 
@@ -26,7 +23,7 @@ export const OrderRouter: RouteObject = {
     },
     {
       path: 'tables',
-      element: <Tables />
+      element: <Navigate to="/attention" replace />
     },
     {
       path: 'actives',
@@ -50,11 +47,11 @@ export const OrderRouter: RouteObject = {
     },
     {
       path: 'add',
-      element: <AddOrder />
+      element: <Navigate to="/attention" replace />
     },
     {
       path: 'add/menu',
-      element: <Menu />
+      element: <Navigate to="/attention" replace />
     }
   ]
 };

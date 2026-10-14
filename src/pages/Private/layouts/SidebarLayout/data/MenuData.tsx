@@ -26,6 +26,7 @@ const generalSection: MenuSection = {
   title: '',
   // allowedRoles: [ValidRoles.admin],
   items: [
+    {title:'Atención, carta y reservas',icon:<TableRestaurantOutlinedIcon fontSize='small' />,to:'/attention',allowedRoles:[Roles.OWNER,Roles.ADMIN,Roles.WAITER,Roles.COOK]},
     {
       title: 'Dashboard',
       icon: <DashboardOutlinedIcon fontSize='small' />,
@@ -40,15 +41,15 @@ const generalSection: MenuSection = {
       allowedRoles: [Roles.OWNER, Roles.ADMIN]
     },
     {
-      title: 'Pedidos',
+      title: 'Pedidos históricos',
       icon: <AssignmentOutlined fontSize='small' />,
-      to: '/orders/',
+      to: '/orders/list',
       allowedRoles: [Roles.OWNER, Roles.ADMIN, Roles.WAITER]
     },
     {
       title: 'Mesas',
       icon: <TableRestaurantOutlinedIcon fontSize='small' />,
-      to: '/orders/tables',
+      to: '/attention',
       allowedRoles: [Roles.OWNER, Roles.ADMIN, Roles.WAITER]
     },
     {
@@ -89,17 +90,17 @@ const generalSection: MenuSection = {
  * @version v1.1 22-12-2023 Change invoices for bills
  */
 const ordersSection = {
-  title: 'Pedidos',
+  title: 'Pedidos históricos',
   items: [
     {
-      title: 'Pedidos',
+      title: 'Pedidos históricos',
       icon: <AssignmentOutlined fontSize='small' />,
       to: '/orders/'
     },
     {
       title: 'Mesas',
       icon: <AssignmentOutlined fontSize='small' />,
-      to: '/orders/tables'
+      to: '/attention'
     },
     {
       title: 'Preparación de pedidos',

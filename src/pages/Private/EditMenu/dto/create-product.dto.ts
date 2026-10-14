@@ -7,6 +7,12 @@ import { ProductStatus } from '../../../../models';
  * @version 1.2 17/12/2023 Adds costUnit and quantity fields.
  */
 export interface CreateProductDto {
+  expectedVersion?:number;
+  kind?:'FOOD'|'DRINK';
+  trackStock?:boolean;
+  hasVariants?:boolean;
+  defaultVariantIndex?:number;
+  productOptions?:{name:string;price:number;cost?:number;trackStock?:boolean;defaultStock?:number;isDefault?:boolean}[];
   name: string;
   price: number;
   categoryId: string;

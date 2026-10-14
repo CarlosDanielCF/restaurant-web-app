@@ -1,0 +1,110 @@
+export interface Modifier {
+  id: string;
+  name: string;
+  kind: 'ACCOMPANIMENT' | 'EXTRA';
+  price: number;
+  isAvailable: boolean;
+}
+export interface Configuration {
+  modifiers: Modifier[];
+  combo: { productId: string; quantity: number }[];
+  courtesy: boolean;
+}
+export interface Product {
+  id: string;
+  name: string;
+  price: number;
+  kind: 'FOOD' | 'DRINK';
+  status: string;
+  quantity: number;
+  trackStock: boolean;
+  version: number;
+  isActive: boolean;
+  configuration: Configuration | null;
+  options: {
+    id: number;
+    name: string;
+    price: number;
+    isAvailable: boolean;
+    isActive: boolean;
+    version: number;
+    quantity: number;
+    manageStock: boolean;
+  }[];
+}
+export interface Component {
+  id: string;
+  name: string;
+  options: {
+    id: string;
+    productId: string;
+    isAvailable: boolean;
+    portions: number | null;
+  }[];
+}
+export interface DailyMenu {
+  id: string;
+  name: string;
+  price: number;
+  serviceDate: string | null;
+  isAvailable: boolean;
+  components: Component[];
+  version: number;
+}
+export interface Portion {
+  id: string;
+  name: string;
+  availabilityUnits: number;
+  isActive: boolean;
+  version: number;
+}
+export interface Table {
+  id: string;
+  name: string;
+  isActive: boolean;
+  isAvailable: boolean;
+}
+export interface Operator {
+  id: string;
+  firstName: string;
+  lastName: string;
+}
+export interface Line {
+  id: string;
+  quantity: string;
+  appliedUnitPrice: string;
+  subtotal: string;
+  notes: string;
+  status: string;
+  productSnapshot: { name: string; stockRequirements: unknown[] };
+}
+export interface Account {
+  id: string;
+  modality: 'TABLE' | 'TAKE_AWAY';
+  responsibleUserId: string;
+  clientId: string | null;
+  attentionStatus: string;
+  paymentStatus: string;
+  version: number;
+  total: string;
+  balance: string;
+  tables: Table[];
+  lines: Line[];
+  history: {
+    action: string;
+    actorId: string;
+    createdAt: string;
+    afterData: unknown;
+  }[];
+}
+export interface Reservation {
+  id: string;
+  name: string;
+  phone: string;
+  scheduledAt: string;
+  people: number;
+  notes: string;
+  status: string;
+  version: number;
+  accountId: string | null;
+}

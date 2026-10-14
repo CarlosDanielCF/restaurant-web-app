@@ -45,7 +45,7 @@ export const Private = () => {
 
   const navigate = useNavigate();
   const location = useLocation();
-  useEffect(()=>{if(user?.role.name===Roles.COOK && ['/', '/orders','/orders/'].includes(location.pathname)) navigate('/orders/actives',{replace:true});},[user?.role.name,location.pathname,navigate]);
+  useEffect(()=>{if(user?.role.name===Roles.COOK && ['/', '/orders','/orders/'].includes(location.pathname)) navigate('/attention',{replace:true});},[user?.role.name,location.pathname,navigate]);
 
   // Load all menu
   const menuQuery = useMenu();

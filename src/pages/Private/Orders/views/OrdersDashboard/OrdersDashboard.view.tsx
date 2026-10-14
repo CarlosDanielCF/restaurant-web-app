@@ -27,8 +27,6 @@ import {
   selectOrders,
   setActiveOrder as setActiveOrderAction
 } from '../../../../../redux';
-import NiceModal from '@ebay/nice-modal-react';
-import { NewOrderModal } from '../../components/modals/NewOrderModal.component';
 import { OrderList } from './components/OrderList.component';
 import { fontWeight } from '@mui/system';
 import { EditOrderCard } from '../../components/EditOrderCard.component';
@@ -81,13 +79,6 @@ export const OrdersDashboard = () => {
 
   const { setOrderType } = useNewOrderStore((state) => state);
 
-  const openNewOrderModal = () => {
-    NiceModal.show(NewOrderModal);
-    // setOrderType(TypeOrder.TAKE_AWAY);
-    //
-    // navigate('/orders/add');
-  };
-
   const totalOrders = orders.length;
 
   const paidOrders = orders.filter((order) => order.isPaid).length;
@@ -126,10 +117,10 @@ export const OrdersDashboard = () => {
                   <Button
                     variant='contained'
                     startIcon={<Add />}
-                    onClick={openNewOrderModal}
+                    onClick={()=>navigate('/attention')}
                     size='small'
                   >
-                    Crear Pedido
+                    Abrir atención
                   </Button>
                 </Stack>
               }
