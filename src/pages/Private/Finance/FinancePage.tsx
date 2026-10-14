@@ -51,6 +51,8 @@ interface Financial {
 }
 interface Shift {
   shift: { id: string; workerId: string; status: string; version: number };
+  courierCashRecorded?: string;
+  courierCashReceived?: string;
   expectedCash: string;
   shortage: string;
   overage: string;
@@ -105,6 +107,29 @@ export function FinancePage() {
     [manual, setManual] = useState(false),
     [adminReason, setAdminReason] = useState(''),
     [lineIds, setLineIds] = useState<string[]>([]);
+  const [courierCash, setCourierCash] = useState(false),
+    [courierId, setCourierId] = useState('');
+  useEffect(() => {
+    let active = true;
+    setCourierCash(false);
+    setCourierId('');
+    if (
+      selected &&
+      data?.account.modality &&
+      ['OWN_DELIVERY', 'EXTERNAL_COURIER'].includes(data.account.modality)
+    )
+      restauranteApi
+        .get<{ delivery: { courierId: string } | null }>(
+          `/offsite/accounts/${selected}`
+        )
+        .then((r) => {
+          if (active) setCourierId(r.data.delivery?.courierId || '');
+        })
+        .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [selected, data?.account.modality, data?.account.version]);
   const [people, setPeople] = useState('2');
   const [clientSearch, setClientSearch] = useState('');
   const [clients, setClients] = useState<
@@ -584,8 +609,11 @@ export function FinancePage() {
                 {s.shift.status}
               </Typography>
               <Typography>
-                Efectivo calculado S/{s.expectedCash} · abonos incluidos en
-                cobros S/{s.installmentsIncludedInPayments}
+                Efectivo registrado en courier S/
+                {s.courierCashRecorded || '0.00'} · recibido de courier S/
+                {s.courierCashReceived || '0.00'} · Efectivo calculado S/
+                {s.expectedCash} · abonos incluidos en cobros S/
+                {s.installmentsIncludedInPayments}
               </Typography>
               {s.payments.map((p) => (
                 <Typography key={p.method}>
@@ -774,6 +802,23 @@ export function FinancePage() {
                   antes de confirmar.
                 </Alert>
               )}
+              {courierId && (
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={courierCash}
+                      onChange={(e) => setCourierCash(e.target.checked)}
+                    />
+                  }
+                  label='El efectivo lo recibió físicamente el repartidor/courier'
+                />
+              )}
+              {courierCash && (
+                <Alert severity='info'>
+                  Registra el pago del cliente una sola vez. La entrega del
+                  efectivo al responsable se confirma aparte en Atención.
+                </Alert>
+              )}
               {parts.map((part, i) => (
                 <Stack key={i} spacing={1}>
                   <TextField
@@ -887,6 +932,7 @@ export function FinancePage() {
                   {
                     expectedVersion: payVersion,
                     shiftId: own?.shift.id,
+                    ...(courierCash ? { courierId } : {}),
                     payments: parts.map((p) => ({
                       ...p,
                       ...(p.method === 'YAPE'

@@ -1,4 +1,6 @@
 export interface KitchenSnapshot {
+  consumptionKind?: string;
+  beneficiaryUserId?: string;
   quantity?: number | string;
   name: string;
   notes: string;

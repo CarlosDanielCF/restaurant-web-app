@@ -1,6 +1,8 @@
+import { OffsitePanel, modalityLabel } from './OffsitePanel';
+import { restauranteApi } from '@/api';
 import { FulfillmentPanel } from './FulfillmentPanel';
 import { useRestaurantStore } from '../Common/store/restaurantStore';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Button,
   Card,
@@ -124,7 +126,7 @@ export function AttentionWorkspace({
     'attention.close': 'Cierre de atención',
     'attention.cancel-draft': 'Cancelación de borrador'
   };
-  const [modality, setModality] = useState<'TABLE' | 'TAKE_AWAY'>('TABLE');
+  const [modality, setModality] = useState<Account['modality']>('TABLE');
   const [selected, setSelected] = useState('');
   const account = accounts.find((a) => a.id === selected);
   const [tableIds, setTableIds] = useState<string[]>([]);
@@ -139,6 +141,7 @@ export function AttentionWorkspace({
   const [sourceId, setSourceId] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [notes, setNotes] = useState('');
+  const [accountNotes, setAccountNotes] = useState('');
   const [option, setOption] = useState('');
   const [modifiers, setModifiers] = useState<string[]>([]);
   const [selections, setSelections] = useState<Record<string, string>>({});
@@ -163,10 +166,34 @@ export function AttentionWorkspace({
     setPortion('');
     setSpecialPrice('');
   }
+  const [offsite, setOffsite] = useState({
+    customerName: '',
+    phone: '',
+    address: '',
+    reference: ''
+  });
+  const restaurantId = useRestaurantStore((s) => s.restaurant?.id);
+  const [kind, setKind] = useState(''),
+    [beneficiary, setBeneficiary] = useState(''),
+    [workers, setWorkers] = useState<Operator[]>([]);
+  useEffect(() => {
+    let active = true;
+    restauranteApi
+      .get<Operator[]>('/offsite/workers')
+      .then((r) => {
+        if (active) setWorkers(r.data);
+      })
+      .catch(() => setWorkers([]));
+    return () => {
+      active = false;
+    };
+  }, [restaurantId]);
   async function add() {
     if (!account) return;
     const body = {
       expectedVersion: account.version,
+      ...(kind ? { kind } : {}),
+      ...(kind === 'STAFF' ? { beneficiaryUserId: beneficiary } : {}),
       ...(replaceLine ? { reason } : {}),
       sourceType,
       sourceId,
@@ -214,9 +241,7 @@ export function AttentionWorkspace({
         {accounts.map((a) => (
           <MenuItem key={a.id} value={a.id}>
             {a.tables.map((t) => t.name).join(' + ') ||
-              (a.modality === 'TAKE_AWAY'
-                ? 'Para llevar ' + a.id.slice(0, 8)
-                : a.id.slice(0, 8))}{' '}
+              modalityLabel[a.modality] + ' ' + a.id.slice(0, 8)}{' '}
             · {a.attentionStatus === 'OPEN' ? 'Abierta' : 'Cerrada'} · S/
             {a.total}
           </MenuItem>
@@ -238,6 +263,8 @@ export function AttentionWorkspace({
               >
                 <MenuItem value='TABLE'>En mesa</MenuItem>
                 <MenuItem value='TAKE_AWAY'>Para llevar</MenuItem>
+                <MenuItem value='OWN_DELIVERY'>Delivery propio</MenuItem>
+                <MenuItem value='EXTERNAL_COURIER'>Courier externo</MenuItem>
               </TextField>
               <OperatorSelect
                 operators={operators}
@@ -263,6 +290,31 @@ export function AttentionWorkspace({
                   </MenuItem>
                 ))}
               </TextField>
+              {modality !== 'TABLE' &&
+                (
+                  ['customerName', 'phone', 'address', 'reference'] as const
+                ).map((key) => (
+                  <TextField
+                    key={key}
+                    label={
+                      {
+                        customerName: 'Nombre de quien recibe',
+                        phone: 'Teléfono de contacto',
+                        address: 'Dirección de entrega',
+                        reference: 'Referencia de entrega'
+                      }[key]
+                    }
+                    value={offsite[key]}
+                    onChange={(e) =>
+                      setOffsite((f) => ({ ...f, [key]: e.target.value }))
+                    }
+                  />
+                ))}
+              <TextField
+                label='Observaciones de la atención'
+                value={accountNotes}
+                onChange={(e) => setAccountNotes(e.target.value)}
+              />
               {modality === 'TABLE' && (
                 <TableChoices
                   tables={tables}
@@ -280,6 +332,8 @@ export function AttentionWorkspace({
                   if (
                     await run('/attention-accounts', {
                       modality,
+                      notes: accountNotes,
+                      ...(modality !== 'TABLE' ? { offsite } : {}),
                       responsibleUserId: responsible,
                       tableIds,
                       ...(client ? { clientId: client } : {})
@@ -301,8 +355,11 @@ export function AttentionWorkspace({
             <CardContent>
               <Stack spacing={2}>
                 <Typography variant='h5'>
-                  Mesas:{' '}
-                  {account.tables.map((t) => t.name).join(' + ') || 'Liberadas'}
+                  {account.modality === 'TABLE'
+                    ? 'Mesas: ' +
+                      (account.tables.map((t) => t.name).join(' + ') ||
+                        'Liberadas')
+                    : modalityLabel[account.modality]}
                 </Typography>
                 <Typography>
                   Responsable:{' '}
@@ -317,6 +374,7 @@ export function AttentionWorkspace({
                     account.paymentStatus}{' '}
                   · Consumo S/{account.total} · Saldo S/{account.balance}
                 </Typography>
+                <Typography>{account.notes}</Typography>
                 {account.lines.map((line) => (
                   <Card variant='outlined' key={line.id}>
                     <CardContent>
@@ -326,6 +384,17 @@ export function AttentionWorkspace({
                         {line.status === 'CANCELLED' ? 'Cancelado' : 'Borrador'}
                       </Typography>
                       <Typography>{line.notes}</Typography>
+                      {line.kind === 'STAFF' && (
+                        <Typography>
+                          Consumo de personal ·{' '}
+                          {workers.find((w) => w.id === line.beneficiaryUserId)
+                            ?.firstName || line.beneficiaryUserId}{' '}
+                          · valor original S/{line.originalUnitPrice}
+                        </Typography>
+                      )}
+                      {line.kind === 'COURTESY' && (
+                        <Typography>Cortesía de cliente</Typography>
+                      )}
                       {account.attentionStatus === 'OPEN' &&
                         line.status === 'ACTIVE' && (
                           <Button
@@ -347,6 +416,13 @@ export function AttentionWorkspace({
               </Stack>
             </CardContent>
           </Card>
+          {account.modality !== 'TABLE' && (
+            <OffsitePanel
+              key={'offsite-' + account.id}
+              account={account}
+              run={run}
+            />
+          )}
           <FulfillmentPanel key={account.id} account={account} run={run} />
           {account.attentionStatus === 'OPEN' && (
             <>
@@ -356,6 +432,34 @@ export function AttentionWorkspace({
                     <Typography variant='h6'>
                       Agregar o sustituir consumo
                     </Typography>
+                    <TextField
+                      select
+                      label='Tipo de consumo'
+                      value={kind}
+                      onChange={(e) => setKind(e.target.value)}
+                    >
+                      <MenuItem value=''>
+                        Venta / configuración de carta
+                      </MenuItem>
+                      <MenuItem value='STAFF'>
+                        Consumo gratuito de personal
+                      </MenuItem>
+                      <MenuItem value='COURTESY'>Cortesía permitida</MenuItem>
+                    </TextField>
+                    {kind === 'STAFF' && (
+                      <TextField
+                        select
+                        label='Trabajador beneficiario'
+                        value={beneficiary}
+                        onChange={(e) => setBeneficiary(e.target.value)}
+                      >
+                        {workers.map((w) => (
+                          <MenuItem key={w.id} value={w.id}>
+                            {w.firstName} {w.lastName}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+                    )}
                     <TextField
                       select
                       label='Operación del consumo'

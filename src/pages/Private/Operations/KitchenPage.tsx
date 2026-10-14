@@ -1,3 +1,4 @@
+import { modalityLabel } from './OffsitePanel';
 import { useRestaurantStore } from '../Common/store/restaurantStore';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import {
@@ -244,7 +245,8 @@ export function KitchenPage() {
                 <CardContent>
                   <Stack spacing={1}>
                     <Typography variant='h5'>
-                      {d.tables.map((t) => t.name).join(' + ') || 'Para llevar'}{' '}
+                      {d.tables.map((t) => t.name).join(' + ') ||
+                        modalityLabel[d.modality]}{' '}
                       · #{d.sequenceNumber}
                     </Typography>
                     <Typography>
@@ -278,6 +280,12 @@ export function KitchenPage() {
                           </Typography>
                           <Typography>{details(i.itemSnapshot)}</Typography>
                           <Typography>{i.itemSnapshot.notes}</Typography>
+                          {i.itemSnapshot.consumptionKind === 'STAFF' && (
+                            <Typography>Consumo de personal</Typography>
+                          )}
+                          {i.itemSnapshot.consumptionKind === 'COURTESY' && (
+                            <Typography>Cortesía</Typography>
+                          )}
                           <Typography variant='caption'>
                             {i.delivered} unidades salieron
                           </Typography>

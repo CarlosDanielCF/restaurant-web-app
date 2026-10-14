@@ -70,6 +70,9 @@ export interface Operator {
   lastName: string;
 }
 export interface Line {
+  kind?: string;
+  beneficiaryUserId?: string;
+  originalUnitPrice?: string;
   confirmedQuantity: string;
   restoredQuantity: string;
   id: string;
@@ -81,8 +84,9 @@ export interface Line {
   productSnapshot: { name: string; stockRequirements: unknown[] };
 }
 export interface Account {
+  notes?: string;
   id: string;
-  modality: 'TABLE' | 'TAKE_AWAY';
+  modality: 'TABLE' | 'TAKE_AWAY' | 'OWN_DELIVERY' | 'EXTERNAL_COURIER';
   responsibleUserId: string;
   clientId: string | null;
   attentionStatus: string;
