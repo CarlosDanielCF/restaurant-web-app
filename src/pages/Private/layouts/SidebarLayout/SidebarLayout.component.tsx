@@ -1,9 +1,14 @@
-import { FC, ReactNode } from 'react';
-import { Box, useTheme, CssBaseline } from '@mui/material';
+import { FC, ReactNode, useContext } from 'react';
+import { Box, useTheme, CssBaseline, IconButton, Typography } from '@mui/material';
+import MenuTwoToneIcon from '@mui/icons-material/MenuTwoTone';
 import { Outlet } from 'react-router-dom';
 
 import Sidebar from './Sidebar/Sidebar.component';
-import Header from './Header/Header.component';
+import HeaderUserbox from './Header/components/Userbox.component';
+import { SidebarContext } from '../../Common/contexts/SidebarContext';
+import { useRestaurantStore } from '../../Common/store/restaurantStore';
+import { useAppSelector } from '@/hooks';
+import { selectAuth } from '@/redux';
 
 interface SidebarLayoutProps {
   children?: ReactNode;
@@ -12,6 +17,9 @@ interface SidebarLayoutProps {
 
 const SidebarLayout: FC<SidebarLayoutProps> = () => {
   const theme = useTheme();
+  const { toggleSidebar } = useContext(SidebarContext);
+  const restaurant = useRestaurantStore((state) => state.restaurant);
+  const { user } = useAppSelector(selectAuth);
 
   return (
     <>
@@ -23,7 +31,6 @@ const SidebarLayout: FC<SidebarLayoutProps> = () => {
         }}
       >
         <CssBaseline />
-        {/* <Header /> */}
         <Sidebar />
         <Box
           sx={{
@@ -41,7 +48,42 @@ const SidebarLayout: FC<SidebarLayoutProps> = () => {
             })
           }}
         >
-          <Outlet />
+          {/* Mobile Top Navigation Bar */}
+          <Box
+            sx={{
+              display: { xs: 'flex', lg: 'none' },
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              px: 2,
+              py: 1.25,
+              bgcolor: 'background.paper',
+              borderBottom: 1,
+              borderColor: 'divider',
+              position: 'sticky',
+              top: 0,
+              zIndex: 100,
+              boxShadow: theme.shadows[1]
+            }}
+          >
+            <Box display='flex' alignItems='center' gap={1.5}>
+              <IconButton
+                onClick={toggleSidebar}
+                color='primary'
+                edge='start'
+                aria-label='Abrir menú de navegación'
+                size='medium'
+              >
+                <MenuTwoToneIcon />
+              </IconButton>
+              <Typography variant='h6' fontWeight={700} color='text.primary' noWrap>
+                {restaurant?.name || 'Sistema Restaurante'}
+              </Typography>
+            </Box>
+            {user && <HeaderUserbox />}
+          </Box>
+          <Box sx={{ p: { xs: 1.5, sm: 2, md: 3 }, flex: 1 }}>
+            <Outlet />
+          </Box>
         </Box>
       </Box>
     </>
@@ -49,3 +91,4 @@ const SidebarLayout: FC<SidebarLayoutProps> = () => {
 };
 
 export default SidebarLayout;
+

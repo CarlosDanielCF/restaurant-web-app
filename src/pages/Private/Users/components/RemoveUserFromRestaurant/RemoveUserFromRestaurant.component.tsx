@@ -33,8 +33,8 @@ export const RemoveUserFromRestaurant = NiceModal.create<Props>(({ user }) => {
   };
 
   return (
-    <Dialog {...muiDialogV5(modal)} maxWidth='sm'>
-      <DialogTitle id='alert-dialog-title' color='white'>
+    <Dialog {...muiDialogV5(modal)} maxWidth='sm' fullWidth>
+      <DialogTitle id='alert-dialog-title'>
         Remover usuario del restaurante
       </DialogTitle>
       <Divider />

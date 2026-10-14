@@ -49,8 +49,8 @@ const style = {
 const Modal: FC<ModalProps> = ({ open, handleClose, status, msg }) => {
   return (
     <>
-      <Dialog open={open}>
-        <DialogTitle id='alert-dialog-title' color='white'>
+      <Dialog open={open} maxWidth='xs' fullWidth>
+        <DialogTitle id='alert-dialog-title' sx={{ fontWeight: 600 }}>
           {status ? 'Solicitud exitosa' : 'Email incorrecto'}
         </DialogTitle>
         <Divider />

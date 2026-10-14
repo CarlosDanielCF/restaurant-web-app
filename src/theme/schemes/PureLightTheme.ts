@@ -14,26 +14,24 @@ import '@mui/lab/themeAugmentation';
 // };
 
 const themeColors = {
-  // primary: '#2C77D7',
-  primary: '#171717',
-  // primary: '#0977CA',
-  secondary: '#6E759F',
-  success: '#57CA22',
-  warning: '#FFA319',
-  error: '#FF1943',
-  info: '#33C2FF',
-  black: '#223354',
+  primary: '#0f766e',
+  secondary: '#475569',
+  success: '#16a34a',
+  warning: '#d97706',
+  error: '#dc2626',
+  info: '#0284c7',
+  black: '#0f172a',
   white: '#ffffff',
-  primaryAlt: '#000C57'
+  primaryAlt: '#115e59'
 };
 
 const colors = {
   gradients: {
-    blue1: 'linear-gradient(135deg, #6B73FF 0%, #000DFF 100%)',
-    blue2: 'linear-gradient(135deg, #ABDCFF 0%, #0396FF 100%)',
-    blue3: 'linear-gradient(127.55deg, #141E30 3.73%, #243B55 92.26%)',
-    blue4: 'linear-gradient(-20deg, #2b5876 0%, #4e4376 100%)',
-    blue5: 'linear-gradient(135deg, #97ABFF 10%, #123597 100%)',
+    blue1: 'linear-gradient(135deg, #0d9488 0%, #0f766e 100%)',
+    blue2: 'linear-gradient(135deg, #99f6e4 0%, #0d9488 100%)',
+    blue3: 'linear-gradient(127.55deg, #134e4a 3.73%, #1e293b 92.26%)',
+    blue4: 'linear-gradient(-20deg, #115e59 0%, #334155 100%)',
+    blue5: 'linear-gradient(135deg, #5eead4 10%, #0f766e 100%)',
     orange1: 'linear-gradient(135deg, #FCCF31 0%, #F55555 100%)',
     orange2: 'linear-gradient(135deg, #FFD3A5 0%, #FD6585 100%)',
     orange3: 'linear-gradient(120deg, #f6d365 0%, #fda085 100%)',
@@ -48,35 +46,35 @@ const colors = {
   },
   shadows: {
     success:
-      '0px 1px 4px rgba(68, 214, 0, 0.25), 0px 3px 12px 2px rgba(68, 214, 0, 0.35)',
+      '0px 1px 4px rgba(22, 163, 74, 0.2), 0px 3px 8px rgba(22, 163, 74, 0.25)',
     error:
-      '0px 1px 4px rgba(255, 25, 67, 0.25), 0px 3px 12px 2px rgba(255, 25, 67, 0.35)',
-    info: '0px 1px 4px rgba(51, 194, 255, 0.25), 0px 3px 12px 2px rgba(51, 194, 255, 0.35)',
+      '0px 1px 4px rgba(220, 38, 38, 0.2), 0px 3px 8px rgba(220, 38, 38, 0.25)',
+    info: '0px 1px 4px rgba(2, 132, 199, 0.2), 0px 3px 8px rgba(2, 132, 199, 0.25)',
     primary:
-      '0px 1px 4px rgba(85, 105, 255, 0.25), 0px 3px 12px 2px rgba(85, 105, 255, 0.35)',
+      '0px 1px 4px rgba(15, 118, 110, 0.2), 0px 3px 10px rgba(15, 118, 110, 0.25)',
     warning:
-      '0px 1px 4px rgba(255, 163, 25, 0.25), 0px 3px 12px 2px rgba(255, 163, 25, 0.35)',
-    card: '0px 9px 16px rgba(159, 162, 191, .18), 0px 2px 2px rgba(159, 162, 191, 0.32)',
+      '0px 1px 4px rgba(217, 119, 6, 0.2), 0px 3px 8px rgba(217, 119, 6, 0.25)',
+    card: '0px 1px 3px 0px rgba(0, 0, 0, 0.06), 0px 1px 2px -1px rgba(0, 0, 0, 0.06)',
     cardSm:
-      '0px 2px 3px rgba(159, 162, 191, .18), 0px 1px 1px rgba(159, 162, 191, 0.32)',
+      '0px 1px 2px 0px rgba(0, 0, 0, 0.05)',
     cardLg:
-      '0 5rem 14rem 0 rgb(255 255 255 / 30%), 0 0.8rem 2.3rem rgb(0 0 0 / 60%), 0 0.2rem 0.3rem rgb(0 0 0 / 45%)'
+      '0px 10px 15px -3px rgba(0, 0, 0, 0.08), 0px 4px 6px -4px rgba(0, 0, 0, 0.04)'
   },
   layout: {
     general: {
-      bodyBg: '#FFFFFF'
+      bodyBg: '#f8fafc'
     },
     sidebar: {
-      background: '#f2f5f9',
+      background: '#ffffff',
       textColor: themeColors.secondary,
-      dividerBg: '#f2f5f9',
-      menuItemColor: '#242E6F',
+      dividerBg: '#e2e8f0',
+      menuItemColor: '#334155',
       menuItemColorActive: themeColors.primary,
       menuItemBg: themeColors.white,
-      menuItemBgActive: '#f2f5f9',
-      menuItemIconColor: lighten(themeColors.secondary, 0.3),
+      menuItemBgActive: '#f0fdfa',
+      menuItemIconColor: '#64748b',
       menuItemIconColorActive: themeColors.primary,
-      menuItemHeadingColor: darken(themeColors.secondary, 0.3)
+      menuItemHeadingColor: '#0f172a'
     }
   },
   alpha: {

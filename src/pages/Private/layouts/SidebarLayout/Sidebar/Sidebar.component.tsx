@@ -33,6 +33,9 @@ import { switchRestaurantMutation } from '@/pages/Private/Restaurant/hooks/useRe
 import { ButtonSound, ButtonTheme } from '../components';
 import { Userbox } from '../Header/components';
 import { useAppSelector } from '@/hooks';
+import { menuSections } from '../data/MenuData';
+import { NavItem } from '../../interfaces';
+import { useNavigate } from 'react-router-dom';
 
 const SidebarWrapper = styled(Box)(
   ({ theme }) => `
@@ -188,6 +191,7 @@ function Sidebar() {
 
   const { user: userState } = useAppSelector(selectAuth);
   const theme = useTheme();
+  const navigate = useNavigate();
 
   return (
     <>
@@ -229,16 +233,6 @@ function Sidebar() {
             <ButtonTheme />
             <ButtonSound />
           </Stack>
-
-          {/* <Divider /> */}
-          {/* <Box p={1} textAlign='center'> */}
-          {/*   <Typography color='text.primary' variant='subtitle1'> */}
-          {/*     Desarrollado por{' '} */}
-          {/*   </Typography> */}
-          {/*   <Typography variant='body1' color='text.primary'> */}
-          {/*     Santiago Quirumbay */}
-          {/*   </Typography> */}
-          {/* </Box> */}
         </Box>
       </DrawerPersistent>
 
@@ -246,34 +240,105 @@ function Sidebar() {
       <Drawer
         sx={{
           display: { xs: 'block', lg: 'none' },
-          zIndex: theme.zIndex.drawer + 3
+          zIndex: theme.zIndex.drawer + 3,
+          '& .MuiDrawer-paper': {
+            width: 290,
+            background: theme.sidebar.background,
+            boxSizing: 'border-box'
+          }
         }}
         anchor={theme.direction === 'rtl' ? 'right' : 'left'}
         open={sidebarToggle}
         onClose={closeSidebar}
-        variant='persistent'
+        variant='temporary'
         elevation={10}
-        color='inherit'
+        ModalProps={{ keepMounted: true }}
       >
-        <SidebarWrapper>
-          <Scrollbar height={'100%'}>
-            <Box mx={2} my={1} mt={3}>
-              <Title />
-            </Box>
+        <Box sx={{ width: 290, height: '100%', display: 'flex', flexDirection: 'column' }}>
+          <Box
+            p={2}
+            display='flex'
+            alignItems='center'
+            justifyContent='space-between'
+            sx={{ borderBottom: 1, borderColor: 'divider' }}
+          >
+            <Title />
+          </Box>
 
-            <SidebarMenu />
-          </Scrollbar>
+          <Box p={2} sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            {userState && <Userbox />}
+          </Box>
 
-          {/* <Divider /> */}
-          {/* <Box p={1} textAlign='center'> */}
-          {/*   <Typography color='text.primary' variant='subtitle1'> */}
-          {/*     Desarrollado por{' '} */}
-          {/*   </Typography> */}
-          {/*   <Typography variant='body1' color='text.primary'> */}
-          {/*     Santiago Quirumbay */}
-          {/*   </Typography> */}
-          {/* </Box> */}
-        </SidebarWrapper>
+          <Box sx={{ flex: 1, overflowY: 'auto', p: 1.5 }}>
+            <List component='nav' disablePadding>
+              {menuSections[0].items.map((item: NavItem, index: number) => {
+                if (
+                  item.allowedRoles &&
+                  userState?.role.name &&
+                  !item.allowedRoles.includes(userState.role.name as any)
+                ) {
+                  return null;
+                }
+
+                const isSelected =
+                  window.location.pathname === item.to ||
+                  (item.to !== '/' && window.location.pathname.startsWith(item.to));
+
+                return (
+                  <ListItemButton
+                    key={index}
+                    onClick={() => {
+                      closeSidebar();
+                      navigate(item.to);
+                    }}
+                    selected={isSelected}
+                    sx={{
+                      borderRadius: 1.5,
+                      mb: 0.5,
+                      py: 1,
+                      px: 2,
+                      color: isSelected ? 'primary.main' : 'text.primary',
+                      bgcolor: isSelected ? 'action.selected' : 'transparent',
+                      '&:hover': {
+                        bgcolor: 'action.hover'
+                      }
+                    }}
+                  >
+                    <ListItemIcon
+                      sx={{
+                        minWidth: 40,
+                        color: isSelected ? 'primary.main' : 'text.secondary'
+                      }}
+                    >
+                      {item.icon}
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={item.title}
+                      primaryTypographyProps={{
+                        variant: 'body2',
+                        fontWeight: isSelected ? 600 : 500
+                      }}
+                    />
+                  </ListItemButton>
+                );
+              })}
+            </List>
+          </Box>
+
+          <Box
+            p={2}
+            sx={{
+              borderTop: 1,
+              borderColor: 'divider',
+              display: 'flex',
+              justifyContent: 'center',
+              gap: 2
+            }}
+          >
+            <ButtonTheme />
+            <ButtonSound />
+          </Box>
+        </Box>
       </Drawer>
     </>
   );

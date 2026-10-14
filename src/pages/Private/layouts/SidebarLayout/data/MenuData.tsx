@@ -80,6 +80,12 @@ const generalSection: MenuSection = {
       icon: <PeopleOutlineIcon fontSize='small' />,
       to: '/users',
       allowedRoles: [Roles.ADMIN]
+    },
+    {
+      title: 'Gestión de clientes',
+      icon: <Groups3OutlinedIcon fontSize='small' />,
+      to: '/clients',
+      allowedRoles: [Roles.ADMIN]
     }
   ]
 };

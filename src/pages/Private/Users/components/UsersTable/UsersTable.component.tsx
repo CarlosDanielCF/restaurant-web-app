@@ -19,7 +19,8 @@ import {
   TableSortLabel,
   Paper,
   InputBase,
-  CircularProgress
+  CircularProgress,
+  Stack
 } from '@mui/material';
 import EditTwoToneIcon from '@mui/icons-material/EditTwoTone';
 import DeleteTwoToneIcon from '@mui/icons-material/DeleteTwoTone';
@@ -42,13 +43,8 @@ import { EditUserRole } from '../EditUserRole.component';
 import { RemoveUserFromRestaurant } from '../RemoveUserFromRestaurant/RemoveUserFromRestaurant.component';
 
 export const TableRowUser: FC<{ user: IUser }> = ({ user }) => {
-  const navigate = useNavigate();
-
-  const dispatch = useDispatch();
-
   const { user: currentUser } = useSelector(selectAuth);
   const restaurant = useRestaurantStore((state) => state.restaurant);
-
   const theme = useTheme();
 
   const openEditUserRoleModal = () => {
@@ -59,30 +55,12 @@ export const TableRowUser: FC<{ user: IUser }> = ({ user }) => {
     NiceModal.show(RemoveUserFromRestaurant, { user });
   };
 
-  // const editUser = (user: IUser) => {
-  //   dispatch(setActiveUser(user));
-  //
-  //   if (currentUser!.id === user.id) {
-  //     navigate('/users/account');
-  //   } else {
-  //     // navigate(`edit/${user.id}`);
-  //   }
-  // };
-
   const userRole = user.restaurantRoles.find(
     (resRole) => resRole.restaurant.id === restaurant?.id
   )?.role;
 
   return (
-    <TableRow>
-      {/* <TableCell padding='checkbox'>
-        <Switch
-          checked={user.isActive}
-          color={user.isActive ? 'success' : 'warning'}
-          onChange={() => submitChangeStatus(user)}
-        />
-
-      </TableCell> */}
+    <TableRow hover>
       <TableCell>
         <Typography
           variant='body1'
@@ -94,59 +72,38 @@ export const TableRowUser: FC<{ user: IUser }> = ({ user }) => {
           {user.person.lastName} {user.person.firstName}
         </Typography>
       </TableCell>
-
-      {/* <TableCell> */}
-      {/*   <Typography variant='body1' color='text.primary' gutterBottom noWrap> */}
-      {/*     {user.person.identification?.num} */}
-      {/*   </Typography> */}
-      {/* </TableCell> */}
       <TableCell>
-        <Typography variant='body1' color='text.primary' gutterBottom noWrap>
-          {user.username}
+        <Typography variant='body2' color='text.secondary' noWrap>
+          @{user.username}
         </Typography>
       </TableCell>
       <TableCell>
-        <Typography variant='body1' color='text.primary' gutterBottom noWrap>
+        <Typography variant='body2' color='text.secondary' noWrap>
           {user.person.email}
         </Typography>
       </TableCell>
       <TableCell>
-        <Typography variant='body1' color='text.primary' gutterBottom noWrap>
-          {userRole ? userRole.description : 'N/A'}
-          {/* <Label */}
-          {/*   color={ */}
-          {/*     user?.role.name === 'admin' */}
-          {/*       ? 'info' */}
-          {/*       : user?.role.name === 'mesero' */}
-          {/*         ? 'primary' */}
-          {/*         : 'secondary' */}
-          {/*   } */}
-          {/* > */}
-          {/*   {Roles[`${user?.role.name! as ValidRoles}`]} */}
-          {/* </Label> */}
-        </Typography>
+        <Label color='primary'>
+          {userRole ? userRole.description : 'Sin rol'}
+        </Label>
       </TableCell>
-
       <TableCell>
-        <Typography variant='body1' color='text.primary' gutterBottom noWrap>
-          <Label color={user.isActive ? 'success' : 'error'}>
-            {user.isActive ? 'Activo' : 'Inactivo'}
-          </Label>
-        </Typography>
+        <Label color={user.isActive ? 'success' : 'error'}>
+          {user.isActive ? 'Activo' : 'Inactivo'}
+        </Label>
       </TableCell>
-
       <TableCell align='right'>
         {user.id !== currentUser?.id && (
-          <>
-            <Tooltip title='Edit role' arrow>
+          <Stack direction='row' spacing={1} justifyContent='flex-end'>
+            <Tooltip title='Editar rol' arrow>
               <IconButton
+                aria-label='Editar rol de usuario'
                 sx={{
                   '&:hover': {
                     background: theme.colors.primary.lighter
                   },
                   color: theme.palette.primary.main
                 }}
-                color='inherit'
                 size='small'
                 onClick={openEditUserRoleModal}
               >
@@ -155,62 +112,117 @@ export const TableRowUser: FC<{ user: IUser }> = ({ user }) => {
             </Tooltip>
             <Tooltip title='Remover del restaurante' arrow>
               <IconButton
+                aria-label='Remover usuario del restaurante'
                 sx={{
                   '&:hover': { background: theme.colors.error.lighter },
                   color: theme.palette.error.main
                 }}
-                color='inherit'
                 size='small'
                 onClick={openRemoveUserModal}
               >
                 <DeleteTwoToneIcon fontSize='small' />
               </IconButton>
             </Tooltip>
-          </>
+          </Stack>
         )}
       </TableCell>
     </TableRow>
   );
 };
 
+export const UserMobileCard: FC<{ user: IUser }> = ({ user }) => {
+  const { user: currentUser } = useSelector(selectAuth);
+  const restaurant = useRestaurantStore((state) => state.restaurant);
+
+  const openEditUserRoleModal = () => {
+    NiceModal.show(EditUserRole, { user });
+  };
+
+  const openRemoveUserModal = () => {
+    NiceModal.show(RemoveUserFromRestaurant, { user });
+  };
+
+  const userRole = user.restaurantRoles.find(
+    (resRole) => resRole.restaurant.id === restaurant?.id
+  )?.role;
+
+  return (
+    <Card
+      elevation={0}
+      sx={{
+        p: 2,
+        mb: 1.5,
+        border: 1,
+        borderColor: 'divider',
+        borderRadius: 2
+      }}
+    >
+      <Stack spacing={1.5}>
+        <Box display='flex' justifyContent='space-between' alignItems='flex-start'>
+          <Box>
+            <Typography variant='subtitle1' fontWeight={600} color='text.primary'>
+              {user.person.lastName} {user.person.firstName}
+            </Typography>
+            <Typography variant='caption' color='text.secondary'>
+              @{user.username}
+            </Typography>
+          </Box>
+          <Label color={user.isActive ? 'success' : 'error'}>
+            {user.isActive ? 'Activo' : 'Inactivo'}
+          </Label>
+        </Box>
+
+        <Typography variant='body2' color='text.secondary'>
+          {user.person.email}
+        </Typography>
+
+        <Box display='flex' justifyContent='space-between' alignItems='center' pt={0.5}>
+          <Label color='primary'>
+            {userRole ? userRole.description : 'Sin rol'}
+          </Label>
+
+          {user.id !== currentUser?.id && (
+            <Stack direction='row' spacing={1}>
+              <Tooltip title='Editar rol'>
+                <IconButton
+                  aria-label='Editar rol'
+                  size='small'
+                  color='primary'
+                  onClick={openEditUserRoleModal}
+                >
+                  <EditTwoToneIcon fontSize='small' />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title='Remover del restaurante'>
+                <IconButton
+                  aria-label='Remover del restaurante'
+                  size='small'
+                  color='error'
+                  onClick={openRemoveUserModal}
+                >
+                  <DeleteTwoToneIcon fontSize='small' />
+                </IconButton>
+              </Tooltip>
+            </Stack>
+          )}
+        </Box>
+      </Stack>
+    </Card>
+  );
+};
+
 interface Props {}
 
 export const UsersTable: FC<Props> = ({}) => {
-  const navigate = useNavigate();
-
-  const dispatch = useDispatch();
-
   const {
     usersQuery,
     page,
     search,
     rowsPerPage,
-
     handleChangeSearch,
     handleChangePage,
     handleChangeRowsPerPage
   } = useUsers();
-
-  const { users } = useSelector(selectUsers);
-
-  const [dense, setDense] = useState<boolean>(false);
-
-  const handleChangeDense = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setDense(event.target.checked);
-  };
-
-  const openEditUserRoleModal = () => {
-    NiceModal.show(EditUserRole);
-  };
-  const editUser = (user: IUser) => {
-    dispatch(setActiveUser(user));
-    navigate('edit');
-  };
-
-  const createUser = () => {
-    dispatch(resetActiveUser());
-    navigate('add');
-  };
 
   const updateList = () => {
     usersQuery.refetch();
@@ -220,90 +232,145 @@ export const UsersTable: FC<Props> = ({}) => {
     updateList();
   }, [page, rowsPerPage, search]);
 
+  const hasUsers = usersQuery.data && usersQuery.data.count > 0;
+
   return (
-    <>
+    <Box sx={{ width: '100%', my: 2 }}>
+      {/* Search Input Bar */}
       <Paper
+        elevation={0}
         component='form'
-        sx={{ p: '2px 4px', display: 'flex', alignItems: 'center' }}
+        onSubmit={(e) => {
+          e.preventDefault();
+          updateList();
+        }}
+        sx={{
+          p: '4px 8px',
+          display: 'flex',
+          alignItems: 'center',
+          border: 1,
+          borderColor: 'divider',
+          borderRadius: 2,
+          mb: 2,
+          maxWidth: 480
+        }}
       >
         <InputBase
           type='text'
           onChange={handleChangeSearch}
-          sx={{ ml: 1, flex: 1 }}
-          placeholder='Buscar usuario'
+          sx={{ ml: 1, flex: 1, fontSize: '0.95rem' }}
+          placeholder='Buscar por nombre, usuario o email...'
           inputProps={{ 'aria-label': 'Buscar usuario' }}
           value={search}
         />
         <IconButton
           type='button'
-          sx={{ p: '10px' }}
-          aria-label='search'
+          sx={{ p: '8px' }}
+          aria-label='buscar'
           onClick={updateList}
         >
           {usersQuery.isPending ? (
             <CircularProgress size={20} />
           ) : (
-            <SearchIcon />
+            <SearchIcon fontSize='small' />
           )}
         </IconButton>
       </Paper>
 
-      <Box sx={{ height: 400, width: '100%', my: 1 }}>
-        {usersQuery.isPending && <LinearProgress />}
-        <Card>
-          <TableContainer>
-            <Table size={dense ? 'small' : 'medium'}>
-              <TableHead>
-                <TableRow>
-                  {/* <TableCell padding="checkbox">
-                  Estado
-                </TableCell> */}
-                  <TableCell>
-                    <TableSortLabel>Nombres y apellidos</TableSortLabel>
-                  </TableCell>
-                  {/* <TableCell>Número de identificación</TableCell> */}
-                  <TableCell>Nombre de usuario</TableCell>
-                  <TableCell>Email</TableCell>
-                  <TableCell>Rol</TableCell>
-                  <TableCell>Estado</TableCell>
-                  <TableCell>Acciones</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {/* {
-                  user
-                    ? <TableRowUser user={user} />
-                    : users.length > 0 && users.map(user => (
-                      <TableRowUser key={user.id} user={user} />
-                    ))
+      {usersQuery.isPending && <LinearProgress sx={{ mb: 1, borderRadius: 1 }} />}
 
+      {/* Desktop / Tablet Table View */}
+      <Card
+        elevation={0}
+        sx={{
+          display: { xs: 'none', sm: 'block' },
+          border: 1,
+          borderColor: 'divider',
+          borderRadius: 2
+        }}
+      >
+        <TableContainer>
+          <Table size='medium'>
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ fontWeight: 600 }}>Nombres y apellidos</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Nombre de usuario</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Email</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Rol</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Estado</TableCell>
+                <TableCell sx={{ fontWeight: 600 }} align='right'>Acciones</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {hasUsers &&
+                usersQuery.data.users.map((user) => (
+                  <TableRowUser key={user.id} user={user} />
+                ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
 
-                } */}
-                {usersQuery.data &&
-                  usersQuery.data.count > 0 &&
-                  usersQuery.data.users.map((user) => (
-                    <TableRowUser key={user.id} user={user} />
-                  ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-          <Box p={2} display='flex' justifyContent='right'>
-            {/* <FormControlLabel */}
-            {/*   control={<Switch checked={dense} onChange={handleChangeDense} />} */}
-            {/*   label='Dense padding' */}
-            {/* /> */}
-            <TablePagination
-              component='div'
-              count={usersQuery.data?.count || 0}
-              onPageChange={handleChangePage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-              page={page}
-              rowsPerPage={rowsPerPage}
-              rowsPerPageOptions={[5, 10, 25, 30]}
-            />
+        {!usersQuery.isPending && !hasUsers && (
+          <Box p={3}>
+            <Typography variant='body1' align='center' color='text.secondary'>
+              {search ? 'No se encontraron usuarios coincidentes con la búsqueda' : 'No hay usuarios registrados'}
+            </Typography>
           </Box>
-        </Card>
+        )}
+
+        <Box p={1} display='flex' justifyContent='flex-end'>
+          <TablePagination
+            component='div'
+            count={usersQuery.data?.count || 0}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            page={page}
+            rowsPerPage={rowsPerPage}
+            rowsPerPageOptions={[5, 10, 25, 30]}
+            labelRowsPerPage='Filas por página:'
+          />
+        </Box>
+      </Card>
+
+      {/* Mobile Card View (<600px) */}
+      <Box sx={{ display: { xs: 'block', sm: 'none' } }}>
+        {hasUsers ? (
+          usersQuery.data.users.map((user) => (
+            <UserMobileCard key={user.id} user={user} />
+          ))
+        ) : (
+          !usersQuery.isPending && (
+            <Paper
+              elevation={0}
+              sx={{
+                p: 4,
+                textAlign: 'center',
+                border: 1,
+                borderColor: 'divider',
+                borderRadius: 2
+              }}
+            >
+              <Typography variant='body2' color='text.secondary'>
+                {search ? 'No se encontraron usuarios coincidentes' : 'No hay usuarios registrados'}
+              </Typography>
+            </Paper>
+          )
+        )}
+
+        <Box display='flex' justifyContent='center' mt={2}>
+          <TablePagination
+            component='div'
+            count={usersQuery.data?.count || 0}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            page={page}
+            rowsPerPage={rowsPerPage}
+            rowsPerPageOptions={[5, 10, 20]}
+            labelRowsPerPage='Filas:'
+          />
+        </Box>
       </Box>
-    </>
+    </Box>
   );
 };
+

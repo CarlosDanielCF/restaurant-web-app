@@ -99,7 +99,7 @@ export const InviteUserModal = NiceModal.create(() => {
   };
 
   return (
-    <Dialog {...muiDialogV5(modal)} fullScreen={fullScreen} maxWidth='lg'>
+    <Dialog {...muiDialogV5(modal)} fullScreen={fullScreen} maxWidth='sm' fullWidth>
       <DialogTitle>
         <Stack
           direction='row'
@@ -110,30 +110,34 @@ export const InviteUserModal = NiceModal.create(() => {
             <Typography variant='h5'>Invitar usuario</Typography>
           </Box>
           <Stack direction='row' spacing={2} alignItems='center'>
-            <IconButton onClick={modal.hide} size='small'>
+            <IconButton onClick={modal.hide} size='small' aria-label='Cerrar'>
               <CloseOutlined fontSize='small' />
             </IconButton>
           </Stack>
         </Stack>
       </DialogTitle>
-      <DialogContent sx={{ width: { lg: '500px' } }}>
+      <DialogContent sx={{ p: { xs: 2, sm: 3 } }}>
         {!selectedUser && (
           <Paper
             component='form'
-            sx={{ p: '2px 4px', display: 'flex', alignItems: 'center' }}
+            onSubmit={(e) => {
+              e.preventDefault();
+              updateList();
+            }}
+            sx={{ p: '2px 4px', display: 'flex', alignItems: 'center', border: 1, borderColor: 'divider', borderRadius: 2 }}
           >
             <InputBase
               type='text'
               onChange={handleChangeSearch}
               sx={{ ml: 1, flex: 1 }}
-              placeholder='Buscar usuario'
+              placeholder='Buscar usuario...'
               inputProps={{ 'aria-label': 'Buscar usuario' }}
               value={search}
             />
             <IconButton
               type='button'
               sx={{ p: '10px' }}
-              aria-label='search'
+              aria-label='buscar'
               onClick={updateList}
             >
               {usersQuery.isPending ? (
@@ -147,16 +151,17 @@ export const InviteUserModal = NiceModal.create(() => {
         {!selectedUser &&
           usersQuery.data?.users &&
           usersQuery.data.users.length > 0 && (
-            <Box height={250} overflow='auto' mt={2} borderRadius='8px'>
-              <List>
+            <Box maxHeight={240} overflow='auto' mt={2} borderRadius='8px' border={1} borderColor='divider'>
+              <List disablePadding>
                 {usersQuery.data?.users.map((user) => (
                   <ListItemButton
                     key={user.id}
                     onClick={() => selectUser(user)}
+                    sx={{ borderBottom: 1, borderColor: 'divider' }}
                   >
                     <ListItemText
                       primary={`${user.person.firstName} ${user.person.lastName}`}
-                      secondary={user.username}
+                      secondary={`@${user.username} • ${user.person.email}`}
                     />
                   </ListItemButton>
                 ))}
@@ -166,30 +171,34 @@ export const InviteUserModal = NiceModal.create(() => {
 
         {selectedUser && (
           <Box>
-            <List>
-              <ListItem>
-                <ListItemText
-                  primary={`${selectedUser.person.firstName} ${selectedUser.person.lastName} (${selectedUser.username})`}
-                  secondary={selectedUser.person.email}
-                />
-                <ListItemSecondaryAction>
-                  <IconButton
-                    onClick={() => setSelectedUser(null)}
-                    size='small'
-                  >
-                    <CloseOutlined fontSize='small' />
-                  </IconButton>
-                </ListItemSecondaryAction>
-              </ListItem>
-            </List>
-            <Box mx={3} mt={2}>
+            <Paper variant='outlined' sx={{ p: 2, borderRadius: 2, bgcolor: 'background.default' }}>
+              <Box display='flex' justifyContent='space-between' alignItems='center'>
+                <Box>
+                  <Typography variant='subtitle1' fontWeight={600}>
+                    {selectedUser.person.firstName} {selectedUser.person.lastName}
+                  </Typography>
+                  <Typography variant='body2' color='text.secondary'>
+                    @{selectedUser.username} • {selectedUser.person.email}
+                  </Typography>
+                </Box>
+                <IconButton
+                  onClick={() => setSelectedUser(null)}
+                  size='small'
+                  aria-label='Cambiar usuario seleccionado'
+                >
+                  <CloseOutlined fontSize='small' />
+                </IconButton>
+              </Box>
+            </Paper>
+
+            <Box mt={3}>
               <FormControl fullWidth>
-                <InputLabel id='demo-simple-select-label'>Rol</InputLabel>
+                <InputLabel id='select-role-label'>Rol en el restaurante</InputLabel>
                 <Select
-                  labelId='demo-simple-select-label'
-                  id='demo-simple-select'
+                  labelId='select-role-label'
+                  id='select-role'
                   value={roleId || ''}
-                  label='Rol'
+                  label='Rol en el restaurante'
                   onChange={handleChangeRole}
                   required
                 >
@@ -204,14 +213,15 @@ export const InviteUserModal = NiceModal.create(() => {
           </Box>
         )}
       </DialogContent>
-      <DialogActions>
+      <DialogActions sx={{ px: 3, pb: 2.5 }}>
         <Button onClick={closeModal} color='inherit'>
-          Close
+          Cancelar
         </Button>
         <LoadingButton
           onClick={onSubmit}
           variant='contained'
           loading={useInviteUser.isPending}
+          disabled={!selectedUser || !roleId}
         >
           Invitar usuario
         </LoadingButton>

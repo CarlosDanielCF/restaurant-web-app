@@ -107,7 +107,7 @@ export const EditUserRole = NiceModal.create<Props>(({ user }) => {
   };
 
   return (
-    <Dialog {...muiDialogV5(modal)} fullScreen={fullScreen} maxWidth='lg'>
+    <Dialog {...muiDialogV5(modal)} fullScreen={fullScreen} maxWidth='sm' fullWidth>
       <DialogTitle>
         <Stack
           direction='row'
@@ -118,57 +118,51 @@ export const EditUserRole = NiceModal.create<Props>(({ user }) => {
             <Typography variant='h5'>Actualizar rol</Typography>
           </Box>
           <Stack direction='row' spacing={2} alignItems='center'>
-            <IconButton onClick={modal.hide} size='small'>
+            <IconButton onClick={modal.hide} size='small' aria-label='Cerrar'>
               <CloseOutlined fontSize='small' />
             </IconButton>
           </Stack>
         </Stack>
       </DialogTitle>
-      <DialogContent sx={{ width: { lg: '500px' } }}>
-        <Box
-          my={2}
-          display='flex'
-          alignItems='center'
-          justifyContent='space-between'
-          gap={2}
-        >
-          <Box>
-            <Typography variant='h6'>
-              {user.person.firstName} {user.person.lastName}
-            </Typography>
-            <Typography variant='body2'>{user.person.email}</Typography>
-          </Box>
+      <DialogContent sx={{ p: { xs: 2, sm: 3 } }}>
+        <Paper variant='outlined' sx={{ p: 2, borderRadius: 2, mb: 3, bgcolor: 'background.default' }}>
+          <Typography variant='subtitle1' fontWeight={600} color='text.primary'>
+            {user.person.firstName} {user.person.lastName}
+          </Typography>
+          <Typography variant='body2' color='text.secondary'>
+            @{user.username} • {user.person.email}
+          </Typography>
+        </Paper>
 
-          <FormControl>
-            <InputLabel id='demo-simple-select-label'>Rol</InputLabel>
-            <Select
-              labelId='demo-simple-select-label'
-              id='demo-simple-select'
-              size='small'
-              value={roleId || ''}
-              label='Rol'
-              onChange={handleChangeRole}
-              required
-            >
-              {rolesQuery.data?.map((role) => (
-                <MenuItem value={role.id} key={role.id}>
-                  {role.description}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Box>
+        <FormControl fullWidth>
+          <InputLabel id='edit-user-role-label'>Nuevo rol en el restaurante</InputLabel>
+          <Select
+            labelId='edit-user-role-label'
+            id='edit-user-role'
+            value={roleId || ''}
+            label='Nuevo rol en el restaurante'
+            onChange={handleChangeRole}
+            required
+          >
+            {rolesQuery.data?.map((role) => (
+              <MenuItem value={role.id} key={role.id}>
+                {role.description}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
       </DialogContent>
-      <DialogActions>
+      <DialogActions sx={{ px: 3, pb: 2.5 }}>
         <Button onClick={closeModal} color='inherit'>
-          Close
+          Cancelar
         </Button>
         <LoadingButton
           onClick={onSubmit}
           variant='contained'
           loading={updateUserRole.isPending}
+          disabled={!roleId}
         >
-          Actualizar
+          Guardar cambios
         </LoadingButton>
       </DialogActions>
     </Dialog>

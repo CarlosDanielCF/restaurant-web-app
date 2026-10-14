@@ -9,8 +9,14 @@ import {
   Typography,
   Box,
   Stack,
-  Chip
+  Chip,
+  Divider,
+  Alert
 } from '@mui/material';
+import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
+import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined';
+import CardMembershipOutlinedIcon from '@mui/icons-material/CardMembershipOutlined';
+import SaveIcon from '@mui/icons-material/Save';
 import { useRestaurantStore } from '../Common/store/restaurantStore';
 import { useForm } from 'react-hook-form';
 import { UpdateRestaurantDto } from '../Reports/dto/update-restaurant.dto';
@@ -52,7 +58,7 @@ const Restaurant = () => {
   const {
     register,
     handleSubmit,
-    formState: { errors }
+    formState: { errors, isDirty }
   } = useForm<UpdateRestaurantDto>({
     defaultValues: {
       name: restaurant?.name,
@@ -65,36 +71,55 @@ const Restaurant = () => {
   });
 
   const onSubmit = (data: UpdateRestaurantDto) => {
-    console.log(data);
-
     updateRestaurantMutation.mutate(data);
   };
 
   return (
-    <>
-      <Container maxWidth='lg'>
-        <TitlePage title='Mi restaurante' />
-        {/* <Typography variant='h4' gutterBottom sx={{ mb: 3, mt: 3 }}> */}
-        {/*   Mi restaurante */}
-        {/* </Typography> */}
+    <Container maxWidth='lg' sx={{ pb: 6 }}>
+      <TitlePage title='Configuración del Restaurante' />
 
-        {restaurant ? (
-          <Grid container spacing={4}>
-            <Grid item xs={12} md={8}>
-              <form onSubmit={handleSubmit(onSubmit)}>
-                <Stack gap={2}>
-                  <Typography variant='h5'>Información</Typography>
-                  <Grid container spacing={3}>
+      {restaurant ? (
+        <Grid container spacing={{ xs: 2, md: 3 }}>
+          {/* General Information Card */}
+          <Grid item xs={12} md={8}>
+            <Card
+              elevation={0}
+              sx={{
+                border: 1,
+                borderColor: 'divider',
+                borderRadius: 2
+              }}
+            >
+              <CardHeader
+                avatar={<StorefrontOutlinedIcon color='primary' />}
+                title='Información General'
+                subheader='Datos fiscales y de contacto visibles en comprobantes y comandas'
+                titleTypographyProps={{ variant: 'h5', fontWeight: 600 }}
+                action={
+                  isDirty ? (
+                    <Chip
+                      label='Cambios sin guardar'
+                      color='warning'
+                      size='small'
+                      sx={{ mt: 1 }}
+                    />
+                  ) : null
+                }
+              />
+              <Divider />
+              <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+                <form onSubmit={handleSubmit(onSubmit)}>
+                  <Grid container spacing={2.5}>
                     <Grid item xs={12} sm={6}>
                       <TextField
-                        label='Nombre'
+                        label='Nombre del restaurante'
                         type='text'
                         fullWidth
                         required
                         {...register('name', {
-                          required: 'Este es un campo requerido'
+                          required: 'El nombre es obligatorio'
                         })}
-                        helperText={errors.name?.message}
+                        helperText={errors.name?.message || 'Nombre comercial del establecimiento'}
                         error={!!errors.name}
                       />
                     </Grid>
@@ -105,22 +130,22 @@ const Restaurant = () => {
                         fullWidth
                         required
                         {...register('identification', {
-                          required: 'Este es un campo requerido'
+                          required: 'La identificación fiscal es requerida'
                         })}
-                        helperText={errors.identification?.message}
+                        helperText={errors.identification?.message || 'Identificación tributaria'}
                         error={!!errors.identification}
                       />
                     </Grid>
                     <Grid item xs={12} sm={6}>
                       <TextField
                         label='Teléfono de contacto'
-                        type='text'
+                        type='tel'
                         fullWidth
                         required
                         {...register('phone', {
-                          required: 'Este es un campo requerido'
+                          required: 'El teléfono es obligatorio'
                         })}
-                        helperText={errors.phone?.message}
+                        helperText={errors.phone?.message || 'Número de atención al cliente'}
                         error={!!errors.phone}
                       />
                     </Grid>
@@ -131,9 +156,9 @@ const Restaurant = () => {
                         fullWidth
                         required
                         {...register('email', {
-                          required: 'Este es un campo requerido'
+                          required: 'El correo electrónico es requerido'
                         })}
-                        helperText={errors.email?.message}
+                        helperText={errors.email?.message || 'Email de contacto administrativo'}
                         error={!!errors.email}
                       />
                     </Grid>
@@ -144,161 +169,176 @@ const Restaurant = () => {
                         fullWidth
                         required
                         {...register('address', {
-                          required: 'Este es un campo requerido'
+                          required: 'La dirección es obligatoria'
                         })}
-                        helperText={errors.address?.message}
+                        helperText={errors.address?.message || 'Ubicación física del restaurante'}
                         error={!!errors.address}
                       />
                     </Grid>
                     <Grid item xs={12} sm={6}>
                       <TextField
-                        label='Capacidad'
+                        label='Capacidad máxima (aforo)'
                         type='number'
                         fullWidth
                         required
                         {...register('capacity', {
-                          required: 'Este es un campo requerido',
+                          required: 'La capacidad es obligatoria',
                           min: {
                             value: 1,
                             message: 'La capacidad debe ser mayor a 0'
                           },
                           valueAsNumber: true
                         })}
-                        helperText={errors.capacity?.message}
+                        helperText={errors.capacity?.message || 'Cantidad de comensales simultáneos'}
                         error={!!errors.capacity}
                       />
                     </Grid>
                   </Grid>
 
-                  <Box display='flex' justifyContent='flex-end'>
+                  <Box display='flex' justifyContent='flex-end' mt={3}>
                     <LoadingButton
                       type='submit'
                       variant='contained'
+                      color='primary'
+                      startIcon={<SaveIcon />}
                       loading={updateRestaurantMutation.isPending}
+                      disabled={!isDirty || updateRestaurantMutation.isPending}
                     >
-                      Guardar
+                      Guardar información
                     </LoadingButton>
                   </Box>
-                </Stack>
-              </form>
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <Stack gap={2}>
-                <Typography variant='h5'>Logo</Typography>
-                <FormRestaurantLogo restaurant={restaurant} />
-              </Stack>
-            </Grid>
+                </form>
+              </CardContent>
+            </Card>
           </Grid>
-        ) : (
-          <>
-            <Typography variant='h5' gutterBottom>
-              No se ha configurado un restaurante
-            </Typography>
-          </>
-        )}
 
-        <Grid container spacing={2} mt={2}>
-          <Grid item xs={12}>
-            <Typography variant='h5' gutterBottom>
-              Suscripción
-            </Typography>
+          {/* Logo Card */}
+          <Grid item xs={12} md={4}>
+            <Card
+              elevation={0}
+              sx={{
+                border: 1,
+                borderColor: 'divider',
+                borderRadius: 2
+              }}
+            >
+              <CardHeader
+                avatar={<ImageOutlinedIcon color='primary' />}
+                title='Identidad Visual'
+                subheader='Logo del restaurante'
+                titleTypographyProps={{ variant: 'h6', fontWeight: 600 }}
+              />
+              <Divider />
+              <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+                <FormRestaurantLogo restaurant={restaurant} />
+              </CardContent>
+            </Card>
           </Grid>
-          {subscriptionQuery.isLoading ? (
-            <Grid item xs={12}>
+        </Grid>
+      ) : (
+        <Alert severity='warning' sx={{ my: 3 }}>
+          No se ha configurado un restaurante todavía.
+        </Alert>
+      )}
+
+      {/* Subscription Section */}
+      <Box mt={4}>
+        <Card
+          elevation={0}
+          sx={{
+            border: 1,
+            borderColor: 'divider',
+            borderRadius: 2
+          }}
+        >
+          <CardHeader
+            avatar={<CardMembershipOutlinedIcon color='primary' />}
+            title='Estado de Suscripción'
+            subheader='Detalles del plan contratado y vigencia del servicio'
+            titleTypographyProps={{ variant: 'h5', fontWeight: 600 }}
+          />
+          <Divider />
+          <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+            {subscriptionQuery.isLoading ? (
               <Typography variant='body2' color='text.secondary'>
                 Cargando suscripción...
               </Typography>
-            </Grid>
-          ) : subscription ? (
-            <Grid item xs={12} sm={6} md={4} lg={3}>
-              <Card variant='outlined'>
-                <CardHeader
-                  title={subscription.plan.name.toUpperCase()}
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
-                  }}
-                  action={
-                    <Label
-                      color={subscriptionStatusColor(subscription.status)}
-                      sx={{ mt: 0.5 }}
-                    >
-                      {subscription.status}
-                    </Label>
-                  }
-                />
-                <CardContent>
-                  <Stack spacing={2}>
-                    <Box>
-                      <Typography variant='caption' color='text.secondary'>
-                        Precio
+            ) : subscription ? (
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6} md={3}>
+                  <Box p={2} sx={{ bgcolor: 'background.default', borderRadius: 2, border: 1, borderColor: 'divider' }}>
+                    <Typography variant='caption' color='text.secondary'>
+                      Plan contratado
+                    </Typography>
+                    <Box display='flex' alignItems='center' gap={1} mt={0.5}>
+                      <Typography variant='h6' fontWeight={700}>
+                        {subscription.plan.name.toUpperCase()}
                       </Typography>
-                      <Typography variant='h5' fontWeight={600}>
-                        ${subscription.plan.price}
+                      <Label color={subscriptionStatusColor(subscription.status)}>
+                        {subscription.status}
+                      </Label>
+                    </Box>
+                  </Box>
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <Box p={2} sx={{ bgcolor: 'background.default', borderRadius: 2, border: 1, borderColor: 'divider' }}>
+                    <Typography variant='caption' color='text.secondary'>
+                      Precio
+                    </Typography>
+                    <Typography variant='h6' fontWeight={700} mt={0.5}>
+                      ${subscription.plan.price} / mes
+                    </Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <Box p={2} sx={{ bgcolor: 'background.default', borderRadius: 2, border: 1, borderColor: 'divider' }}>
+                    <Typography variant='caption' color='text.secondary'>
+                      Fecha de inicio
+                    </Typography>
+                    <Typography variant='body2' fontWeight={600} mt={0.5}>
+                      {subscription.startDate}
+                    </Typography>
+                  </Box>
+                </Grid>
+                {subscription.endDate && (
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Box p={2} sx={{ bgcolor: 'background.default', borderRadius: 2, border: 1, borderColor: 'divider' }}>
+                      <Typography variant='caption' color='text.secondary'>
+                        Fecha de vencimiento
+                      </Typography>
+                      <Typography variant='body2' fontWeight={600} mt={0.5}>
+                        {subscription.endDate}
                       </Typography>
                     </Box>
-                    <Box>
-                      <Typography variant='caption' color='text.secondary'>
-                        Fecha de inicio
-                      </Typography>
-                      <Typography variant='body2'>
-                        {subscription.startDate}
-                      </Typography>
-                    </Box>
-                    {subscription.endDate && (
-                      <Box>
-                        <Typography variant='caption' color='text.secondary'>
-                          Fecha de vencimiento
-                        </Typography>
-                        <Typography variant='body2'>
-                          {subscription.endDate}
-                        </Typography>
-                      </Box>
-                    )}
-                    {subscription.status === SubscriptionStatus.TRIAL && (
-                      <Box>
-                        <Typography variant='caption' color='text.secondary'>
-                          Periodo de prueba hasta
-                        </Typography>
-                        <Typography variant='body2'>
-                          {subscription.trialEndsAt}
-                        </Typography>
-                      </Box>
-                    )}
-                  </Stack>
-                </CardContent>
-              </Card>
-            </Grid>
-          ) : (
-            <Grid item xs={12}>
+                  </Grid>
+                )}
+              </Grid>
+            ) : (
               <Typography variant='body2' color='text.secondary'>
-                No se encontró información de suscripción
+                No se encontró información de suscripción activa.
               </Typography>
-            </Grid>
-          )}
-        </Grid>
+            )}
+          </CardContent>
+        </Card>
+      </Box>
 
-        <Grid container spacing={2} mt={2}>
-          <Grid item xs={12}>
-            <ProductionAreasList />
-          </Grid>
-        </Grid>
+      {/* Production Areas */}
+      <Box mt={4}>
+        <ProductionAreasList />
+      </Box>
 
-        <Grid container spacing={2} mt={2}>
-          <Grid item xs={12}>
-            <AccountsList />
-          </Grid>
-        </Grid>
+      {/* Accounts & Cash registers */}
+      <Box mt={4}>
+        <AccountsList />
+      </Box>
 
-        <Grid container spacing={2} mt={2}>
-          <Grid item xs={12}>
-            <PaymentMethodsList />
-          </Grid>
-        </Grid>
-      </Container>
-    </>
+      {/* Payment Methods */}
+      <Box mt={4}>
+        <PaymentMethodsList />
+      </Box>
+    </Container>
   );
 };
 
 export default Restaurant;
+
