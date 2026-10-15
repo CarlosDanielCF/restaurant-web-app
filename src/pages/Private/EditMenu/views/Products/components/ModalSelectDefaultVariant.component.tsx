@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import { useState } from 'react';
 import { LoadingButton } from '@mui/lab';
-import { AttachMoney } from '@mui/icons-material';
+import { AttachMoney, CloseRounded, CheckRounded } from '@mui/icons-material';
 import { ProductForm } from '../CreateProduct.view';
 
 interface ModalSelectDefaultVariantProps {
@@ -103,13 +103,14 @@ export const ModalSelectDefaultVariant =
             </RadioGroup>
           </DialogContent>
           <DialogActions sx={{ p: 2 }}>
-            <Button onClick={handleClose} color='inherit'>
+            <Button onClick={handleClose} color='inherit' startIcon={<CloseRounded />}>
               Cancelar
             </Button>
             <LoadingButton
               variant='contained'
               loading={isLoading}
               onClick={handleConfirm}
+              startIcon={<CheckRounded />}
             >
               Confirmar
             </LoadingButton>

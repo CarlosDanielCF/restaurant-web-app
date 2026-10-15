@@ -1,6 +1,7 @@
 import { TypeOrder } from '../../../../models';
 
 export interface CreateOrderDto {
+  idempotencyKey?: string;
   clientId?: string;
   tableId?: string;
   details: CreateOrderDetailDto[];

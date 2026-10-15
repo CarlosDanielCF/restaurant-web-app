@@ -28,6 +28,7 @@ import {
 } from '@mui/material';
 
 import { CloseOutlined } from '@mui/icons-material';
+import SaveRoundedIcon from '@mui/icons-material/SaveRounded';
 import { useUpdateUser, useUsersSuggestions } from '../hooks/useUsers';
 import SearchIcon from '@mui/icons-material/Search';
 import { useEffect, useState } from 'react';
@@ -153,7 +154,7 @@ export const EditUserRole = NiceModal.create<Props>(({ user }) => {
         </FormControl>
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2.5 }}>
-        <Button onClick={closeModal} color='inherit'>
+        <Button onClick={closeModal} color='inherit' startIcon={<CloseOutlined />}>
           Cancelar
         </Button>
         <LoadingButton
@@ -161,6 +162,7 @@ export const EditUserRole = NiceModal.create<Props>(({ user }) => {
           variant='contained'
           loading={updateUserRole.isPending}
           disabled={!roleId}
+          startIcon={<SaveRoundedIcon />}
         >
           Guardar cambios
         </LoadingButton>

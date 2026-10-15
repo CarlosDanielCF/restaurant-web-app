@@ -1,6 +1,6 @@
 import { FC, useEffect, useState } from 'react';
 import { IProduct, ProductStatus } from '../../../../../../models';
-import { Add, AttachMoney, Save, Percent } from '@mui/icons-material';
+import { Add, AttachMoney, Save, Percent, CloseRounded } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
 import {
   Card,
@@ -574,10 +574,11 @@ export const FormProduct: FC<Props> = ({ product }) => {
           }}
         >
           <Button
-            variant='text'
+            variant='outlined'
             onClick={() => {
               navigate('/menu/products');
             }}
+            startIcon={<CloseRounded />}
           >
             Cancelar
           </Button>

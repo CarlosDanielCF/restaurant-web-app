@@ -32,7 +32,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { addProduct, selectMenu } from '../../../../../redux';
 import { IProduct, ProductStatus } from '../../../../../models';
-import { AttachMoney, Add } from '@mui/icons-material';
+import { AttachMoney, Add, CloseRounded } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
 import { useCreateProduct } from '../../hooks/useProducts';
 import { useNavigate } from 'react-router-dom';
@@ -516,18 +516,19 @@ export const CreateProduct = () => {
               </Grid>
               <Box display='flex' justifyContent='space-between' mt={2}>
                 <Button
-                  variant='text'
+                  variant='outlined'
                   onClick={() => navigate('/menu/products')}
+                  startIcon={<CloseRounded />}
                 >
                   Cancelar
                 </Button>
                 <LoadingButton
                   variant='contained'
                   type='submit'
-                  // disabled={isDirty && !isValid}
                   loading={isPending}
+                  startIcon={<Add />}
                 >
-                  Crear
+                  Crear producto
                 </LoadingButton>
               </Box>
             </form>

@@ -1,5 +1,4 @@
 import { FC, useState, useEffect } from 'react';
-
 import { LoadingButton } from '@mui/lab';
 import {
   Dialog,
@@ -10,6 +9,8 @@ import {
   DialogActions,
   Button
 } from '@mui/material';
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
+import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 import { useDispatch } from 'react-redux';
 import { deleteClient } from '../../../../../redux/slices/clients/clients.slice';
 import { useFetchAndLoad } from '../../../../../hooks/useFetchAndLoad';
@@ -50,7 +51,6 @@ export const DeleteClient: FC = () => {
 
   useEffect(() => {
     subscription$.subscribe((data) => {
-      console.log(data);
       setClient(data.client);
       setOpen(!!data.value);
     });
@@ -58,24 +58,27 @@ export const DeleteClient: FC = () => {
 
   return (
     <Dialog open={open} onClose={closeModal}>
-      <DialogTitle id='alert-dialog-title' color='white'>
+      <DialogTitle id='alert-dialog-title'>
         Eliminar cliente
       </DialogTitle>
       <Divider />
       <DialogContent>
         <DialogContentText id='alert-dialog-description'>
-          {`¿Esta seguro de eliminar al cliente ${client?.person.lastName}?`}
+          {`¿Está seguro de eliminar al cliente ${client?.person.lastName || ''}?`}
         </DialogContentText>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={closeModal}>Cancelar</Button>
+      <DialogActions sx={{ px: 3, pb: 2 }}>
+        <Button onClick={closeModal} color='inherit' startIcon={<CloseRoundedIcon />}>
+          Cancelar
+        </Button>
         <LoadingButton
           loading={loading}
           variant='contained'
           color='error'
           onClick={submitDeleteClient}
+          startIcon={<DeleteOutlineRoundedIcon />}
         >
-          Aceptar
+          Eliminar
         </LoadingButton>
       </DialogActions>
     </Dialog>

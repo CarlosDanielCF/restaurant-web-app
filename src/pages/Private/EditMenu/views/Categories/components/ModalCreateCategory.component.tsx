@@ -22,6 +22,8 @@ import { CreateCategoryDto } from '../../../dto';
 import { LoadingButton } from '@mui/lab';
 import { useCreateCategory } from '../../../hooks/useCategories';
 import { useEditMenuStore } from '../../../hooks/useEditMenuStore';
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
+import AddRoundedIcon from '@mui/icons-material/AddRounded';
 
 export const ModalCreateCategory = NiceModal.create(() => {
   const modal = useModal();
@@ -118,12 +120,15 @@ export const ModalCreateCategory = NiceModal.create(() => {
           </Stack>
 
           <Stack direction='row' justifyContent='end' gap={2}>
-            <Button onClick={closeModal}>Cancelar</Button>
+            <Button onClick={closeModal} color='inherit' startIcon={<CloseRoundedIcon />}>
+              Cancelar
+            </Button>
             <LoadingButton
               loading={isPending}
               type='submit'
               variant='contained'
               disabled={!isDirty}
+              startIcon={<AddRoundedIcon />}
             >
               Guardar
             </LoadingButton>

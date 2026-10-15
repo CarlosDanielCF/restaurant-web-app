@@ -1,4 +1,4 @@
-import { Add, ArrowBack } from '@mui/icons-material';
+import { Add, ArrowBack, CloseRounded, SaveRounded } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
 import {
   Grid,
@@ -171,6 +171,7 @@ export const EditTable = () => {
                     variant='outlined'
                     onClick={() => navigate('/tables')}
                     disabled={isSaving}
+                    startIcon={<CloseRounded />}
                   >
                     Cancelar
                   </Button>
@@ -178,6 +179,7 @@ export const EditTable = () => {
                     variant='contained'
                     type='submit'
                     loading={isSaving}
+                    startIcon={activeTable ? <SaveRounded /> : <Add />}
                   >
                     {activeTable ? 'Guardar cambios' : 'Crear mesa'}
                   </LoadingButton>

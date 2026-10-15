@@ -167,7 +167,7 @@ export const ModalUploadExcel = NiceModal.create(() => {
           )}
 
           <Stack direction='row' justifyContent='end' gap={2}>
-            <Button onClick={closeModal} color='inherit'>
+            <Button onClick={closeModal} color='inherit' startIcon={<CloseIcon />}>
               {uploadResult ? 'Cerrar' : 'Cancelar'}
             </Button>
             {!uploadResult && (

@@ -19,7 +19,7 @@ import { LoadingButton } from '@mui/lab';
 import { Controller, useForm } from 'react-hook-form';
 import { UpdateProductOptionDto } from '../../../dto';
 import { useUpdateProductOption } from '../../../hooks/useProductOptions';
-import { AttachMoney } from '@mui/icons-material';
+import { AttachMoney, CloseRounded, SaveRounded } from '@mui/icons-material';
 
 interface Props {
   productOption: ProductOption;
@@ -216,16 +216,19 @@ export const ModalUpdateProductOption = NiceModal.create<Props>(
               </Grid>
             </CardContent>
 
-            <DialogActions>
-              <Button onClick={closeModal}>Cancelar</Button>
+            <DialogActions sx={{ px: 3, pb: 2.5 }}>
+              <Button onClick={closeModal} color='inherit' startIcon={<CloseRounded />}>
+                Cancelar
+              </Button>
               <LoadingButton
                 variant='contained'
                 color='primary'
                 loading={isPending}
                 type='submit'
                 disabled={!isDirty}
+                startIcon={<SaveRounded />}
               >
-                Aceptar
+                Guardar cambios
               </LoadingButton>
             </DialogActions>
           </form>

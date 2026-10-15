@@ -15,6 +15,17 @@ const restauranteApi = axios.create({
 
 // Interceptores
 
+const generateUUID = (): string => {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+};
+
 restauranteApi.interceptors.request.use((config) => {
   const restaurant = useRestaurantStore.getState().restaurant;
 
@@ -25,6 +36,11 @@ restauranteApi.interceptors.request.use((config) => {
 
   if (restaurant) {
     config.headers['x-restaurant-id'] = restaurant.id;
+  }
+
+  const method = (config.method || '').toLowerCase();
+  if (['post', 'patch', 'delete', 'put'].includes(method) && !config.headers['Idempotency-Key']) {
+    config.headers['Idempotency-Key'] = generateUUID();
   }
 
   return config;

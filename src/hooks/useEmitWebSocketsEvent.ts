@@ -10,6 +10,17 @@ interface WebSocketOptions<TData> {
   onError?: (resp: SocketResponse) => void;
 }
 
+const generateUUID = (): string => {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+};
+
 /**
  * Hook to use websockets
  * @version v1.0 24-12-2023
@@ -27,7 +38,17 @@ export function useEmitWebSocketsEvent<TData, TVariables>(
   ) => {
     setLoading(true);
 
-    socket?.emit(eventMessage, data, (resp: SocketResponseData<TData>) => {
+    let payload: any = data;
+    if (data && typeof data === 'object' && !Array.isArray(data)) {
+      if (
+        ['create-order', 'add-order-detail'].includes(eventMessage) &&
+        !(data as any).idempotencyKey
+      ) {
+        payload = { ...data, idempotencyKey: generateUUID() };
+      }
+    }
+
+    socket?.emit(eventMessage, payload, (resp: SocketResponseData<TData>) => {
       setLoading(false);
 
       if (resp.ok) {

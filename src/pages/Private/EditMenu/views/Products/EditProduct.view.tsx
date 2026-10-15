@@ -8,7 +8,7 @@ import { ProductTags } from './components/ProductTags.component';
 import { useSelector } from 'react-redux';
 import { selectMenu } from '../../../../../redux';
 import { EmptyState } from '@/components/ui';
-import { FastfoodOutlined } from '@mui/icons-material';
+import { FastfoodOutlined, ArrowBack } from '@mui/icons-material';
 
 export const EditProduct = () => {
   const params = useParams();
@@ -47,6 +47,7 @@ export const EditProduct = () => {
           action={
             <Button
               variant='contained'
+              startIcon={<ArrowBack />}
               onClick={() => navigate('/menu/products')}
             >
               Volver al catálogo

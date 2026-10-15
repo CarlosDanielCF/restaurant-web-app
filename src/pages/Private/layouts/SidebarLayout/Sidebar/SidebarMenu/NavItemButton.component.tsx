@@ -1,5 +1,4 @@
 import { FC, useContext } from 'react';
-
 import {
   ListItem,
   ListItemButton,
@@ -8,9 +7,10 @@ import {
   useTheme,
   useMediaQuery,
   IconButton,
-  Tooltip
+  Tooltip,
+  alpha
 } from '@mui/material';
-import { NavLink as RouterLink, useMatch, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { SidebarContext } from '../../../../Common/contexts/SidebarContext';
 import { NavItem } from '../../../interfaces';
@@ -23,15 +23,18 @@ interface Props {
 }
 
 export const NavItemButton: FC<Props> = ({ item }) => {
-  const { closeSidebar } = useContext(SidebarContext);
+  const { closeSidebar, isCollapsed } = useContext(SidebarContext);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('lg'));
+  const location = useLocation();
 
   const { user } = useSelector(selectAuth);
   const navigate = useNavigate();
-  const match = useMatch(item.to);
 
-  // Only close sidebar on mobile/tablet devices
+  const isSelected =
+    location.pathname === item.to ||
+    (item.to !== '/' && location.pathname.startsWith(item.to));
+
   const handleClick = () => {
     if (isMobile) {
       closeSidebar();
@@ -46,27 +49,94 @@ export const NavItemButton: FC<Props> = ({ item }) => {
     return null;
   }
 
+  // Collapsed mode on desktop
+  if (isCollapsed && !isMobile) {
+    return (
+      <ListItem
+        component='div'
+        key={item.to}
+        disablePadding
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          my: 0.5
+        }}
+      >
+        <Tooltip title={item.title} placement='right' arrow>
+          <IconButton
+            onClick={handleClick}
+            aria-label={item.title}
+            sx={{
+              width: 44,
+              height: 44,
+              borderRadius: 2,
+              color: isSelected ? 'primary.main' : 'text.secondary',
+              bgcolor: isSelected
+                ? alpha(theme.palette.primary.main, 0.12)
+                : 'transparent',
+              '&:hover': {
+                bgcolor: isSelected
+                  ? alpha(theme.palette.primary.main, 0.2)
+                  : alpha(theme.palette.action.hover, 0.08),
+                color: isSelected ? 'primary.main' : 'text.primary'
+              },
+              transition: theme.transitions.create(['background-color', 'color'], {
+                duration: theme.transitions.duration.shorter
+              })
+            }}
+          >
+            {item.icon}
+          </IconButton>
+        </Tooltip>
+      </ListItem>
+    );
+  }
+
+  // Expanded mode on desktop or mobile drawer
   return (
-    <ListItem component='div' key={item.to}>
-      <Tooltip title={item.title} placement='right' arrow>
-        <IconButton
-          onClick={handleClick}
-          // color={match ? 'primary' : 'primary'}
+    <ListItem component='div' key={item.to} disablePadding sx={{ my: 0.5, px: 1.5 }}>
+      <ListItemButton
+        onClick={handleClick}
+        selected={isSelected}
+        sx={{
+          borderRadius: 2,
+          py: 1,
+          px: 1.5,
+          color: isSelected ? 'primary.main' : 'text.primary',
+          bgcolor: isSelected
+            ? alpha(theme.palette.primary.main, 0.1)
+            : 'transparent',
+          '&.Mui-selected': {
+            bgcolor: alpha(theme.palette.primary.main, 0.1),
+            '&:hover': {
+              bgcolor: alpha(theme.palette.primary.main, 0.16)
+            }
+          },
+          '&:hover': {
+            bgcolor: alpha(theme.palette.action.hover, 0.08)
+          },
+          transition: theme.transitions.create(['background-color', 'color'], {
+            duration: theme.transitions.duration.shorter
+          })
+        }}
+      >
+        <ListItemIcon
           sx={{
-            display: 'flex',
-            justifyContent: 'center',
-            width: '100%',
-            color: match
-              ? theme.colors.alpha.trueWhite[70]
-              : theme.palette.primary.main,
-            backgroundColor: match
-              ? 'primary.main'
-              : theme.colors.alpha.trueWhite[10]
+            minWidth: 36,
+            color: isSelected ? 'primary.main' : 'text.secondary'
           }}
         >
           {item.icon}
-        </IconButton>
-      </Tooltip>
+        </ListItemIcon>
+        <ListItemText
+          primary={item.title}
+          primaryTypographyProps={{
+            variant: 'body2',
+            fontWeight: isSelected ? 600 : 500,
+            noWrap: true
+          }}
+        />
+      </ListItemButton>
     </ListItem>
   );
 };

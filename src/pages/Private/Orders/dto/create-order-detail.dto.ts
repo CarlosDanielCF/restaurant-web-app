@@ -9,6 +9,7 @@ import { TypeOrder } from '@/models';
  * @version 1.2 17/03/2025 Adds type order
  */
 export interface CreateOrderDetailDto {
+  idempotencyKey?: string;
   quantity: number;
   description?: string;
   price: number;

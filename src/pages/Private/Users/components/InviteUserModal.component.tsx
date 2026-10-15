@@ -26,6 +26,7 @@ import {
 } from '@mui/material';
 
 import { CloseOutlined } from '@mui/icons-material';
+import PersonAddRoundedIcon from '@mui/icons-material/PersonAddRounded';
 import { useUsersSuggestions } from '../hooks/useUsers';
 import SearchIcon from '@mui/icons-material/Search';
 import { useEffect, useState } from 'react';
@@ -212,7 +213,7 @@ export const InviteUserModal = NiceModal.create(() => {
         )}
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2.5 }}>
-        <Button onClick={closeModal} color='inherit'>
+        <Button onClick={closeModal} color='inherit' startIcon={<CloseOutlined />}>
           Cancelar
         </Button>
         <LoadingButton
@@ -220,6 +221,7 @@ export const InviteUserModal = NiceModal.create(() => {
           variant='contained'
           loading={useInviteUser.isPending}
           disabled={!selectedUser || !roleId}
+          startIcon={<PersonAddRoundedIcon />}
         >
           Invitar usuario
         </LoadingButton>

@@ -14,6 +14,7 @@ import {
   InputLabel
 } from '@mui/material';
 import { TypeIdentification } from '../../../../models/common.model';
+import SaveRoundedIcon from '@mui/icons-material/SaveRounded';
 
 interface Props {
   client: ICreateClient;
@@ -189,6 +190,7 @@ export const FormClient: FC<Props> = ({ client, onSubmit, loading, msg }) => {
             type='submit'
             loading={loading}
             size='large'
+            startIcon={<SaveRoundedIcon />}
           >
             {msg || 'Guardar cliente'}
           </LoadingButton>

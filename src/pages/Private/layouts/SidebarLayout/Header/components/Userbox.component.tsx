@@ -65,7 +65,11 @@ const UserBoxDescription = styled(Typography)(
 `
 );
 
-export const Userbox = () => {
+interface UserboxProps {
+  showDetails?: boolean;
+}
+
+export const Userbox = ({ showDetails = false }: UserboxProps) => {
   const { user: userState } = useAppSelector(selectAuth);
   const dispatch = useAppDispatch();
   const { restaurant, setRestaurant } = useRestaurantStore((state) => state);
@@ -105,31 +109,58 @@ export const Userbox = () => {
 
   return (
     <>
-      <Badge
-        overlap='circular'
-        color={online ? 'success' : 'error'}
-        variant='dot'
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right'
-        }}
-        badgeContent={''}
+      <Box
+        display='flex'
+        alignItems='center'
         sx={{
-          cursor: 'pointer'
+          cursor: 'pointer',
+          p: showDetails ? 1 : 0.5,
+          borderRadius: 2,
+          transition: 'all 0.2s ease',
+          '&:hover': {
+            bgcolor: 'action.hover'
+          }
         }}
-        // component={Button}
+        onClick={handleOpen}
+        ref={ref}
       >
-        <Avatar
-          variant='circular'
-          alt={user.name}
-          ref={ref}
-          onClick={handleOpen}
+        <Badge
+          overlap='circular'
+          color={online ? 'success' : 'error'}
+          variant='dot'
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'right'
+          }}
+          badgeContent={''}
         >
-          {user.name.at(0)}
-        </Avatar>
-      </Badge>
-      {/* <UserBoxButton color="secondary" >
-        </UserBoxButton> */}
+          <Avatar
+            variant='circular'
+            alt={user.name}
+            sx={{
+              width: showDetails ? 38 : 34,
+              height: showDetails ? 38 : 34,
+              bgcolor: 'primary.main',
+              color: 'primary.contrastText',
+              fontSize: '0.875rem',
+              fontWeight: 700
+            }}
+          >
+            {user.name?.at(0)?.toUpperCase()}
+          </Avatar>
+        </Badge>
+
+        {showDetails && (
+          <Box sx={{ ml: 1.5, textAlign: 'left', minWidth: 0 }}>
+            <Typography variant='subtitle2' fontWeight={600} color='text.primary' noWrap>
+              {user.name}
+            </Typography>
+            <Typography variant='caption' color='text.secondary' noWrap display='block'>
+              {user.jobtitle || 'Usuario'}
+            </Typography>
+          </Box>
+        )}
+      </Box>
 
       {/* <UserBoxText>
 

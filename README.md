@@ -4,7 +4,56 @@ Mi sistema de restaurante es una solución completa de gestión de pedidos dise�
 
 ![image](https://github.com/SantiagoQP23/sistema-restaurante-app/assets/44738574/ee9dc82a-05a6-49f5-b781-e48cb288b6c8)
 
-## Dashboard
+## 🚀 Puesta en marcha (Instalación y ejecución)
+
+### 1. Requisitos previos
+- **Node.js**: v18.0.0 o superior (recomendado v20+)
+- **pnpm**: v8.0.0 o superior (`npm install -g pnpm` o `corepack enable`)
+- **Backend en ejecución**: Tener corriendo el servicio de `restaurant-backend` (por defecto en `http://localhost:5000/api` y WebSockets en `http://localhost:5000/socket.io/socket.io.js`).
+
+### 2. Instalación de dependencias
+En la raíz del proyecto `restaurant-web-app`, instala los paquetes con `pnpm`:
+
+```bash
+pnpm install
+```
+
+### 3. Configuración de variables de entorno
+Crea el archivo `.env` copiando el archivo de ejemplo:
+
+```bash
+cp .env.example .env
+```
+
+Asegúrate de que contenga las URLs correctas de tu backend:
+
+```env
+VITE_APP_NAME=Restaurante
+VITE_API_URL=http://localhost:5000/api
+VITE_WS_URL=http://localhost:5000/socket.io/socket.io.js
+```
+
+### 4. Iniciar en modo desarrollo
+Para arrancar el servidor local con Vite:
+
+```bash
+pnpm run dev
+```
+
+Una vez levantado, abre tu navegador en la dirección indicada por la consola (generalmente `http://localhost:5173`).
+
+---
+
+### 🛠️ Scripts disponibles
+
+| Comando | Descripción |
+| :--- | :--- |
+| `pnpm run dev` | Inicia el servidor de desarrollo Vite con soporte `--host`. |
+| `pnpm run build` | Ejecuta verificación de tipos con `tsc` y genera el bundle optimizado en `/dist`. |
+| `pnpm run preview` | Levanta un servidor local para previsualizar el build de producción. |
+| `pnpm run format` | Aplica formato al código fuente con Prettier. |
+
+---
 
 ![image](https://github.com/SantiagoQP23/sistema-restaurante-app/assets/44738574/039d7802-f0a4-4229-98ed-a117e7e2b320)
 

@@ -21,6 +21,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { selectMenu, updateCategory } from '../../../../../../redux';
 
 import SaveIcon from '@mui/icons-material/Save';
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import { useUpdateCategory } from '../../../hooks/useCategories';
 import { useEditMenuStore } from '../../../hooks/useEditMenuStore';
 
@@ -133,7 +134,7 @@ export const ModalEditCategory = NiceModal.create<Props>(({ category }) => {
             </Stack>
           </DialogContent>
           <DialogActions>
-            <Button onClick={closeModal} color='inherit'>
+            <Button onClick={closeModal} color='inherit' startIcon={<CloseRoundedIcon />}>
               Cancelar
             </Button>
             <LoadingButton

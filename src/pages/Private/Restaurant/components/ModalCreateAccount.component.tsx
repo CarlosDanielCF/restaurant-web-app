@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import { Controller, useForm } from 'react-hook-form';
 import { LoadingButton } from '@mui/lab';
-import { Save } from '@mui/icons-material';
+import { Save, CloseRounded } from '@mui/icons-material';
 import { AccountType } from '../../../../models/financial/account.model';
 import { CreateAccountDto } from '../dto/create-account.dto';
 import { useCreateAccount } from '../hooks/useAccounts';
@@ -107,7 +107,9 @@ export const ModalCreateAccount = NiceModal.create(() => {
         </DialogContent>
 
         <DialogActions>
-          <Button onClick={() => modal.hide()}>Cancelar</Button>
+          <Button onClick={() => modal.hide()} color='inherit' startIcon={<CloseRounded />}>
+            Cancelar
+          </Button>
           <LoadingButton
             loading={isPending}
             type='submit'

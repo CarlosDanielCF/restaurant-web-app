@@ -14,6 +14,8 @@ import {
   InputLabel
 } from '@mui/material';
 import { Roles } from '@/models/roles';
+import SaveRoundedIcon from '@mui/icons-material/SaveRounded';
+import PersonAddRoundedIcon from '@mui/icons-material/PersonAddRounded';
 
 interface Props {
   user: CreateUser;
@@ -228,7 +230,12 @@ export const FormUser: FC<Props> = ({
               justifyContent: 'flex-end'
             }}
           >
-            <LoadingButton variant='contained' type='submit' loading={loading}>
+            <LoadingButton
+              variant='contained'
+              type='submit'
+              loading={loading}
+              startIcon={isNew ? <PersonAddRoundedIcon /> : <SaveRoundedIcon />}
+            >
               {isNew ? 'Crear' : 'Actualizar'}
             </LoadingButton>
           </Grid>

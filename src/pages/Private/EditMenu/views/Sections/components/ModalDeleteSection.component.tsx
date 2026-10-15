@@ -7,6 +7,8 @@ import {
   Button,
   Dialog
 } from '@mui/material';
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
+import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 import { ISection } from '../../../../../../models';
 import { LoadingButton } from '@mui/lab';
 import NiceModal, { muiDialogV5, useModal } from '@ebay/nice-modal-react';
@@ -37,17 +39,17 @@ export const ModalDeleteSection = NiceModal.create<Props>(({ section }) => {
     <>
       <Dialog {...muiDialogV5(modal)}>
         <DialogTitle id='alert-dialog-title'>
-          {`¿Esta seguro de eliminar la sección ${section!.name}?`}
+          {`¿Está seguro de eliminar la sección ${section!.name}?`}
         </DialogTitle>
         <Divider />
         <DialogContent>
           <DialogContentText id='alert-dialog-description'>
             Se eliminarán todas las categorías y productos que pertenecen a esta
-            categoría
+            sección.
           </DialogContentText>
         </DialogContent>
-        <DialogActions sx={{ display: 'flex', justifyContent: 'center' }}>
-          <Button onClick={closeModal} color='inherit'>
+        <DialogActions sx={{ display: 'flex', justifyContent: 'center', pb: 2.5 }}>
+          <Button onClick={closeModal} color='inherit' startIcon={<CloseRoundedIcon />}>
             Cancelar
           </Button>
           <LoadingButton
@@ -55,8 +57,9 @@ export const ModalDeleteSection = NiceModal.create<Props>(({ section }) => {
             variant='contained'
             color='error'
             onClick={submitDeleteSection}
+            startIcon={<DeleteOutlineRoundedIcon />}
           >
-            Aceptar
+            Eliminar
           </LoadingButton>
         </DialogActions>
       </Dialog>

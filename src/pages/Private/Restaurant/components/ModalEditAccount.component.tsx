@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import { Controller, useForm } from 'react-hook-form';
 import { LoadingButton } from '@mui/lab';
-import { Save } from '@mui/icons-material';
+import { Save, CloseRounded } from '@mui/icons-material';
 import {
   Account,
   AccountType
@@ -107,7 +107,9 @@ export const ModalEditAccount = NiceModal.create<Props>(({ account }) => {
         </DialogContent>
 
         <DialogActions>
-          <Button onClick={() => modal.hide()}>Cancelar</Button>
+          <Button onClick={() => modal.hide()} color='inherit' startIcon={<CloseRounded />}>
+            Cancelar
+          </Button>
           <LoadingButton
             loading={isPending}
             type='submit'

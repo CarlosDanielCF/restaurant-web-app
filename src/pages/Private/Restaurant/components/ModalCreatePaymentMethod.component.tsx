@@ -25,6 +25,7 @@ import {
   CheckCircle,
   Percent,
   Save,
+  CloseRounded,
   StarOutlined
 } from '@mui/icons-material';
 import { PaymentMethodCategory } from '../../../../models/financial/payment-method.model';
@@ -292,7 +293,9 @@ export const ModalCreatePaymentMethod = NiceModal.create(() => {
         </DialogContent>
 
         <DialogActions>
-          <Button onClick={() => modal.hide()}>Cancelar</Button>
+          <Button onClick={() => modal.hide()} color='inherit' startIcon={<CloseRounded />}>
+            Cancelar
+          </Button>
           <LoadingButton
             loading={isPending}
             type='submit'
