@@ -8,8 +8,15 @@ import { DndContext, DragEndEvent, closestCenter } from '@dnd-kit/core';
 
 import { SortableContext, arrayMove } from '@dnd-kit/sortable';
 
-import { Add, CloseOutlined, EditOutlined, Save } from '@mui/icons-material';
+import {
+  Add,
+  CloseOutlined,
+  EditOutlined,
+  Save,
+  TableRestaurantOutlined
+} from '@mui/icons-material';
 import { Button, Grid, Stack, Typography } from '@mui/material';
+import { EmptyState } from '@/components/ui';
 
 import {
   selectTables,
@@ -112,6 +119,7 @@ export const ListTables = () => {
                     setReorder(true);
                   }}
                   startIcon={<EditOutlined />}
+                  disabled={tables.length === 0}
                 >
                   Reordenar
                 </Button>
@@ -136,30 +144,50 @@ export const ListTables = () => {
         justifyContent='space-between'
         alignItems='center'
         mt={1}
-        mb={4}
+        mb={3}
       >
         <Grid item>
-          <Typography variant='h6'>
+          <Typography variant='h6' color='text.secondary'>
             Mesas registradas: {tables.length}
           </Typography>
         </Grid>
       </Grid>
 
-      <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <SortableContext items={orderedTables}>
-          <Grid container spacing={2}>
-            {orderedTables.map((table) => (
-              <Grid item xs={12} sm={3} key={table.id}>
-                <DraggableTable
-                  table={table}
-                  key={table.id}
-                  reorder={reorder}
-                />
-              </Grid>
-            ))}
-          </Grid>
-        </SortableContext>
-      </DndContext>
+      {orderedTables.length === 0 ? (
+        <EmptyState
+          icon={<TableRestaurantOutlined sx={{ fontSize: 44 }} />}
+          title='No hay mesas registradas'
+          description='Organiza tu sala y zonas de atención creando mesas con el botón "Añadir mesa".'
+          action={
+            <Button
+              variant='contained'
+              startIcon={<Add />}
+              onClick={createTable}
+            >
+              Crear primera mesa
+            </Button>
+          }
+        />
+      ) : (
+        <DndContext
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext items={orderedTables}>
+            <Grid container spacing={2}>
+              {orderedTables.map((table) => (
+                <Grid item xs={12} sm={6} md={4} lg={3} key={table.id}>
+                  <DraggableTable
+                    table={table}
+                    key={table.id}
+                    reorder={reorder}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+          </SortableContext>
+        </DndContext>
+      )}
     </>
   );
 };

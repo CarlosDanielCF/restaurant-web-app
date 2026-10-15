@@ -4,13 +4,18 @@ import {
   useTheme,
   CssBaseline,
   IconButton,
+  Typography,
   useMediaQuery
 } from '@mui/material';
+import MenuTwoToneIcon from '@mui/icons-material/MenuTwoTone';
 import { Outlet } from 'react-router-dom';
 
 import Sidebar from './Sidebar/Sidebar.component';
-import MenuIcon from '@mui/icons-material/Menu';
+import HeaderUserbox from './Header/components/Userbox.component';
 import { SidebarContext } from '../../Common/contexts/SidebarContext';
+import { useRestaurantStore } from '../../Common/store/restaurantStore';
+import { useAppSelector } from '@/hooks';
+import { selectAuth } from '@/redux';
 
 interface SidebarLayoutProps {
   children?: ReactNode;
@@ -20,10 +25,12 @@ interface SidebarLayoutProps {
 const SidebarLayout: FC<SidebarLayoutProps> = () => {
   const theme = useTheme();
   const mobile = useMediaQuery(theme.breakpoints.down('lg'));
-  const { closeSidebar, toggleSidebar } = useContext(SidebarContext);
+  const { toggleSidebar, closeSidebar } = useContext(SidebarContext);
+  const restaurant = useRestaurantStore((state) => state.restaurant);
+  const { user } = useAppSelector(selectAuth);
+
   useEffect(() => {
     if (mobile) closeSidebar();
-    // Close the desktop navigation when entering a small viewport.
   }, [mobile]);
 
   return (
@@ -36,17 +43,18 @@ const SidebarLayout: FC<SidebarLayoutProps> = () => {
         }}
       >
         <CssBaseline />
-        {/* <Header /> */}
         <Sidebar />
         <Box
+          component='main'
+          data-testid='app-content'
           sx={{
             position: 'relative',
             zIndex: 5,
             display: 'flex',
             flexDirection: 'column',
             flex: 1,
-            width: '100%',
             minWidth: 0,
+            width: '100%',
             overflow: 'auto',
             height: '100vh',
             transition: theme.transitions.create(['margin', 'width'], {
@@ -55,14 +63,52 @@ const SidebarLayout: FC<SidebarLayoutProps> = () => {
             })
           }}
         >
-          {mobile && (
-            <Box sx={{ px: 1, pt: 1 }}>
-              <IconButton aria-label='Abrir navegación' onClick={toggleSidebar}>
-                <MenuIcon />
+          {/* Mobile Top Navigation Bar */}
+          <Box
+            sx={{
+              display: { xs: 'flex', lg: 'none' },
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              px: 2,
+              py: 1.25,
+              bgcolor: 'background.paper',
+              borderBottom: 1,
+              borderColor: 'divider',
+              position: 'sticky',
+              top: 0,
+              zIndex: 100,
+              boxShadow: theme.shadows[1]
+            }}
+          >
+            <Box
+              display='flex'
+              alignItems='center'
+              gap={1.5}
+              sx={{ minWidth: 0 }}
+            >
+              <IconButton
+                onClick={toggleSidebar}
+                color='primary'
+                edge='start'
+                aria-label='Abrir menú de navegación'
+                size='medium'
+              >
+                <MenuTwoToneIcon />
               </IconButton>
+              <Typography
+                variant='h6'
+                fontWeight={700}
+                color='text.primary'
+                noWrap
+              >
+                {restaurant?.name || 'Sistema Restaurante'}
+              </Typography>
             </Box>
-          )}
-          <Outlet />
+            {user && <HeaderUserbox />}
+          </Box>
+          <Box sx={{ p: { xs: 1.5, sm: 2, md: 3 }, flex: 1 }}>
+            <Outlet />
+          </Box>
         </Box>
       </Box>
     </>

@@ -7,6 +7,8 @@ import {
   Button,
   Dialog
 } from '@mui/material';
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
+import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 import { updateProduct } from '../../../../../../redux';
 import { LoadingButton } from '@mui/lab';
 import { useAppDispatch } from '../../../../../../hooks/useRedux';
@@ -39,16 +41,20 @@ export const ModalDeleteProduct = NiceModal.create<Props>(({ product }) => {
     <>
       <Dialog {...muiDialogV5(modal)}>
         <DialogTitle id='alert-dialog-title'>
-          {`¿Esta seguro de eliminar el producto ${product!.name}?`}
+          {`¿Está seguro de eliminar el producto ${product!.name}?`}
         </DialogTitle>
         <Divider />
         <DialogContent>
           <DialogContentText id='alert-dialog-description'>
-            El producto ya no estará disponible en el menú
+            El producto ya no estará disponible en el catálogo activo.
           </DialogContentText>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={closeModal} color='inherit'>
+        <DialogActions sx={{ px: 3, pb: 2.5 }}>
+          <Button
+            onClick={closeModal}
+            color='inherit'
+            startIcon={<CloseRoundedIcon />}
+          >
             Cancelar
           </Button>
           <LoadingButton
@@ -56,8 +62,9 @@ export const ModalDeleteProduct = NiceModal.create<Props>(({ product }) => {
             variant='contained'
             color='error'
             onClick={submitDeleteProduct}
+            startIcon={<DeleteOutlineRoundedIcon />}
           >
-            Aceptar
+            Eliminar
           </LoadingButton>
         </DialogActions>
       </Dialog>

@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-
+import { useState, useEffect, FC } from 'react';
 import { LoadingButton } from '@mui/lab';
 import {
   Dialog,
@@ -10,13 +9,11 @@ import {
   DialogActions,
   Button
 } from '@mui/material';
-import { FC } from 'react';
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
+import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 import { useFetchAndLoad } from '../../../../../hooks/useFetchAndLoad';
-import {
-  deleteUser,
-  selectUsers
-} from '../../../../../redux/slices/users/users.slice';
-import { useSelector, useDispatch } from 'react-redux';
+import { deleteUser } from '../../../../../redux/slices/users/users.slice';
+import { useDispatch } from 'react-redux';
 import { IUser } from '../../../../../models/auth.model';
 import {
   statusModalDeleteUser,
@@ -25,33 +22,32 @@ import {
 import { useSnackbar } from 'notistack';
 
 export const DeleteUser: FC = () => {
-  const { loading, callEndpoint } = useFetchAndLoad();
-
   const [user, setUser] = useState<IUser>();
 
-  const [open, setOpen] = useState<boolean>(false);
   const subscription$ = statusModalDeleteUser.getSubject();
+
+  const [open, setOpen] = useState<boolean>(false);
+
+  const { loading, callEndpoint } = useFetchAndLoad();
+
+  const { enqueueSnackbar } = useSnackbar();
 
   const dispatch = useDispatch();
 
-  const { enqueueSnackbar } = useSnackbar();
+  const closeModal = () => {
+    setOpen(false);
+  };
 
   const submitDeleteUser = async () => {
     await callEndpoint(deleteUserS(user!.id))
       .then(() => {
         enqueueSnackbar('Usuario eliminado', { variant: 'success' });
-
         dispatch(deleteUser(user!.id));
-
         closeModal();
       })
       .catch(() => {
         enqueueSnackbar('Error al eliminar usuario', { variant: 'error' });
       });
-  };
-
-  const closeModal = () => {
-    setOpen(false);
   };
 
   useEffect(() => {
@@ -63,24 +59,29 @@ export const DeleteUser: FC = () => {
 
   return (
     <Dialog open={open} onClose={closeModal}>
-      <DialogTitle id='alert-dialog-title' color='white'>
-        Eliminar usuario
-      </DialogTitle>
+      <DialogTitle id='alert-dialog-title'>Eliminar usuario</DialogTitle>
       <Divider />
       <DialogContent>
         <DialogContentText id='alert-dialog-description'>
-          {`¿Esta seguro de eliminar el usuario ${user?.person.firstName}?`}
+          {`¿Está seguro de eliminar el usuario ${user?.person?.firstName || ''}?`}
         </DialogContentText>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={closeModal}>Cancelar</Button>
+      <DialogActions sx={{ px: 3, pb: 2 }}>
+        <Button
+          onClick={closeModal}
+          color='inherit'
+          startIcon={<CloseRoundedIcon />}
+        >
+          Cancelar
+        </Button>
         <LoadingButton
           loading={loading}
           variant='contained'
           color='error'
           onClick={submitDeleteUser}
+          startIcon={<DeleteOutlineRoundedIcon />}
         >
-          Aceptar
+          Eliminar
         </LoadingButton>
       </DialogActions>
     </Dialog>

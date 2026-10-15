@@ -22,16 +22,12 @@ import { LoadingButton } from '@mui/lab';
 
 import { useAppDispatch } from '../../../../../../hooks';
 
-import { ArrowBack } from '@mui/icons-material';
+import { ArrowBack, Save, Add } from '@mui/icons-material';
 import {
   addCategory,
   updateCategory
 } from '../../../../../../redux/slices/menu/menu.thunks';
-import {
-  resetActiveCategory,
-  selectMenu,
-  setActiveCategory
-} from '../../../../../../redux';
+import { selectMenu, setActiveCategory } from '../../../../../../redux';
 import { Container, FormControl, Card } from '@mui/material';
 
 import {
@@ -161,14 +157,15 @@ export const EditCategory: FC<Props> = () => {
               />
 
               <LoadingButton
-                variant='outlined'
+                variant='contained'
                 type='submit'
                 loading={
                   updateCategoryMutation.isPending ||
                   createCategoryMutation.isPending
                 }
+                startIcon={activeCategory ? <Save /> : <Add />}
               >
-                {activeCategory ? 'Editar' : 'Crear'}
+                {activeCategory ? 'Guardar cambios' : 'Crear categoría'}
               </LoadingButton>
             </form>
           </CardContent>

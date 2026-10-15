@@ -18,7 +18,7 @@ import { LoadingButton } from '@mui/lab';
 import { useForm } from 'react-hook-form';
 import { CreateProductOptionDto } from '../../../dto';
 import { useCreateProductOption } from '../../../hooks/useProductOptions';
-import { AttachMoney } from '@mui/icons-material';
+import { AttachMoney, CloseRounded, AddRounded } from '@mui/icons-material';
 
 interface Props {
   product: IProduct;
@@ -193,16 +193,23 @@ export const ModalCreateProductOption = NiceModal.create<Props>(
               </Grid>
             </CardContent>
 
-            <DialogActions>
-              <Button onClick={closeModal}>Cancelar</Button>
+            <DialogActions sx={{ px: 3, pb: 2.5 }}>
+              <Button
+                onClick={closeModal}
+                color='inherit'
+                startIcon={<CloseRounded />}
+              >
+                Cancelar
+              </Button>
               <LoadingButton
                 variant='contained'
                 color='primary'
                 loading={isPending}
                 type='submit'
                 disabled={!isDirty}
+                startIcon={<AddRounded />}
               >
-                Aceptar
+                Añadir opción
               </LoadingButton>
             </DialogActions>
           </form>

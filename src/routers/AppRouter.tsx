@@ -23,9 +23,21 @@ export const AppRouter = () => {
 
   if (status === 'checking') {
     return (
-      <Box>
-        <CircularProgress />
-        <Typography>checking status</Typography>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '100vh',
+          backgroundColor: 'background.default',
+          gap: 2
+        }}
+      >
+        <CircularProgress size={44} thickness={4} color='primary' />
+        <Typography variant='body1' fontWeight={500} color='text.secondary'>
+          Verificando sesión...
+        </Typography>
       </Box>
     );
   }

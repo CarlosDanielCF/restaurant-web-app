@@ -1,3 +1,21 @@
+# Estado vigente — Integración controlada Barrera A
+
+Frontend `integration/f0-f9` desde `2e020095df2b284d13471151ccd51c61691eb0dd`. Backend intacto en `codex/phase-9`, `f312cb5fff101a75983bd1f869b072b434b97469`. Sin merge a main, sin modificar Gemini, sin F10/release. Barrera A pendiente de aprobación.
+
+Integradas mejoras visuales teal/blanco, login, contraseña visible/oculta, sidebar persistente/colapsable, tooltips, responsive, clientes/trabajadores, carta/categorías/secciones/productos/presentaciones, restaurante/logo y mesas. Navegación F0–F9 por roles conservada. Mapa visual adaptado a ocupación por cuenta, sin reactivar Orders como agregado de atención.
+
+Idempotencia: prioridad a claves explícitas F4–F9; HTTP genérico y creación/adición histórica por socket conservan clave de intención pendiente dentro de la pestaña. Sin UUID por intento ni fallback backend. Pruebas de respuesta perdida en pagos, doble clic, reconexión y servidor real.
+
+Detalle de los 59 archivos, excepciones y evidencia: [INTEGRATION-BARRIER-A.md](INTEGRATION-BARRIER-A.md). Sin cambios de base de datos (15 migraciones F9). Backend 92 unitarias/137 HTTP correctas, frontend build/typecheck, regresiones browser F6–F9 y lint sin diagnósticos nuevos. Se conservan 22 diagnósticos históricos focalizados, sin barrido general.
+
+Validación integrada final: F0–F3 con backend real, once rutas en 390×844/900×1100/1440×900 y cocina 1920×1080; sin excepciones JavaScript. Impresión F9 A4/80mm y regresiones F6–F9 correctas.
+
+Limitaciones: recuperación por correo requiere SMTP; interfaz informa la indisponibilidad real y conserva vía administrativa F1. Recursos externos/endpoint cash-register heredado y avisos de bundle documentados. No validación de impresora o dispositivos físicos.
+
+---
+
+## Registro histórico — Fase 9
+
 # Estado vigente — Ciclo D, Fase 9 (2026-10-14)
 
 Rama `codex/phase-9`, directamente desde F8 aprobado `9f2c7d0a30976f4a40ad9b245ad4537da7dc055e`. Sin merge a main/Gemini; Barrera A abierta. Pendiente revisión del Arquitecto. No F10 ni release.

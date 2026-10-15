@@ -7,10 +7,10 @@ import {
   Button,
   Dialog
 } from '@mui/material';
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
+import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 import NiceModal, { muiDialogV5, useModal } from '@ebay/nice-modal-react';
-
 import { LoadingButton } from '@mui/lab';
-
 import { ICategory } from '../../../../../../models';
 import { updateCategory } from '../../../../../../redux';
 import { useAppDispatch } from '../../../../../../hooks/useRedux';
@@ -44,16 +44,20 @@ export const ModalDeleteCategory = NiceModal.create<Props>(({ category }) => {
     <>
       <Dialog {...muiDialogV5(modal)}>
         <DialogTitle id='alert-dialog-title'>
-          {`¿Esta seguro de eliminar la categoría ${category!.name}?`}
+          {`¿Está seguro de eliminar la categoría ${category!.name}?`}
         </DialogTitle>
         <Divider />
         <DialogContent>
           <DialogContentText id='alert-dialog-description'>
-            Se eliminarán todos los productos que pertenecen a esta categoría
+            Se eliminarán todos los productos que pertenecen a esta categoría.
           </DialogContentText>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={closeModal} color='inherit'>
+        <DialogActions sx={{ px: 3, pb: 2.5 }}>
+          <Button
+            onClick={closeModal}
+            color='inherit'
+            startIcon={<CloseRoundedIcon />}
+          >
             Cancelar
           </Button>
           <LoadingButton
@@ -61,8 +65,9 @@ export const ModalDeleteCategory = NiceModal.create<Props>(({ category }) => {
             variant='contained'
             color='error'
             onClick={eliminarCategoria}
+            startIcon={<DeleteOutlineRoundedIcon />}
           >
-            Aceptar
+            Eliminar
           </LoadingButton>
         </DialogActions>
       </Dialog>

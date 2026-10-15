@@ -91,7 +91,11 @@ export const useUpdateRestaurant = () => {
   const { setRestaurant } = useRestaurantStore((state) => state);
 
   return useMutation<Restaurant, unknown, UpdateRestaurantDto>({
-    mutationFn: (data: UpdateRestaurantDto) => updateRestaurant('1', data),
+    mutationFn: (data: UpdateRestaurantDto) => {
+      const id = useRestaurantStore.getState().restaurant?.id;
+      if (!id) throw new Error('Seleccione un restaurante');
+      return updateRestaurant(id, data);
+    },
     onSuccess: (data: Restaurant) => {
       setRestaurant(data);
       enqueueSnackbar('Restaurante actualizado', { variant: 'success' });

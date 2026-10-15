@@ -23,18 +23,14 @@ import {
   Close,
   DeleteOutlined,
   EditOutlined,
-  Reply,
   ReplyOutlined,
   Save,
-  Visibility,
+  ViewListOutlined,
   VisibilityOutlined
 } from '@mui/icons-material';
+import { EmptyState } from '@/components/ui';
 
-import {
-  loadSections,
-  selectMenu,
-  setActiveSection
-} from '../../../../../../redux';
+import { selectMenu, setActiveSection } from '../../../../../../redux';
 
 import {
   ModalDeleteSection,
@@ -199,37 +195,48 @@ export const SectionsList = () => {
         </Stack>
       </Box>
 
-      <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <SortableContext items={orderedSections}>
-          <Grid container rowSpacing={1} spacing={1}>
-            {orderedSections.map((seccion) => (
-              <Grid key={seccion.id} item xs={12} sm={4} lg={3}>
-                <Section
-                  seccion={seccion}
-                  handleOpenMenu={handleOpenMenu}
-                  draggable={reorder}
-                />
+      {orderedSections.length === 0 ? (
+        <EmptyState
+          icon={<ViewListOutlined sx={{ fontSize: 44 }} />}
+          title='No hay secciones activas'
+          description='Organiza tu menú creando secciones (ej: Entradas, Platos Fuertes, Bebidas) con el botón "Añadir".'
+        />
+      ) : (
+        <DndContext
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext items={orderedSections}>
+            <Grid container spacing={2}>
+              {orderedSections.map((seccion) => (
+                <Grid key={seccion.id} item xs={12} sm={6} md={4} lg={3}>
+                  <Section
+                    seccion={seccion}
+                    handleOpenMenu={handleOpenMenu}
+                    draggable={reorder}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+          </SortableContext>
+        </DndContext>
+      )}
+
+      {inactiveSections.length > 0 && (
+        <Box mt={5}>
+          <Typography variant='h6' my={2} color='text.secondary'>
+            Secciones inactivas ({inactiveSections.length})
+          </Typography>
+
+          <Grid container spacing={2}>
+            {inactiveSections.map((seccion) => (
+              <Grid key={seccion.id} item xs={12} sm={6} md={4} lg={3}>
+                <Section seccion={seccion} handleOpenMenu={handleOpenMenu} />
               </Grid>
             ))}
           </Grid>
-        </SortableContext>
-      </DndContext>
-
-      <Box mt={6}>
-        {inactiveSections.length > 0 && (
-          <Typography variant='h6' my={2}>
-            Secciones inactivas: {inactiveSections.length}
-          </Typography>
-        )}
-
-        <Grid container rowSpacing={1} spacing={1}>
-          {inactiveSections.map((seccion) => (
-            <Grid key={seccion.id} item xs={12} sm={4} lg={3}>
-              <Section seccion={seccion} handleOpenMenu={handleOpenMenu} />
-            </Grid>
-          ))}
-        </Grid>
-      </Box>
+        </Box>
+      )}
       {activeSection && (
         <>
           <Popover

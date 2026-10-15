@@ -4,10 +4,7 @@ import {
   Box,
   Avatar,
   Typography,
-  Grid,
   TextField,
-  Button,
-  Chip,
   Link,
   Dialog,
   DialogActions,
@@ -15,7 +12,6 @@ import {
   DialogContentText,
   DialogTitle,
   Divider,
-  Card,
   Stack
 } from '@mui/material';
 
@@ -49,8 +45,8 @@ const style = {
 const Modal: FC<ModalProps> = ({ open, handleClose, status, msg }) => {
   return (
     <>
-      <Dialog open={open}>
-        <DialogTitle id='alert-dialog-title' color='white'>
+      <Dialog open={open} maxWidth='xs' fullWidth>
+        <DialogTitle id='alert-dialog-title' sx={{ fontWeight: 600 }}>
           {status ? 'Solicitud exitosa' : 'Email incorrecto'}
         </DialogTitle>
         <Divider />
@@ -111,9 +107,13 @@ const ForgotPassword = () => {
   const onSubmit = async (email: string) => {
     await callEndpoint(sendRequestResetPassword(email))
       .then((resp) => {
-        enqueueSnackbar('El correo fue enviado correctamente', {
-          variant: 'success'
-        });
+        enqueueSnackbar(
+          resp.data?.message ||
+            'Solicitud recibida. Revise las instrucciones disponibles.',
+          {
+            variant: 'success'
+          }
+        );
         // Reset form and validation state
         formRef.current?.reset();
         setEmailValid(true);
@@ -123,9 +123,13 @@ const ForgotPassword = () => {
         //   message: 'No se encontro un usuario con el email ' + email,
         //   status: false
         // });
-        enqueueSnackbar('No se encontro un usuario con el email ' + email, {
-          variant: 'error'
-        });
+        enqueueSnackbar(
+          err?.data?.message ||
+            'No se pudo solicitar la recuperación. Intente nuevamente o contacte a administración.',
+          {
+            variant: 'error'
+          }
+        );
 
         //enqueueSnackbar('Por favor, revise su email', {variant: 'error'});
       });

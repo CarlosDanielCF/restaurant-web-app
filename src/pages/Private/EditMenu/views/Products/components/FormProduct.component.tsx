@@ -1,6 +1,6 @@
 import { FC, useEffect, useState } from 'react';
 import { IProduct, ProductStatus } from '../../../../../../models';
-import { Add, AttachMoney, Save, Percent } from '@mui/icons-material';
+import { Add, Save, CloseRounded } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
 import {
   Card,
@@ -8,7 +8,6 @@ import {
   CardContent,
   Grid,
   TextField,
-  InputAdornment,
   FormControl,
   InputLabel,
   Select,
@@ -86,11 +85,19 @@ export const FormProduct: FC<Props> = ({ product }) => {
 
   const getUpdateProductDto = (product: IProduct) => {
     const updateProductDto: UpdateProductDto = {
-      id:product.id,name:product.name,price:product.price,description:product.description,
-      categoryId:product.category.id,productionAreaId:product.productionArea?.id,
-      unitCost:product.unitCost,quantity:product.quantity,isActive:product.isActive,
-      isPublic:product.isPublic,status:product.status,iva:product.iva,
-      expectedVersion:(product as IProduct & {version:number}).version
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      description: product.description,
+      categoryId: product.category.id,
+      productionAreaId: product.productionArea?.id,
+      unitCost: product.unitCost,
+      quantity: product.quantity,
+      isActive: product.isActive,
+      isPublic: product.isPublic,
+      status: product.status,
+      iva: product.iva,
+      expectedVersion: (product as IProduct & { version: number }).version
     };
     return updateProductDto;
   };
@@ -572,10 +579,11 @@ export const FormProduct: FC<Props> = ({ product }) => {
           }}
         >
           <Button
-            variant='text'
+            variant='outlined'
             onClick={() => {
               navigate('/menu/products');
             }}
+            startIcon={<CloseRounded />}
           >
             Cancelar
           </Button>
@@ -587,7 +595,7 @@ export const FormProduct: FC<Props> = ({ product }) => {
             loading={isPending}
             startIcon={<Save />}
           >
-            Editar
+            Guardar cambios
           </LoadingButton>
         </Box>
       </form>

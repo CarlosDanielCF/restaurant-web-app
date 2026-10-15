@@ -14,7 +14,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
     owned = await fixture('phase67_browser');
     const base = process.env.BACKEND_URL || 'http://127.0.0.1:5000/api';
     const frontend = process.env.FRONTEND_URL || 'http://127.0.0.1:3030';
-    async function call(path, method = 'GET', body, token, tenant) {
+    const call = async (path, method = 'GET', body, token, tenant) => {
       const r = await fetch(base + path, {
         method,
         headers: {
@@ -35,7 +35,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
           method + ' ' + path + ' ' + r.status + ' ' + JSON.stringify(data)
         );
       return data;
-    }
+    };
     const owner = await call('/auth/login', 'POST', {
         username: owned.username,
         password: owned.password
@@ -94,11 +94,12 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
     page.on('pageerror', (e) => errors.push(e.message));
     await page.goto(frontend + '/auth/login');
     await page.getByLabel('Nombre de usuario').fill(username);
-    await page.getByLabel('Contraseña').fill(password);
+    await page.locator('input[name="password"]').fill(password);
     await page.getByRole('button', { name: 'Iniciar sesión' }).click();
     await page.waitForTimeout(1500);
     await page.goto(frontend + '/finance');
     await page
+      .locator('[data-testid=app-content]')
       .getByText('Cobros y rendición', { exact: true })
       .waitFor()
       .catch(async (e) => {
@@ -125,11 +126,44 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
       .click();
     await page.getByLabel('Importe aplicado S/').fill('10.00');
     await page.getByLabel('Importe recibido S/').fill('20.00');
+    const paymentKeys = [];
+    let dropResponse = true;
+    await page.route('**/finance/accounts/*/payments', async (route) => {
+      paymentKeys.push(route.request().headers()['idempotency-key']);
+      if (dropResponse) {
+        dropResponse = false;
+        const serverResponse = await route.fetch();
+        if (serverResponse.status() !== 201)
+          throw Error('First payment did not commit');
+        await route.abort('failed'); // Money persisted, response lost in transit.
+      } else await route.continue();
+    });
+    await page.getByRole('button', { name: 'Confirmar cobro manual' }).click();
+    await page.getByText(/Sin confirmación. Consulte el estado/).waitFor();
+    // Version guard blocks stale dialogs: reconstruct the same intent after refreshing.
+    await page.getByRole('button', { name: 'Volver', exact: true }).click();
+    await page
+      .getByRole('button', { name: 'Registrar pago', exact: true })
+      .click();
+    await page.getByLabel('Importe aplicado S/').fill('10.00');
+    await page.getByLabel('Importe recibido S/').fill('20.00');
+    await page.waitForFunction(() =>
+      Array.from(document.querySelectorAll('button')).some(
+        (b) => b.textContent === 'Confirmar cobro manual' && !b.disabled
+      )
+    );
     response = page.waitForResponse(
       (r) => r.url().endsWith('/payments') && r.request().method() === 'POST'
     );
-    await page.getByRole('button', { name: 'Confirmar cobro manual' }).click();
-    if ((await response).status() !== 201) throw Error('Payment failed');
+    await page
+      .getByRole('button', { name: 'Confirmar cobro manual' })
+      .evaluate((button) => {
+        button.click();
+        button.click();
+      });
+    if ((await response).status() !== 201) throw Error('Payment retry failed');
+    if (paymentKeys.length !== 2 || paymentKeys[0] !== paymentKeys[1])
+      throw Error('Retry/double click changed logical payment identity');
     await page.getByText(/Saldo S\/10.00/).waitFor();
     console.log('Browser cash partial payment/change and shift passed');
     await page
@@ -156,6 +190,8 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
     );
     await page.getByRole('button', { name: 'Confirmar cobro manual' }).click();
     if ((await response).status() !== 201) throw Error('Yape payment failed');
+    if (paymentKeys[2] === paymentKeys[0])
+      throw Error('New payment reused old key');
     await page.getByText(/Saldo S\/0.00/).waitFor();
     console.log(
       'Browser manual Yape, missing QR warning and full settlement passed'
@@ -180,7 +216,14 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
     await page.getByText(/Rendición SUBMITTED/).waitFor();
     await page.setViewportSize({ width: 390, height: 844 });
     await page.waitForTimeout(300);
-    if (await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1)) throw Error('Mobile horizontal overflow');
+    if (
+      await page.evaluate(
+        () =>
+          document.documentElement.scrollWidth >
+          document.documentElement.clientWidth + 1
+      )
+    )
+      throw Error('Mobile horizontal overflow');
     if (process.env.SMOKE_SCREENSHOT)
       await page.screenshot({
         path: process.env.SMOKE_SCREENSHOT,

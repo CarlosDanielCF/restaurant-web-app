@@ -9,11 +9,12 @@ import {
   MenuItem,
   TextField,
   Typography,
-  Button,
   FormControl,
   InputLabel
 } from '@mui/material';
 import { Roles } from '@/models/roles';
+import SaveRoundedIcon from '@mui/icons-material/SaveRounded';
+import PersonAddRoundedIcon from '@mui/icons-material/PersonAddRounded';
 
 interface Props {
   user: CreateUser;
@@ -57,7 +58,7 @@ export const FormUser: FC<Props> = ({
                 minLength: { value: 2, message: 'Minimo 2 caracteres' }
               })}
               helperText={
-                <Typography color='red'>
+                <Typography component='span' color='red'>
                   {errors.firstName?.message}{' '}
                 </Typography>
               }
@@ -79,7 +80,9 @@ export const FormUser: FC<Props> = ({
                 minLength: { value: 2, message: 'Mínimo 2 caracteres' }
               })}
               helperText={
-                <Typography color='red'>{errors.lastName?.message} </Typography>
+                <Typography component='span' color='red'>
+                  {errors.lastName?.message}{' '}
+                </Typography>
               }
               onKeyDown={(e) => {
                 const allowedCharsRegex = /^[a-zA-ZáéíóúñÁÉÍÓÚÑ ]*$/;
@@ -138,7 +141,7 @@ export const FormUser: FC<Props> = ({
                 }
               })}
               helperText={
-                <Typography color='red'>
+                <Typography component='span' color='red'>
                   {errors.identification?.num?.message}{' '}
                 </Typography>
               }
@@ -146,33 +149,33 @@ export const FormUser: FC<Props> = ({
           </Grid>
 
           {isNew && (
-          <Grid item xs={12} sm={6}>
-            <FormControl fullWidth>
-              <Controller
-                name='role.name'
-                control={control}
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <>
-                    <InputLabel id='select-identification'>Rol</InputLabel>
-                    <Select
-                      labelId='select-identification'
-                      label='Rol'
-                      fullWidth
-                      margin='dense'
-                      value={value}
-                      onChange={onChange}
-                      onBlur={onBlur}
-                      error={!!errors.role?.name?.message}
-                    >
-                      <MenuItem value={Roles.ADMIN}>Administrador</MenuItem>
-                      <MenuItem value={Roles.WAITER}>Mozo</MenuItem>
-                      <MenuItem value={Roles.COOK}>Cocinero</MenuItem>
-                    </Select>
-                  </>
-                )}
-              />
-            </FormControl>
-          </Grid>
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth>
+                <Controller
+                  name='role.name'
+                  control={control}
+                  render={({ field: { onChange, onBlur, value } }) => (
+                    <>
+                      <InputLabel id='select-identification'>Rol</InputLabel>
+                      <Select
+                        labelId='select-identification'
+                        label='Rol'
+                        fullWidth
+                        margin='dense'
+                        value={value}
+                        onChange={onChange}
+                        onBlur={onBlur}
+                        error={!!errors.role?.name?.message}
+                      >
+                        <MenuItem value={Roles.ADMIN}>Administrador</MenuItem>
+                        <MenuItem value={Roles.WAITER}>Mozo</MenuItem>
+                        <MenuItem value={Roles.COOK}>Cocinero</MenuItem>
+                      </Select>
+                    </>
+                  )}
+                />
+              </FormControl>
+            </Grid>
           )}
 
           <Grid item xs={12} sm={6}>
@@ -184,7 +187,9 @@ export const FormUser: FC<Props> = ({
                 minLength: { value: 2, message: 'Minimo 2 caracteres' }
               })}
               helperText={
-                <Typography color='red'>{errors.username?.message} </Typography>
+                <Typography component='span' color='red'>
+                  {errors.username?.message}{' '}
+                </Typography>
               }
             />
           </Grid>
@@ -202,7 +207,9 @@ export const FormUser: FC<Props> = ({
                 minLength: { value: 2, message: 'Minimo 2 caracteres' }
               })}
               helperText={
-                <Typography color='red'>{errors.email?.message} </Typography>
+                <Typography component='span' color='red'>
+                  {errors.email?.message}{' '}
+                </Typography>
               }
             />
           </Grid>
@@ -216,7 +223,9 @@ export const FormUser: FC<Props> = ({
                 maxLength: { value: 10, message: 'Máximo 10 caracteres' }
               })}
               helperText={
-                <Typography color='red'>{errors.numPhone?.message} </Typography>
+                <Typography component='span' color='red'>
+                  {errors.numPhone?.message}{' '}
+                </Typography>
               }
             />
           </Grid>
@@ -229,7 +238,12 @@ export const FormUser: FC<Props> = ({
               justifyContent: 'flex-end'
             }}
           >
-            <LoadingButton variant='contained' type='submit' loading={loading}>
+            <LoadingButton
+              variant='contained'
+              type='submit'
+              loading={loading}
+              startIcon={isNew ? <PersonAddRoundedIcon /> : <SaveRoundedIcon />}
+            >
               {isNew ? 'Crear' : 'Actualizar'}
             </LoadingButton>
           </Grid>

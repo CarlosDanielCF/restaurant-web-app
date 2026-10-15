@@ -106,7 +106,7 @@ export const FormProductImage: FC<Props> = ({ product }) => {
 
   return (
     <>
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <Box>
         <AvatarWrapper>
           {image || product?.images ? (
             <Avatar
@@ -160,11 +160,16 @@ export const FormProductImage: FC<Props> = ({ product }) => {
         </AvatarWrapper>
 
         <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <LoadingButton loading={isPending} type='submit' variant='outlined'>
+          <LoadingButton
+            loading={isPending}
+            type='button'
+            onClick={handleSubmit(onSubmit)}
+            variant='outlined'
+          >
             Actualizar
           </LoadingButton>
         </Box>
-      </form>
+      </Box>
     </>
   );
 };

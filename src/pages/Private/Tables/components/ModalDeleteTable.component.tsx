@@ -15,6 +15,8 @@ import { useFetchAndLoad } from '../../../../hooks/useFetchAndLoad';
 import { useSnackbar } from 'notistack';
 import { updateTable } from '../../../../redux';
 import NiceModal, { muiDialogV5, useModal } from '@ebay/nice-modal-react';
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
+import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 
 export interface ModalDeleteTableProps {
   table: ITable;
@@ -64,10 +66,15 @@ export const ModalDeleteTable = NiceModal.create<ModalDeleteTableProps>(
           sx={{
             display: 'flex',
             justifyContent: 'center',
-            alignItems: 'center'
+            alignItems: 'center',
+            pb: 2.5
           }}
         >
-          <Button onClick={closeModal} color='inherit'>
+          <Button
+            onClick={closeModal}
+            color='inherit'
+            startIcon={<CloseRoundedIcon />}
+          >
             Cancelar
           </Button>
           <LoadingButton
@@ -75,8 +82,9 @@ export const ModalDeleteTable = NiceModal.create<ModalDeleteTableProps>(
             variant='contained'
             color='error'
             onClick={submitDeleteTable}
+            startIcon={<DeleteOutlineRoundedIcon />}
           >
-            Aceptar
+            Eliminar
           </LoadingButton>
         </DialogActions>
       </Dialog>

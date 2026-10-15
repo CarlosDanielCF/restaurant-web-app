@@ -11,7 +11,7 @@ import { useCreateProductionArea } from '../hooks/useProductionArea';
 import { useForm } from 'react-hook-form';
 import { LoadingButton } from '@mui/lab';
 import { CreateProductionAreaDto } from '../dto/create-production-area.dto';
-import { Save } from '@mui/icons-material';
+import { Save, CloseRounded } from '@mui/icons-material';
 
 export const ModalCreateProductionArea = NiceModal.create(() => {
   const modal = useModal();
@@ -69,7 +69,13 @@ export const ModalCreateProductionArea = NiceModal.create(() => {
         </DialogContent>
 
         <DialogActions>
-          <Button onClick={closeModal}>Cancelar</Button>
+          <Button
+            onClick={closeModal}
+            color='inherit'
+            startIcon={<CloseRounded />}
+          >
+            Cancelar
+          </Button>
           <LoadingButton
             loading={isPending}
             type='submit'

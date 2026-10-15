@@ -18,6 +18,7 @@ import { useForm } from 'react-hook-form';
 
 import UploadTwoToneIcon from '@mui/icons-material/UploadTwoTone';
 import { PhotoSharp } from '@mui/icons-material';
+import CloudUploadOutlinedIcon from '@mui/icons-material/CloudUploadOutlined';
 import { Restaurant } from '../../Common/models/restaurant.model';
 import { useUpdateRestaurantLogo } from '../hooks/useRestaurant';
 import { useRestaurantStore } from '../../Common/store/restaurantStore';
@@ -163,8 +164,13 @@ export const FormRestaurantLogo: FC<Props> = ({ restaurant }) => {
           </AvatarWrapper>
 
           <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <LoadingButton loading={isPending} type='submit' variant='outlined'>
-              Actualizar
+            <LoadingButton
+              loading={isPending}
+              type='submit'
+              variant='contained'
+              startIcon={<CloudUploadOutlinedIcon />}
+            >
+              Actualizar logo
             </LoadingButton>
           </Box>
         </form>

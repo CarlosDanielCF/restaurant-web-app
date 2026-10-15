@@ -42,7 +42,16 @@ export function TableChoices({
           return (
             <FormControlLabel
               key={t.id}
-              label={`${t.name}${occupied ? ' · ocupada' : ''}`}
+              label={`${t.name} · ${occupied ? 'Ocupada' : 'Libre'}`}
+              sx={{
+                m: 0.5,
+                p: 1,
+                minWidth: 135,
+                border: '1px solid',
+                borderColor: occupied ? 'primary.main' : 'divider',
+                borderRadius: 2,
+                bgcolor: occupied ? 'action.selected' : 'background.paper'
+              }}
               control={
                 <Checkbox
                   checked={selected.includes(t.id)}

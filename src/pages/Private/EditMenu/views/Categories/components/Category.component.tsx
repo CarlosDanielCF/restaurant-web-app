@@ -199,7 +199,7 @@ export const Category: FC<Props> = ({ categoria }) => {
               size='small'
               endIcon={<ArrowForward />}
               onClick={() => showProducts()}
-            >{`Productos: ${categoria.products.length}`}</Button>
+            >{`Productos: ${categoria.products?.length ?? 0}`}</Button>
           </Stack>
         </CardContent>
       </Card>

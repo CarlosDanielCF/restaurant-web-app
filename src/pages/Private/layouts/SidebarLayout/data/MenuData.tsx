@@ -1,176 +1,99 @@
 import { MenuSection } from '../../interfaces';
-
 import {
   AssignmentOutlined,
-  FiberManualRecord,
-  ListAltOutlined,
   MenuBookOutlined,
   SoupKitchenOutlined,
-  Storefront
+  StorefrontOutlined,
+  TableRestaurantOutlined,
+  PeopleOutline,
+  Groups3Outlined,
+  ReceiptLongOutlined,
+  AssessmentOutlined,
+  PaymentsOutlined
 } from '@mui/icons-material';
-
-import Groups3OutlinedIcon from '@mui/icons-material/Groups3Outlined';
-import TableRestaurantOutlinedIcon from '@mui/icons-material/TableRestaurantOutlined';
-
-import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
-
-import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline';
 import { Roles } from '@/models/roles';
 
-/**
- * @version 1.1 31-01-2025 Remove finance
- * @author Steven Rosales
- * @version 1.2 20-03-2025 Add cash register
- */
-const generalSection: MenuSection = {
-  title: '',
-  // allowedRoles: [ValidRoles.admin],
-  items: [
-    {title:'Documentos internos',icon:<ListAltOutlined fontSize='small' />,to:'/internal-documents',allowedRoles:[Roles.OWNER,Roles.ADMIN,Roles.WAITER]},
-    {title:'Reportes operativos',icon:<ListAltOutlined fontSize='small' />,to:'/operational-reports',allowedRoles:[Roles.OWNER,Roles.ADMIN,Roles.WAITER,Roles.COOK]},
-    {title:'Cobros y rendición',icon:<TableRestaurantOutlinedIcon fontSize='small' />,to:'/finance',allowedRoles:[Roles.OWNER,Roles.ADMIN,Roles.WAITER]},
-    {title:'Atención, carta y reservas',icon:<TableRestaurantOutlinedIcon fontSize='small' />,to:'/attention',allowedRoles:[Roles.OWNER,Roles.ADMIN,Roles.WAITER,Roles.COOK]},
-    {
-      title: 'Dashboard',
-      icon: <DashboardOutlinedIcon fontSize='small' />,
-      to: '/reports',
-      allowedRoles: [Roles.OWNER, Roles.ADMIN]
-    },
-    {
-      title: 'Restaurante',
-      icon: <Storefront fontSize='small' />,
-      to: '/restaurant',
-      label: 'Nuevo',
-      allowedRoles: [Roles.OWNER, Roles.ADMIN]
-    },
-    {
-      title: 'Pedidos históricos',
-      icon: <AssignmentOutlined fontSize='small' />,
-      to: '/orders/list',
-      allowedRoles: [Roles.OWNER, Roles.ADMIN, Roles.WAITER]
-    },
-    {
-      title: 'Mesas',
-      icon: <TableRestaurantOutlinedIcon fontSize='small' />,
-      to: '/attention',
-      allowedRoles: [Roles.OWNER, Roles.ADMIN, Roles.WAITER]
-    },
-    {
-      title: 'Preparación de pedidos',
-      icon: <SoupKitchenOutlined fontSize='small' />,
-      to: '/kitchen',
-      allowedRoles: [Roles.OWNER, Roles.ADMIN, Roles.COOK]
-    },
-    {
-      title: 'Lista de pedidos',
-      icon: <ListAltOutlined fontSize='small' />,
-      to: '/orders/list',
-      allowedRoles: [Roles.OWNER, Roles.ADMIN, Roles.WAITER]
-    },
-    {
-      title: 'Menú del restaurante',
-      icon: <MenuBookOutlined fontSize='small' />,
-      to: '/menu/sections',
-      allowedRoles: [Roles.OWNER, Roles.ADMIN]
-    },
-    {
-      title: 'Gestión de mesas',
-      icon: <TableRestaurantOutlinedIcon fontSize='small' />,
-      to: '/tables',
-      allowedRoles: [Roles.OWNER, Roles.ADMIN]
-    },
-    {
-      title: 'Gestión de usuarios',
-      icon: <PeopleOutlineIcon fontSize='small' />,
-      to: '/users',
-      allowedRoles: [Roles.OWNER, Roles.ADMIN]
-    }
-  ]
-};
+const managers = [Roles.OWNER, Roles.ADMIN];
+const service = [...managers, Roles.WAITER];
+const everyone = [...service, Roles.COOK];
 
-/**
- * Routes for orders
- * @version v1.1 22-12-2023 Change invoices for bills
- */
-const ordersSection = {
-  title: 'Pedidos históricos',
-  items: [
-    {
-      title: 'Pedidos históricos',
-      icon: <AssignmentOutlined fontSize='small' />,
-      to: '/orders/'
-    },
-    {
-      title: 'Mesas',
-      icon: <AssignmentOutlined fontSize='small' />,
-      to: '/attention'
-    },
-    {
-      title: 'Preparación de pedidos',
-      icon: <SoupKitchenOutlined fontSize='small' />,
-      to: '/kitchen'
-      // allowedRoles: [ValidRoles.mesero],
-    },
-    {
-      title: 'Lista de pedidos',
-      icon: <ListAltOutlined fontSize='small' />,
-      to: '/orders/list'
-    }
-    // {
-    //   title: 'Cuentas',
-    //   icon: <ReceiptLongOutlined fontSize='small' />,
-    //   to: '/bills'
-    // }
-  ]
-};
-
-const managementSection = {
-  title: 'Administración',
-  allowedRoles: [Roles.OWNER, Roles.ADMIN],
-  items: [
-    {
-      title: 'Menú del restaurante',
-      icon: <MenuBookOutlined fontSize='small' />,
-      to: '/menu/sections'
-      // subItems: [
-      //   {
-      //     title: 'Secciones',
-      //     to: '/menu/sections',
-      //     icon: <FiberManualRecord sx={{ fontSize: 8 }} />
-      //   },
-      //   {
-      //     title: 'Categorías',
-      //     to: '/menu/categories',
-      //     icon: <FiberManualRecord sx={{ fontSize: 8 }} />
-      //     // allowedRoles: [ValidRoles.mesero],
-      //   },
-      //   {
-      //     title: 'Productos',
-      //     to: '/menu/products',
-      //     icon: <FiberManualRecord sx={{ fontSize: 8 }} />
-      //   }
-      // ]
-    },
-    {
-      title: 'Gestión de mesas',
-      icon: <TableRestaurantOutlinedIcon fontSize='small' />,
-      to: '/tables'
-    },
-    {
-      title: 'Gestión de usuarios',
-      icon: <PeopleOutlineIcon fontSize='small' />,
-      to: '/users'
-    }
-    // {
-    //   title: 'Gestión de clientes',
-    //   icon: <Groups3OutlinedIcon />,
-    //   to: '/clients'
-    // }
-  ]
-};
-
+// Canonical F0–F9 routes. Delivery, menu and reservations are tabs in Atención;
+// reports use the F9 domain, never the obsolete dashboard/checkout APIs.
 export const menuSections: MenuSection[] = [
-  generalSection
-  // ordersSection,
-  // managementSection
+  {
+    title: 'Operación',
+    items: [
+      {
+        title: 'Atención, mesas y delivery',
+        icon: <TableRestaurantOutlined />,
+        to: '/attention',
+        allowedRoles: everyone
+      },
+      {
+        title: 'Cocina',
+        icon: <SoupKitchenOutlined />,
+        to: '/kitchen',
+        allowedRoles: [...managers, Roles.COOK]
+      },
+      {
+        title: 'Cobros y rendición',
+        icon: <PaymentsOutlined />,
+        to: '/finance',
+        allowedRoles: service
+      },
+      {
+        title: 'Documentos internos',
+        icon: <ReceiptLongOutlined />,
+        to: '/internal-documents',
+        allowedRoles: service
+      },
+      {
+        title: 'Reportes operativos',
+        icon: <AssessmentOutlined />,
+        to: '/operational-reports',
+        allowedRoles: everyone
+      },
+      {
+        title: 'Pedidos históricos',
+        icon: <AssignmentOutlined />,
+        to: '/orders/list',
+        allowedRoles: service
+      }
+    ]
+  },
+  {
+    title: 'Gestión',
+    items: [
+      {
+        title: 'Restaurante',
+        icon: <StorefrontOutlined />,
+        to: '/restaurant',
+        allowedRoles: managers
+      },
+      {
+        title: 'Carta permanente',
+        icon: <MenuBookOutlined />,
+        to: '/menu/sections',
+        allowedRoles: managers
+      },
+      {
+        title: 'Gestión de mesas',
+        icon: <TableRestaurantOutlined />,
+        to: '/tables',
+        allowedRoles: managers
+      },
+      {
+        title: 'Trabajadores',
+        icon: <PeopleOutline />,
+        to: '/users',
+        allowedRoles: managers
+      },
+      {
+        title: 'Clientes',
+        icon: <Groups3Outlined />,
+        to: '/clients',
+        allowedRoles: service
+      }
+    ]
+  }
 ];

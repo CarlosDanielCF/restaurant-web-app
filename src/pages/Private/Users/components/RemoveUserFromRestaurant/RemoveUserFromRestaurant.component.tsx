@@ -11,6 +11,8 @@ import {
 } from '@mui/material';
 import { IUser } from '../../../../../models/auth.model';
 import { useRemoveUserFromRestaurant } from '../../hooks/useUsers';
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
+import PersonRemoveRoundedIcon from '@mui/icons-material/PersonRemoveRounded';
 
 interface Props {
   user: IUser;
@@ -33,8 +35,8 @@ export const RemoveUserFromRestaurant = NiceModal.create<Props>(({ user }) => {
   };
 
   return (
-    <Dialog {...muiDialogV5(modal)} maxWidth='sm'>
-      <DialogTitle id='alert-dialog-title' color='white'>
+    <Dialog {...muiDialogV5(modal)} maxWidth='sm' fullWidth>
+      <DialogTitle id='alert-dialog-title'>
         Remover usuario del restaurante
       </DialogTitle>
       <Divider />
@@ -43,15 +45,22 @@ export const RemoveUserFromRestaurant = NiceModal.create<Props>(({ user }) => {
           {`¿Está seguro de remover al usuario ${user.person.firstName} ${user.person.lastName} del restaurante?`}
         </DialogContentText>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={closeModal}>Cancelar</Button>
+      <DialogActions sx={{ px: 3, pb: 2 }}>
+        <Button
+          onClick={closeModal}
+          color='inherit'
+          startIcon={<CloseRoundedIcon />}
+        >
+          Cancelar
+        </Button>
         <LoadingButton
           loading={removeUserMutation.isPending}
           variant='contained'
           color='error'
           onClick={handleRemoveUser}
+          startIcon={<PersonRemoveRoundedIcon />}
         >
-          Aceptar
+          Remover
         </LoadingButton>
       </DialogActions>
     </Dialog>

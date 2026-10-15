@@ -1,16 +1,16 @@
-import { Container } from '@mui/material/';
+import { Box, Button, CircularProgress } from '@mui/material';
 
-import { Navigate, useParams } from 'react-router-dom';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useProduct } from '../../hooks/useProducts';
 import { TitlePage } from '../../../components';
 import { FormProduct } from './components/FormProduct.component';
-import { ProductTags } from './components/ProductTags.component';
-import { useSelector } from 'react-redux';
-import { selectMenu } from '../../../../../redux';
-import { Grid } from '@mui/material';
+
+import { EmptyState } from '@/components/ui';
+import { FastfoodOutlined, ArrowBack } from '@mui/icons-material';
 
 export const EditProduct = () => {
   const params = useParams();
+  const navigate = useNavigate();
 
   if (!params.id) {
     return <Navigate to='/menu/products' />;
@@ -21,11 +21,39 @@ export const EditProduct = () => {
   // const product = useSelector(selectMenu).activeProduct;
 
   if (isPending) {
-    return <>Loading...</>;
+    return (
+      <Box
+        display='flex'
+        flexDirection='column'
+        alignItems='center'
+        justifyContent='center'
+        py={10}
+        gap={2}
+      >
+        <CircularProgress size={40} />
+      </Box>
+    );
   }
 
   if (!product) {
-    return <>No se encontro el producto</>;
+    return (
+      <Box py={6}>
+        <EmptyState
+          icon={<FastfoodOutlined sx={{ fontSize: 44 }} />}
+          title='Producto no encontrado'
+          description='El producto solicitado no existe o fue removido del catálogo.'
+          action={
+            <Button
+              variant='contained'
+              startIcon={<ArrowBack />}
+              onClick={() => navigate('/menu/products')}
+            >
+              Volver al catálogo
+            </Button>
+          }
+        />
+      </Box>
+    );
   }
 
   return (

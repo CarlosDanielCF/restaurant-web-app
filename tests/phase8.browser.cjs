@@ -91,7 +91,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
     });
     await page.goto(frontend + '/auth/login');
     await page.getByLabel('Nombre de usuario').fill(username);
-    await page.getByLabel('Contraseña').fill(password);
+    await page.locator('input[name="password"]').fill(password);
     await page.getByRole('button', { name: 'Iniciar sesión' }).click();
     await page.waitForURL((u) => !u.pathname.includes('/auth/'));
     await page.goto(frontend + '/attention');

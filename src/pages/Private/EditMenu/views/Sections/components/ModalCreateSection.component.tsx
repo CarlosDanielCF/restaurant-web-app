@@ -1,13 +1,4 @@
-import {
-  TextField,
-  Button,
-  Typography,
-  DialogContent,
-  DialogActions,
-  Dialog,
-  DialogTitle,
-  Box
-} from '@mui/material/';
+import { TextField, Button, Typography, Dialog } from '@mui/material/';
 import { useForm } from 'react-hook-form';
 import { useDispatch } from 'react-redux';
 import { addSection } from '../../../../../../redux';
@@ -17,6 +8,8 @@ import { useCreateSection } from '../../../hooks/useSections';
 import NiceModal, { muiDialogV5, useModal } from '@ebay/nice-modal-react';
 import { CreateSectionDto } from '../../../dto';
 import { Stack } from '@mui/system';
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
+import AddRoundedIcon from '@mui/icons-material/AddRounded';
 
 export const ModalCreateSection = NiceModal.create(() => {
   const modal = useModal();
@@ -71,7 +64,11 @@ export const ModalCreateSection = NiceModal.create(() => {
               helperText={errors.name?.message}
             />
             <Stack direction='row' justifyContent='end' gap={2}>
-              <Button onClick={closeModal} color='inherit'>
+              <Button
+                onClick={closeModal}
+                color='inherit'
+                startIcon={<CloseRoundedIcon />}
+              >
                 Cancelar
               </Button>
               <LoadingButton
@@ -79,6 +76,7 @@ export const ModalCreateSection = NiceModal.create(() => {
                 variant='contained'
                 color='primary'
                 type='submit'
+                startIcon={<AddRoundedIcon />}
               >
                 Crear
               </LoadingButton>

@@ -4,9 +4,6 @@ import NiceModal, { muiDialogV5, useModal } from '@ebay/nice-modal-react';
 import {
   Button,
   Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   FormControl,
   InputLabel,
   MenuItem,
@@ -22,6 +19,8 @@ import { CreateCategoryDto } from '../../../dto';
 import { LoadingButton } from '@mui/lab';
 import { useCreateCategory } from '../../../hooks/useCategories';
 import { useEditMenuStore } from '../../../hooks/useEditMenuStore';
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
+import AddRoundedIcon from '@mui/icons-material/AddRounded';
 
 export const ModalCreateCategory = NiceModal.create(() => {
   const modal = useModal();
@@ -48,8 +47,19 @@ export const ModalCreateCategory = NiceModal.create(() => {
 
   const onSubmit = (data: CreateCategoryDto) => {
     mutateAsync(data).then((category) => {
-      dispatch(addCategory(category));
-      addCategoryToSection(category, category.section.id);
+      // Creation returns a summary. Preserve the selected relation for the
+      // local catalog until the authoritative query refresh completes.
+      const section =
+        category.section || sections.find((s) => s.id === data.sectionId);
+      if (section) {
+        const created = {
+          ...category,
+          section,
+          products: category.products || []
+        };
+        dispatch(addCategory(created));
+        addCategoryToSection(created, data.sectionId);
+      }
 
       closeModal();
     });
@@ -118,12 +128,19 @@ export const ModalCreateCategory = NiceModal.create(() => {
           </Stack>
 
           <Stack direction='row' justifyContent='end' gap={2}>
-            <Button onClick={closeModal}>Cancelar</Button>
+            <Button
+              onClick={closeModal}
+              color='inherit'
+              startIcon={<CloseRoundedIcon />}
+            >
+              Cancelar
+            </Button>
             <LoadingButton
               loading={isPending}
               type='submit'
               variant='contained'
               disabled={!isDirty}
+              startIcon={<AddRoundedIcon />}
             >
               Guardar
             </LoadingButton>

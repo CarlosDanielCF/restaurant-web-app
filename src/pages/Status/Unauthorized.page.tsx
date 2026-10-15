@@ -1,53 +1,75 @@
-import {
-  Container,
-  Box,
-  Typography,
-  Card,
-  FormControl,
-  InputAdornment,
-  Divider,
-  Button,
-  styled,
-  OutlinedInput
-} from '@mui/material';
-
-const MainContent = styled(Box)(
-  ({ theme }) => `
-    margin-top: 100px;
-    height: 100%;
-    display: flex;
-    flex: 1;
-    overflow: auto;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-`
-);
-
-const OutlinedInputWrapper = styled(OutlinedInput)(
-  ({ theme }) => `
-    background-color: ${theme.colors.alpha.white[100]};
-`
-);
+import { Container, Box, Typography, Button, Paper } from '@mui/material';
+import LockPersonOutlinedIcon from '@mui/icons-material/LockPersonOutlined';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { useNavigate } from 'react-router-dom';
 
 export const UnauthorizedPage = () => {
+  const navigate = useNavigate();
+
   return (
-    <MainContent>
-      <Container maxWidth='md'>
-        <Box textAlign='center'>
-          <Typography variant='h3' sx={{ my: 2 }}>
-            No estas autorizado para ver esta página
+    <Box
+      sx={{
+        minHeight: '80vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        p: 3
+      }}
+    >
+      <Container maxWidth='sm'>
+        <Paper
+          elevation={0}
+          sx={{
+            p: { xs: 4, sm: 6 },
+            textAlign: 'center',
+            borderRadius: 3,
+            border: 1,
+            borderColor: 'divider',
+            bgcolor: 'background.paper'
+          }}
+        >
+          <Box
+            sx={{
+              display: 'inline-flex',
+              p: 2.5,
+              borderRadius: '50%',
+              bgcolor: (theme) =>
+                theme.palette.mode === 'light'
+                  ? 'error.lighter'
+                  : 'rgba(239, 68, 68, 0.1)',
+              color: 'error.main',
+              mb: 2.5
+            }}
+          >
+            <LockPersonOutlinedIcon sx={{ fontSize: 48 }} />
+          </Box>
+          <Typography
+            variant='h4'
+            fontWeight={700}
+            color='text.primary'
+            gutterBottom
+          >
+            Acceso no autorizado
           </Typography>
           <Typography
-            variant='h6'
+            variant='body1'
             color='text.secondary'
-            fontWeight='normal'
-            sx={{ mb: 4 }}
+            sx={{ mb: 4, maxWidth: 400, mx: 'auto' }}
           >
-            Por favor, solicite permisos al administrador
+            No cuenta con los permisos necesarios para acceder a este módulo. Si
+            considera que esto es un error, por favor contacte a su
+            administrador.
           </Typography>
-        </Box>
+          <Button
+            variant='contained'
+            color='primary'
+            startIcon={<ArrowBackIcon />}
+            onClick={() => navigate('/attention')}
+          >
+            Volver a inicio
+          </Button>
+        </Paper>
       </Container>
-    </MainContent>
+    </Box>
   );
 };

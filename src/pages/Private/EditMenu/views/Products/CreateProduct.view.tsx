@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { TitlePage } from '../../../components';
+
 import {
   Box,
   Button,
@@ -32,7 +32,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { addProduct, selectMenu } from '../../../../../redux';
 import { IProduct, ProductStatus } from '../../../../../models';
-import { AttachMoney, Add } from '@mui/icons-material';
+import { AttachMoney, Add, CloseRounded } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
 import { useCreateProduct } from '../../hooks/useProducts';
 import { useNavigate } from 'react-router-dom';
@@ -43,7 +43,7 @@ import NiceModal from '@ebay/nice-modal-react';
 import { ModalSelectDefaultVariant } from './components/ModalSelectDefaultVariant.component';
 
 export interface ProductForm {
-  kind:'FOOD'|'DRINK';
+  kind: 'FOOD' | 'DRINK';
   name: string;
   price: number;
   categoryId: string;
@@ -65,7 +65,7 @@ export interface ProductForm {
 }
 
 const initialForm: ProductForm = {
-  kind:'FOOD',
+  kind: 'FOOD',
   name: '',
   description: '',
   price: 0,
@@ -234,7 +234,16 @@ export const CreateProduct = () => {
                             />
                           </Grid>
                           <Grid item xs={12}>
-                            <TextField select fullWidth label='Clasificación' defaultValue='FOOD' {...register('kind')}><MenuItem value='FOOD'>Comida</MenuItem><MenuItem value='DRINK'>Bebida</MenuItem></TextField>
+                            <TextField
+                              select
+                              fullWidth
+                              label='Clasificación'
+                              defaultValue='FOOD'
+                              {...register('kind')}
+                            >
+                              <MenuItem value='FOOD'>Comida</MenuItem>
+                              <MenuItem value='DRINK'>Bebida</MenuItem>
+                            </TextField>
                             <InputLabel>Descripcion</InputLabel>
                             <TextField
                               multiline
@@ -336,7 +345,9 @@ export const CreateProduct = () => {
                                       onChange={onChange}
                                       onBlur={onBlur}
                                     >
-                                      <MenuItem value=''>Sin área específica</MenuItem>
+                                      <MenuItem value=''>
+                                        Sin área específica
+                                      </MenuItem>
                                       {productionAreas.map((area) => (
                                         <MenuItem key={area.id} value={area.id}>
                                           {area.name}
@@ -519,18 +530,19 @@ export const CreateProduct = () => {
               </Grid>
               <Box display='flex' justifyContent='space-between' mt={2}>
                 <Button
-                  variant='text'
+                  variant='outlined'
                   onClick={() => navigate('/menu/products')}
+                  startIcon={<CloseRounded />}
                 >
                   Cancelar
                 </Button>
                 <LoadingButton
                   variant='contained'
                   type='submit'
-                  // disabled={isDirty && !isValid}
                   loading={isPending}
+                  startIcon={<Add />}
                 >
-                  Crear
+                  Crear producto
                 </LoadingButton>
               </Box>
             </form>

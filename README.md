@@ -1,3 +1,7 @@
+# Integración controlada — Barrera A
+
+Rama `integration/f0-f9`, sobre Codex F9. Matriz de los 59 archivos, decisiones de compatibilidad y pruebas: [INTEGRATION-BARRIER-A.md](INTEGRATION-BARRIER-A.md). Pendiente revisión; sin merge a main ni F10.
+
 # Ciclo D — Fase 9
 
 Documentos internos y reportes: [PHASE9.md](PHASE9.md). Rama `codex/phase-9` desde F8 aprobada, pendiente revisión coordinada; sin merge a main/Gemini.

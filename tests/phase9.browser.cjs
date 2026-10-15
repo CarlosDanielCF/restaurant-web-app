@@ -128,7 +128,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
     });
     await page.goto(frontend + '/auth/login');
     await page.getByLabel('Nombre de usuario').fill(owned.username);
-    await page.getByLabel('Contraseña').fill(owned.password);
+    await page.locator('input[name="password"]').fill(owned.password);
     await page.getByRole('button', { name: 'Iniciar sesión' }).click();
     await page.waitForURL((u) => !u.pathname.includes('/auth/'));
     await page.goto(frontend + '/internal-documents');
@@ -230,7 +230,10 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
     });
     await page.emulateMedia({ media: 'screen' });
     await page.goto(frontend + '/operational-reports');
-    await page.getByText('Reportes operativos', { exact: true }).waitFor();
+    await page
+      .locator('[data-testid=app-content]')
+      .getByText('Reportes operativos', { exact: true })
+      .waitFor();
     await page
       .getByText('Plato documento navegador', { exact: true })
       .waitFor();
