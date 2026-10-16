@@ -1,3 +1,4 @@
+import { operationalLabel } from './labels';
 import { useEffect, useState } from 'react';
 import {
   Alert,
@@ -229,10 +230,10 @@ export function ReportsPage() {
     ) : key.endsWith('At') && typeof value === 'string' ? (
       new Date(value).toLocaleString('es-PE', { timeZone: result?.timeZone })
     ) : (
-      String(value)
+      operationalLabel(String(value))
     );
   return (
-    <Container maxWidth='xl'>
+    <Container maxWidth='xl' className='final-page'>
       <Stack spacing={2}>
         <Typography variant='h4'>Reportes operativos</Typography>
         <Alert severity='info'>
@@ -267,6 +268,7 @@ export function ReportsPage() {
           ))}
         </TextField>
         <Stack
+          className='report-filters'
           direction={{ xs: 'column', md: 'row' }}
           spacing={1}
           flexWrap='wrap'
@@ -326,7 +328,7 @@ export function ReportsPage() {
               <MenuItem value=''>Todos</MenuItem>
               {['CASH', 'YAPE', 'CARD'].map((m) => (
                 <MenuItem key={m} value={m}>
-                  {m}
+                  {operationalLabel(m)}
                 </MenuItem>
               ))}
             </TextField>
@@ -342,7 +344,7 @@ export function ReportsPage() {
               {['TABLE', 'TAKE_AWAY', 'OWN_DELIVERY', 'EXTERNAL_COURIER'].map(
                 (m) => (
                   <MenuItem key={m} value={m}>
-                    {m}
+                    {operationalLabel(m)}
                   </MenuItem>
                 )
               )}
@@ -358,7 +360,7 @@ export function ReportsPage() {
               <MenuItem value=''>Todos</MenuItem>
               {states[kind].map((s) => (
                 <MenuItem key={s} value={s}>
-                  {s}
+                  {operationalLabel(s)}
                 </MenuItem>
               ))}
             </TextField>
@@ -373,7 +375,7 @@ export function ReportsPage() {
               <MenuItem value=''>Todos</MenuItem>
               {types[kind].map((s) => (
                 <MenuItem key={s} value={s}>
-                  {s}
+                  {operationalLabel(s)}
                 </MenuItem>
               ))}
             </TextField>
@@ -408,9 +410,9 @@ export function ReportsPage() {
               })}
             </Typography>
             {result.totals.map((t, i) => (
-              <Typography key={i}>
-                {t.movementType}: {t.amount} {t.currency} · {t.records}{' '}
-                registros
+              <Typography key={i} className='report-total'>
+                {operationalLabel(t.movementType)}: {t.amount} {t.currency} ·{' '}
+                {t.records} registros
               </Typography>
             ))}
             {!result.rows.length ? (

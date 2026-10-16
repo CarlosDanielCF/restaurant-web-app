@@ -1,3 +1,16 @@
+# Estado vigente — candidato final F10 (2026-10-16)
+
+Trabajo en `codex/phase-10`, sin merge a main. Barrera A integrada previamente. Este bloque sustituye los estados históricos siguientes (incluidas antiguas restricciones de ciclos).
+
+Interfaz compartida F10, resumen administrativo real, rendiciones legibles, reportes compactos y cocina vacía sin navegación innecesaria. Sin datos inventados. Rutas legacy fuera de alcance retiradas del router. Backend: teléfono de cliente 9–10 dígitos; guard de seed antes de escrituras; auditoría sin anidación recursiva de historiales y lectura paginada de JSON histórico sin errores de memoria de ordenación. Se conservan contratos monetarios, roles, idempotencia, snapshots, estados independientes y datos existentes.
+
+15 migraciones, ninguna nueva, sin cambios de esquema. Seed demo explícito e idempotente solo development/restaurante_app. SMTP CONFIGURADO: NO; pendiente proveedor/credenciales. No se afirma despliegue productivo, automatización externa de backups ni prueba física de impresora.
+
+Evidencia final y limitaciones en [PHASE10.md](PHASE10.md).
+
+---
+## Registro histórico (no estado vigente)
+
 # Estado vigente — Fase 10: Ciclo 2
 
 Ciclo 1 aprobado. Ciclo 2: Cocina, salidas del mozo, Cobros, Delivery, Fiados y Devoluciones con presentación compacta. Backend y contratos F0–F9 preservados. Navegación a documentos con cuenta preseleccionada. Pruebas y límites en [PHASE10.md](PHASE10.md), sección Ciclo 2. No avance a Administración/Rendiciones/Reportes.

@@ -129,7 +129,18 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
     await page.goto(frontend + '/auth/login');
     await page.getByLabel('Nombre de usuario').fill(owned.username);
     await page.locator('input[name="password"]').fill(owned.password);
+    const loginResponse = page.waitForResponse(
+      (r) => r.url().endsWith('/auth/login') && r.request().method() === 'POST'
+    );
     await page.getByRole('button', { name: 'Iniciar sesión' }).click();
+    const loginResult = await loginResponse;
+    if (loginResult.status() !== 200)
+      throw Error(
+        'Login failed: ' +
+          loginResult.status() +
+          ' ' +
+          (await loginResult.text())
+      );
     await page.waitForURL((u) => !u.pathname.includes('/auth/'));
     await page.goto(frontend + '/internal-documents');
     await page.getByLabel('Atención para documento').click();
@@ -242,7 +253,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
       .getByRole('option', { name: 'Cobros y métodos', exact: true })
       .click();
     await page.getByLabel('Método', { exact: true }).click();
-    await page.getByRole('option', { name: 'CASH', exact: true }).click();
+    await page.getByRole('option', { name: 'Efectivo', exact: true }).click();
     response = page.waitForResponse(
       (r) =>
         r.url().includes('/operational-reports/collections?') &&

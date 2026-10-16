@@ -1,109 +1,33 @@
-# Fase 10 — desarrollo local y atención
+# Restaurant — frontend F0–F10
 
-Guía de arranque Windows y diagnóstico de módulos pendientes: [WINDOWS.md](WINDOWS.md). Frontend con pnpm 8.15.0; usar `pnpm dev` (3030 estricto), `pnpm typecheck` y `pnpm build`. Alcance y validación: [PHASE10.md](PHASE10.md).
+Candidato final en `codex/phase-10`, sobre `f6388754b40e48c7e85cca5d53f962949d75f440`. Sin merge a main. Backend compatible: F9 más correcciones F10 documentadas en su ESTADO.md.
 
-# Integración controlada — Barrera A
+## Arranque
 
-Rama `integration/f0-f9`, sobre Codex F9. Matriz de los 59 archivos, decisiones de compatibilidad y pruebas: [INTEGRATION-BARRIER-A.md](INTEGRATION-BARRIER-A.md). Pendiente revisión; sin merge a main ni F10.
+Node LTS compatible; pnpm **8.15.0** (packageManager/lockfile). No mezclar npm install con pnpm.
 
-# Ciclo D — Fase 9
+```sh
+corepack enable
+pnpm install --frozen-lockfile
+pnpm dev
+```
 
-Documentos internos y reportes: [PHASE9.md](PHASE9.md). Rama `codex/phase-9` desde F8 aprobada, pendiente revisión coordinada; sin merge a main/Gemini.
+Configurar `.env` con `VITE_API_URL=http://127.0.0.1:5000/api` y `VITE_WS_URL=http://127.0.0.1:5000`. Backend iniciado, migraciones aplicadas, MySQL restaurante_app. Vite usa **3030 estricto**: cerrar/revisar el proceso que lo ocupa; no abrir 3030 si otra terminal anunció 3031. Login ligero y estado de arranque visible. [Guía Windows y diagnóstico](WINDOWS.md).
 
-# sistema-restaurante-app
+## Funcionalidad
 
-Mi sistema de restaurante es una solución completa de gestión de pedidos diseñada para mejorar la eficiencia y el flujo de trabajo en los restaurantes. Con una interfaz fácil de usar y altamente personalizable, este sistema permite a los restaurantes automatizar muchas de las tareas diarias, ahorrando tiempo y mejorando la experiencia del cliente.
+Atención/mesas/reservas, carta y menú compuesto, cocina/salidas, cobros/deudas/abonos/devoluciones/propinas, delivery/courier, rendiciones, configuración/trabajadores, documentos internos y reportes. Roles y permisos los impone el backend. Resumen operativo de administración en `/operational-overview`, únicamente con datos reales; no confunde ventas y cobros. Interfaz responsive compacta, impresión A4/80mm; sin datos ficticios en pantallas vacías.
 
-![image](https://github.com/SantiagoQP23/sistema-restaurante-app/assets/44738574/ee9dc82a-05a6-49f5-b781-e48cb288b6c8)
+No se registran rutas de proveedores, compras, facturas legacy ni caja/reportes antiguos. Se mantienen finanzas, documentos y reportes canónicos F6–F9; archivos legacy aún no alcanzables pueden permanecer por trazabilidad.
 
-## Dashboard
+## Pruebas
 
-![image](https://github.com/SantiagoQP23/sistema-restaurante-app/assets/44738574/039d7802-f0a4-4229-98ed-a117e7e2b320)
+```sh
+pnpm typecheck
+pnpm build
+node --test tests/idempotency.test.cjs tests/display-money.test.cjs
+```
 
-## Pedidos
+Pruebas de navegador `tests/*.browser.cjs` requieren backend real, MySQL, Chromium y Playwright. `PLAYWRIGHT_MODULE`/`CHROMIUM_PATH` permiten indicar instalación externa; no se agrega una dependencia pesada a producción. Ejecutarlas secuencialmente con las suites HTTP. Datos de prueba en tenants propios, nunca en una base distinta. Evidencia y comandos en [PHASE10.md](PHASE10.md), estado en [ESTADO.md](ESTADO.md).
 
-![image](https://github.com/SantiagoQP23/sistema-restaurante-app/assets/44738574/3ddcc6fa-aa23-47c6-b36d-1f3fecb0a972)
-
-### Creación de pedido
-
-La aplicación se adapta a diferentes tamaños de pantalla
-
-![image](https://github.com/SantiagoQP23/sistema-restaurante-app/assets/44738574/ca463dfb-a791-4aee-97c6-fae265caca81)
-
-Resumen de nuevo pedido
-![image](https://github.com/SantiagoQP23/sistema-restaurante-app/assets/44738574/736bd389-7910-4cf6-9f56-dd4055ffe7a4)
-
-### Edición de pedido
-
-![image](https://github.com/SantiagoQP23/sistema-restaurante-app/assets/44738574/68017dee-8bc7-4ac1-8dba-15d51d2f6696)
-
-### Información de mesa
-
-![image](https://github.com/SantiagoQP23/sistema-restaurante-app/assets/44738574/f32c43ec-eb65-4081-837a-ba0a949d4970)
-
-### Pantalla de cocina
-
-![image](https://github.com/SantiagoQP23/sistema-restaurante-app/assets/44738574/6fa23947-a48b-420d-b4c5-593ad2192b21)
-
-### Gestión de pedidos
-
-![image](https://github.com/SantiagoQP23/sistema-restaurante-app/assets/44738574/cbe54a27-b6a4-4f81-854a-bb5102b9d291)
-
-### Gestión de cuentas por cobrar
-
-![image](https://github.com/SantiagoQP23/sistema-restaurante-app/assets/44738574/6732c1fc-ab01-4650-99f5-50bc319d4b7f)
-
-## Gestión de menú
-
-### Secciones
-
-![image](https://github.com/SantiagoQP23/sistema-restaurante-app/assets/44738574/9aadbcd5-c787-4881-8415-55e3bafb38c4)
-
-### Categorías
-
-![image](https://github.com/SantiagoQP23/sistema-restaurante-app/assets/44738574/ef205da2-42ac-43c3-8cd4-fa3e5c586a22)
-
-### Productos
-
-![image](https://github.com/SantiagoQP23/sistema-restaurante-app/assets/44738574/10d855b1-f7d9-4f12-b466-abe6337c79f6)
-
-### Edición de producto
-
-![image](https://github.com/SantiagoQP23/sistema-restaurante-app/assets/44738574/1549d388-d020-4fb9-9eab-648650abd75b)
-
-## Mesas
-
-![image](https://github.com/SantiagoQP23/sistema-restaurante-app/assets/44738574/79dcfd5c-dfe3-4400-bfa5-ee7674ae78b6)
-
-## Usuarios
-
-![image](https://github.com/SantiagoQP23/sistema-restaurante-app/assets/44738574/79da5248-389c-40a7-b3ca-52a757e1b3ff)
-
-## Clientes
-
-![image](https://github.com/SantiagoQP23/sistema-restaurante-app/assets/44738574/98328416-e98f-4bd6-8425-06ec6ece97ea)
-
-## Información del restaurante
-
-![image](https://github.com/SantiagoQP23/sistema-restaurante-app/assets/44738574/82ce40c3-3da9-4ad9-a9d6-795a5ad237d9)
-
-## Caja
-
-### Resumen de caja
-
-![image](https://github.com/SantiagoQP23/sistema-restaurante-app/assets/44738574/d7aa92d0-6daf-449b-971c-b8bf9911eacb)
-
-### Historial de cajas
-
-![image](https://github.com/SantiagoQP23/sistema-restaurante-app/assets/44738574/cf5fb3a5-2285-4b7c-8f01-76bf4a60c6dc)
-
-##Transacciones
-![image](https://github.com/SantiagoQP23/sistema-restaurante-app/assets/44738574/932d7010-9750-48a8-b6bb-4f0e2762870e)
-
-## Reporte de productos más vendidos
-
-![image](https://github.com/SantiagoQP23/sistema-restaurante-app/assets/44738574/63a0fe59-7abe-405f-ad42-51f85a458ee4)
-
-## Ciclo B — Finanzas
-
-Pantalla funcional `/finance` y contratos de integración: [PHASE67.md](PHASE67.md). Rama de revisión `codex/phase-6-7`; no supone aprobación de Barrera A.
+Demo: ejecutar `npm run seed:demo` en backend siguiendo su README. No inventar credenciales; DEMO_PASSWORD lo elige el operador. SMTP CONFIGURADO: NO; pendiente proveedor/credenciales. No bloquea login ni operación habitual. Backup/restore en documentación backend.

@@ -97,3 +97,9 @@ pnpm preview
 ```
 
 Preview usa 8080; si se prueba contra el backend, añadir explícitamente ese origen local a FRONTEND_ORIGIN y reiniciar backend. No cambiar DTO/endpoints para resolver CORS. Dejar los servidores dev en una única instancia y detenerlos con Ctrl+C al terminar.
+
+## Candidato final F10
+
+El usuario validó backend/frontend Windows y acceso al sistema. Este cierre conserva pnpm, 3030 estricto y login diferido. Para datos de demostración utilizar **el nuevo seed del backend** (`npm run seed:demo`), no ejecutar seeds históricos ni importar SQL sobre una base con operaciones. Consultar `restaurant-backend/WINDOWS.md` y README para DEMO_PASSWORD, cuatro roles y 24 mesas.
+
+Migraciones: 15, sin nuevas en este cierre. SMTP CONFIGURADO: NO; pendiente proveedor/credenciales. La operación normal y login siguen disponibles. Backup/restore: `restaurant-backend/docs/BACKUP-RECOVERY.md`; ensayar únicamente en un servidor aislado con nombre restaurante_app. Nunca reutilizar un servidor/base ajena.

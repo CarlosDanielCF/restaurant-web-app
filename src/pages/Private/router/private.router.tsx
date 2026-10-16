@@ -1,3 +1,4 @@
+import { OverviewPage } from '../Insights/OverviewPage';
 import { DocumentsPage } from '../Insights/DocumentsPage';
 import { ReportsPage } from '../Insights/ReportsPage';
 import { FinancePage } from '../Finance/FinancePage';
@@ -13,14 +14,9 @@ import { MenuEditRouter } from '../EditMenu/router/MenuEdit.router';
 import { ClientsRouter } from '../Clients/router/Clients.router';
 import { TablesRouter } from '../Tables/router/Tables.router';
 import { UsersRouter, UserRouter } from '../Users/router/Users.router';
-import { ReportsRouter } from '../Reports/router/Reports.router';
-import { BalanceRouter } from '../Balance/router/Balance.router';
-import { SuppliersRouter } from '../Suppliers/router/Suppliers.router';
-import { InvoiceRouter } from '../Invoices/router/Invoice.router';
 import { RestaurantRouter } from '../Restaurant/router';
 import { UnauthorizedPage } from '../../Status/Unauthorized.page';
 import Auth from '../components/Auth.component';
-import { BillsRouter } from '../Bills/routers/Bills.router';
 import BaseLayout from '../layouts/BaseLayout';
 import { NewRestaurant } from '../Restaurant/views/NewRestaurant/NewRestaurant.view';
 import { Roles } from '@/models/roles';
@@ -30,55 +26,67 @@ export const PrivateRouter: RouteObject[] = [
     path: '/',
     element: <SidebarLayout />,
     children: [
-      {path:'internal-documents',element:<Auth allowedRoles={[Roles.OWNER,Roles.ADMIN,Roles.WAITER]} />,children:[{index:true,element:<DocumentsPage />}]},
-      {path:'operational-reports',element:<ReportsPage />},
-      {path:'finance',element:<Auth allowedRoles={[Roles.OWNER,Roles.ADMIN,Roles.WAITER]} />,children:[{index:true,element:<FinancePage />}]},
-      {path:'attention',element:<OperationsPage />},
-      {path:'kitchen',element:<Auth allowedRoles={[Roles.OWNER,Roles.ADMIN,Roles.COOK]} />,children:[{index:true,element:<KitchenPage />}]},
+      {
+        path: 'internal-documents',
+        element: (
+          <Auth allowedRoles={[Roles.OWNER, Roles.ADMIN, Roles.WAITER]} />
+        ),
+        children: [{ index: true, element: <DocumentsPage /> }]
+      },
+      { path: 'operational-reports', element: <ReportsPage /> },
+      {
+        path: 'finance',
+        element: (
+          <Auth allowedRoles={[Roles.OWNER, Roles.ADMIN, Roles.WAITER]} />
+        ),
+        children: [{ index: true, element: <FinancePage /> }]
+      },
+      { path: 'attention', element: <OperationsPage /> },
+      {
+        path: 'kitchen',
+        element: <Auth allowedRoles={[Roles.OWNER, Roles.ADMIN, Roles.COOK]} />,
+        children: [{ index: true, element: <KitchenPage /> }]
+      },
       // MenuRouter,
       OrderRouter,
-      InvoiceRouter,
-      {element:<Auth allowedRoles={[Roles.OWNER,Roles.ADMIN]} />,children:[MenuEditRouter]},
+
+      {
+        element: <Auth allowedRoles={[Roles.OWNER, Roles.ADMIN]} />,
+        children: [MenuEditRouter]
+      },
       ClientsRouter,
       TablesRouter,
       UserRouter,
-      BillsRouter,
+
       {
         path: PrivateRoutes.USERS,
         element: <Auth allowedRoles={[Roles.OWNER, Roles.ADMIN]} />,
         children: [UsersRouter]
       },
       {
-        path: PrivateRoutes.REPORTS,
+        path: 'operational-overview',
         element: <Auth allowedRoles={[Roles.OWNER, Roles.ADMIN]} />,
-        children: [ReportsRouter]
+        children: [{ index: true, element: <OverviewPage /> }]
       },
-      {
-        path: '/financial',
-        element: <Auth allowedRoles={[Roles.OWNER, Roles.ADMIN]} />,
-        children: [BalanceRouter]
-      },
-      SuppliersRouter,
-
       {
         path: 'unauthorized',
         element: <UnauthorizedPage />
       },
       {
         path: '/auth/login',
-        element: <Navigate to="/attention" />
+        element: <Navigate to='/attention' />
       },
       {
         path: '',
-        element: <Navigate to="/attention" />
+        element: <Navigate to='/attention' />
       },
       {
         path: 'ORD.ORDERS',
-        element: <Navigate to="/attention" />
+        element: <Navigate to='/attention' />
       },
       {
         path: '*',
-        element: <Navigate to="/attention" />
+        element: <Navigate to='/attention' />
       }
     ]
   },

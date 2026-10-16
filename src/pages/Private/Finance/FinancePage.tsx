@@ -1,3 +1,4 @@
+import { operationalLabel } from '../Insights/labels';
 import { DebtCards } from './DebtCards';
 import '../Operations/cycle2.css';
 import { Link } from 'react-router-dom';
@@ -61,6 +62,15 @@ interface Financial {
   yapeQr: string;
 }
 interface Shift {
+  refunds: { method: string; amount: string }[];
+  movements: {
+    id: string;
+    kind: string;
+    amount: string;
+    reason: string;
+    createdAt: string;
+  }[];
+  tips: { kind: string; method: string; amount: string }[];
   shift: { id: string; workerId: string; status: string; version: number };
   courierCashRecorded?: string;
   courierCashReceived?: string;
@@ -68,6 +78,7 @@ interface Shift {
   shortage: string;
   overage: string;
   settlement: {
+    differenceReason: string;
     expectedCash: string;
     deliveredCash: string;
     status: string;
@@ -104,6 +115,23 @@ export function FinancePage() {
     [selected, setSelected] = useState(''),
     [data, setData] = useState<Financial>(),
     [shifts, setShifts] = useState<Shift[]>([]);
+  const [workerNames, setWorkerNames] = useState<Record<string, string>>({});
+  useEffect(() => {
+    let active = true;
+    setWorkerNames({});
+    restauranteApi
+      .get<{ id: string; name: string }[]>('/operational-reports/directory')
+      .then(({ data }) => {
+        if (active)
+          setWorkerNames(Object.fromEntries(data.map((w) => [w.id, w.name])));
+      })
+      .catch(() => {
+        /* Keep the stable worker identifier when the directory is unavailable. */
+      });
+    return () => {
+      active = false;
+    };
+  }, [restaurant?.id]);
   const [error, setError] = useState(''),
     [notice, setNotice] = useState(''),
     [ready, setReady] = useState(false),
@@ -749,12 +777,14 @@ export function FinancePage() {
           Abrir mi turno
         </Button>
         {shifts.map((s) => (
-          <Paper key={s.shift.id} sx={{ p: 2 }}>
+          <Paper key={s.shift.id} className='shift-card' sx={{ p: 2 }}>
             <Stack spacing={1}>
               <Typography>
                 Trabajador{' '}
-                {s.shift.workerId === user?.id ? 'Yo' : s.shift.workerId} ·{' '}
-                {s.shift.status}
+                {s.shift.workerId === user?.id
+                  ? 'Yo'
+                  : workerNames[s.shift.workerId] || s.shift.workerId}{' '}
+                · {operationalLabel(s.shift.status)}
               </Typography>
               <Typography>
                 Efectivo registrado en courier S/
@@ -765,7 +795,7 @@ export function FinancePage() {
               </Typography>
               {s.payments.map((p) => (
                 <Typography key={p.method}>
-                  {p.method}: S/{p.amount}
+                  {operationalLabel(p.method)}: S/{p.amount}
                 </Typography>
               ))}
               {s.settlement && (
@@ -776,6 +806,59 @@ export function FinancePage() {
                   sobrante S/{s.overage}
                 </Typography>
               )}
+              <div className='shift-totals'>
+                {[
+                  ['Esperado', s.expectedCash],
+                  ['Entregado', s.settlement?.deliveredCash ?? '—'],
+                  ['Faltante', s.shortage],
+                  ['Sobrante', s.overage]
+                ].map(([label, value]) => (
+                  <div key={label}>
+                    <Typography variant='caption'>{label}</Typography>
+                    <Typography fontWeight={700}>S/ {value}</Typography>
+                  </div>
+                ))}
+              </div>
+              {s.settlement?.differenceReason && (
+                <Alert severity='warning'>
+                  Motivo de diferencia: {s.settlement.differenceReason}
+                </Alert>
+              )}
+              <details className='shift-ledger'>
+                <summary>
+                  Fondos, entregas previas, devoluciones y propinas
+                </summary>
+                <Typography variant='body2'>
+                  Abonos incluidos en los cobros: S/{' '}
+                  {s.installmentsIncludedInPayments}. No se suman nuevamente.
+                  Las deudas no son efectivo a rendir.
+                </Typography>
+                {s.movements?.map((m) => (
+                  <Typography key={m.id}>
+                    {operationalLabel(m.kind)} · S/ {m.amount} · {m.reason} ·{' '}
+                    {new Date(m.createdAt).toLocaleString('es-PE', {
+                      timeZone: restaurant?.timeZone
+                    })}
+                  </Typography>
+                ))}
+                {!s.movements?.length && (
+                  <Typography>
+                    Sin movimientos de fondos registrados.
+                  </Typography>
+                )}
+                {s.refunds?.map((r) => (
+                  <Typography key={r.method}>
+                    Devoluciones {operationalLabel(r.method)}: S/ {r.amount}
+                  </Typography>
+                ))}
+                {s.tips?.map((t, i) => (
+                  <Typography key={i}>
+                    Propina {operationalLabel(t.kind)} ·{' '}
+                    {operationalLabel(t.method)} · S/ {t.amount} (separada de
+                    ventas)
+                  </Typography>
+                ))}
+              </details>
               <Stack direction='row' spacing={1} flexWrap='wrap'>
                 {manager && s.shift.status !== 'SUBMITTED' && (
                   <Button

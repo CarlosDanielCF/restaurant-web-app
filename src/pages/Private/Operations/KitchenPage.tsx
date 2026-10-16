@@ -1,3 +1,4 @@
+import RestaurantMenuOutlined from '@mui/icons-material/RestaurantMenuOutlined';
 import './cycle2.css';
 import { modalityLabel } from './OffsitePanel';
 import { useRestaurantStore } from '../Common/store/restaurantStore';
@@ -215,7 +216,7 @@ export function KitchenPage() {
             </Stack>
           </Alert>
         ))}
-        {wide && (
+        {wide && total > 0 && (
           <Stack direction='row' spacing={2}>
             <Button disabled={page === 0} onClick={() => setPage((p) => p - 1)}>
               ← Anteriores
@@ -328,10 +329,20 @@ export function KitchenPage() {
           </div>
         )}
         {!total && (
-          <Typography>
-            No hay comida pendiente. Los avisos de cambios/cancelaciones
-            permanecen hasta confirmar su lectura.
-          </Typography>
+          <Card className='kitchen-empty'>
+            <CardContent>
+              <RestaurantMenuOutlined />
+              <Typography variant='h5'>Cocina al día</Typography>
+              <Typography>
+                No hay comida pendiente. Las nuevas comandas aparecerán
+                automáticamente.
+              </Typography>
+              <Typography variant='caption'>
+                Los avisos de cambios y cancelaciones permanecen hasta confirmar
+                su lectura.
+              </Typography>
+            </CardContent>
+          </Card>
         )}
       </Stack>
     </Container>

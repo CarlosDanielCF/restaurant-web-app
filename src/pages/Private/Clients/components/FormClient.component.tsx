@@ -151,8 +151,8 @@ export const FormClient: FC<Props> = ({ client, onSubmit, loading, msg }) => {
             helperText={errors.numPhone?.message}
             {...register('numPhone', {
               pattern: {
-                value: /^\d{10}$/,
-                message: 'El contrato actual requiere 10 dígitos'
+                value: /^\d{9,10}$/,
+                message: 'Ingrese 9 o 10 dígitos'
               }
             })}
           />

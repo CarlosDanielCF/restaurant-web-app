@@ -117,11 +117,24 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
       return data;
     };
     console.log('Login/sidebar passed');
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    await page.goto(front + '/kitchen');
+    await page.getByText('Cocina al día', { exact: true }).waitFor();
+    assert.equal(
+      await page
+        .getByRole('button', { name: 'Siguientes →', exact: true })
+        .count(),
+      0
+    );
+    await page.screenshot({
+      path: '/workspace/cloud-setup/final-kitchen-empty.png'
+    });
+    await page.setViewportSize({ width: 1440, height: 900 });
     // Client form and search against MySQL.
     await page.goto(front + '/clients/add');
     await page.locator('input[name="firstName"]').fill('Cliente');
     await page.locator('input[name="lastName"]').fill('Integración');
-    await page.getByLabel('Número de teléfono').fill('0991234567');
+    await page.getByLabel('Número de teléfono').fill('999123456');
     const client = await response('/clients', 'POST', () =>
       page.getByRole('button', { name: 'Guardar cliente' }).click()
     );
@@ -256,7 +269,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
     await page
       .getByLabel('Nombre del restaurante')
       .fill('Restaurante Integración');
-    await page.getByLabel('Teléfono de contacto').fill('0991234567');
+    await page.getByLabel('Teléfono de contacto').fill('999123456');
     await page.getByLabel('Correo electrónico').fill('restaurant@example.test');
     await page.getByLabel('Dirección fiscal y/o sucursal').fill('Calle UI 123');
     await page.getByLabel('Capacidad máxima (aforo)').fill('40');
@@ -324,7 +337,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
     await page.getByRole('dialog').waitFor({ state: 'hidden' });
     await page.getByRole('tab', { name: 'Reservas', exact: true }).click();
     await page.getByLabel('Nombre de la reserva').fill('Reserva UI');
-    await page.getByLabel('Teléfono de la reserva').fill('0991234567');
+    await page.getByLabel('Teléfono de la reserva').fill('999123456');
     await page.getByLabel('Fecha y hora local').fill('2026-11-20T13:00');
     const reservation = await response('/reservations', 'POST', () =>
       page.getByRole('button', { name: 'Guardar reserva' }).click()
@@ -368,11 +381,27 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
         '/restaurant',
         '/finance',
         '/internal-documents',
-        '/operational-reports'
+        '/operational-reports',
+        '/operational-overview'
       ]) {
         await page.goto(front + route);
         await page.waitForLoadState('networkidle');
-        await page.locator('[data-testid=app-content]').waitFor({ state: 'visible' });
+        if (route === '/operational-overview') {
+          await page
+            .getByText('Ventas confirmadas hoy', { exact: true })
+            .waitFor();
+          assert.equal(
+            await page.getByText(/No se pudo actualizar el resumen/).count(),
+            0
+          );
+          await page.screenshot({
+            path:
+              '/workspace/cloud-setup/final-overview-' + viewport.width + '.png'
+          });
+        }
+        await page
+          .locator('[data-testid=app-content]')
+          .waitFor({ state: 'visible' });
         assert.ok(
           await page.locator('body').innerText(),
           route + ' ' + JSON.stringify(errors)

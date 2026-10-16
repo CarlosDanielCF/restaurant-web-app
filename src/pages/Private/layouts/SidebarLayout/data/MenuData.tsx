@@ -65,6 +65,12 @@ export const menuSections: MenuSection[] = [
     title: 'Gestión',
     items: [
       {
+        title: 'Resumen operativo',
+        icon: <AssessmentOutlined />,
+        to: '/operational-overview',
+        allowedRoles: managers
+      },
+      {
         title: 'Restaurante',
         icon: <StorefrontOutlined />,
         to: '/restaurant',

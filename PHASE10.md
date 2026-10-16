@@ -1,3 +1,58 @@
+# F10 — cierre total: candidato para revisión
+
+2026-10-16. Rama `codex/phase-10`, desde frontend `f6388754b40e48c7e85cca5d53f962949d75f440`; backend F9 más correcciones F10. Sin merge a main. Este bloque es el estado vigente; los ciclos anteriores se conservan abajo como historial.
+
+## Frontend final
+
+- Lenguaje compartido blanco/gris, teal y títulos navy, radios/bordes/sombras discretos, tarjetas y tablas compactas, controles táctiles. Estilos comunes limitados a pantalla; no contaminan documentos impresos. Conserva interfaces F10 aprobadas de atención, mesas, reservas, pedido, catálogo, cocina, cobros y offsite.
+- Cocina: estado vacío real “Cocina al día”, sin paginación vacía. Mantiene avisos pendientes, conexión, tres envíos más antiguos, relojes independientes y salida exclusiva del mozo. TV y navegación comprobadas.
+- Administración: `/operational-overview` con ventas confirmadas del día (zona del restaurante), cuentas abiertas, envíos pendientes >15min, rendiciones enviadas pendientes de revisión y accesos al detalle. Datos reales de endpoints existentes, loading/error/actualizar y protección contra respuesta tardía tras cambio de restaurante. Límite de 500 cuentas recientes visible; no se inventa un total global de deudas ni se suman cobros a ventas.
+- Rendiciones: tarjetas de esperado/entregado/faltante/sobrante, motivo de diferencia, desglose de fondos/entregas/devoluciones/propinas. Nombre real del trabajador desde directorio autorizado, con ID como fallback explícito. Abonos incluidos en cobros, sin sumarlos otra vez. Contratos y handlers financieros intactos.
+- Reportes: filtros en grid adaptable, totales separados, traducción de códigos operativos solo en presentación; filtros siguen enviando valores del contrato (por ejemplo Efectivo → CASH). Auditoría conserva detalle antes/después.
+- Clientes: teléfono de 9–10 dígitos coherente con backend; identificación no cambia.
+- Eliminadas del router activo entradas legacy de proveedores/compras/facturas/caja/reportes antiguos, sin reactivar SaaS/checkout/predicciones. Finanzas, documentos y reportes F6–F9 siguen disponibles según rol. Archivos legacy no alcanzables no se borran masivamente.
+- Login ligero, 3030 estricto, pnpm oficial, error de arranque visible, sidebar/header y configuración ya aprobados se mantienen. Windows validado previamente por el usuario; esta automatización corre en Linux.
+
+## Contratos
+
+Sin endpoints/eventos nuevos para UI. GET `/operational-reports/directory` se reutiliza para nombres; GET attention-accounts, kitchen/board, finance/shifts y operational-reports/sales para resumen. Única corrección DTO: teléfono cliente 9–10 dígitos. Sin cambios a permisos, importes, idempotencia, estados, timers o disponibilidad.
+
+Backend corrigió crecimiento recursivo de auditoría y ordenación de snapshots grandes, guard de seed y añadió demo segura/escenario integral. Detalle en `restaurant-backend/docs/PHASE10.md`. 15 migraciones, ninguna nueva.
+
+## Validación ejecutada
+
+| Verificación | Resultado |
+|---|---|
+| pnpm typecheck / pnpm build | Correctos |
+| ESLint focalizado TS/TSX nuevos/modificados | Sin errores; aviso heredado de versión React |
+| Unitarias frontend | 9/9: 6 idempotencia + 3 dinero mostrado |
+| startup.browser | Login 87 módulos, router privado no anticipado; arranque demorado visible, 3030 ocupado falla sin cambiar puerto |
+| integration.browser | Login, recuperación sin SMTP explícita, sidebar, cliente con teléfono de 9 dígitos, mesas, categorías/productos/variantes, trabajadores/roles, restaurante/logo/timezone, extras, menú, disponibilidad, reserva/llegada |
+| phase10-operations.browser | Cuenta real, búsqueda, instrucciones independientes, confirmación/adicionales, totales/estados |
+| phase10-cycle2.browser | Cocina, salida parcial, corrección, completar, responsive |
+| phase10-finance.browser + phase67.browser | Efectivo/vuelto, parcial, Yape manual, saldo, propina, descuento, devolución, deuda/abono, turno |
+| phase8.browser | Takeaway/delivery/courier, gratuidades y efectivo en backend real |
+| phase9.browser | Documento previo/ticket mixto, reimpresión auditada, filtros, impresión A4/80mm |
+| idempotency-hook.browser | A/retry A/B, doble clic, timeout, remount y reconexión |
+| idempotency-socket | create-order/add-order-detail concurrentes, pérdida de respuesta/reconexión, operación nueva |
+| Responsive | 390×844, 900×1100, 1440×900 sin overflow global; Cocina 1920×1080 |
+| Backend | Build/lint/typecheck, 95 unitarias, 139 HTTP/MySQL, escenario integral con reinicio y 11 lecturas persistidas |
+
+Las ejecuciones finales listadas pasaron; no se cuentan como éxitos los ensayos fallidos. Se actualizó el selector de la prueba de reportes de “CASH” a “Efectivo”, verificando que la petición aún envía `method=CASH`. Un intento previo de F9 expiró esperando navegación tras login; el test ahora comprueba explícitamente su respuesta HTTP y las repeticiones completas pasaron. No se atribuye una causa funcional no demostrada.
+
+PDFs reales de Chromium revisados: A4 (595.92×842.88pt), térmico aproximado 80mm (227.04pt de ancho), contenido DOCUMENTO INTERNO, sin navegación/botones ni pérdida de datos. No representa una prueba de impresora física. Snapshots no reconstruidos con datos actuales.
+
+## Advertencias y límites
+
+Sin nuevas excepciones JS ni pantalla blanca en recorridos aprobados. Siguen avisos React Router v7, selects MUI transitorios heredados, bundle grande y recursos remotos/endpoint legacy `cash-register/actives` (404), además del 401 esperado de auth-renew sin sesión. No hubo refactor masivo de deuda histórica. La capa visual no introduce lógica monetaria del cliente.
+
+SMTP CONFIGURADO: NO. ESTADO: pendiente proveedor/credenciales. No se inventa integración bancaria/POS/Yape, backup externo automático, TLS productivo ni credenciales. La demo se configura explícitamente en backend con DEMO_PASSWORD; no hay contraseña almacenada en Git.
+
+Evidencias Cloud (logs, capturas, PDFs y respaldo sensible) fuera de repositorios, en `/workspace/cloud-setup`; instrucciones reproducibles en README, WINDOWS y documentación backend. Candidato pendiente de revisión del Arquitecto/Coordinador; no merge automático ni release.
+
+---
+## Historial de ciclos anteriores (no estado vigente)
+
 # Fase 10 — arranque y experiencia de atención
 
 Base frontend main 6998c748c59e2b060d52b1f232a22d2ab7389c73; backend main f312cb5fff101a75983bd1f869b072b434b97469. Trabajo en codex/phase-10 en ambos repositorios, sin merge a main. El backend no tiene cambios: se publica la rama de referencia con el mismo commit.
@@ -78,3 +133,7 @@ Base aprobada frontend `c2808355211b78dcb4353cd0e6615d3ed5a11912`; backend `f312
 - Regresiones browser F6–7, F8 y F9 (incluye pago mixto/tarjeta y documentos). F8 amplía comprobación de overflow y capturas 390×844, 900×1100 y 1440×900. Cocina 1920×1080.
 
 Limitaciones heredadas: advertencias de bundle/dependencias/React Router/MUI, imagen externa inaccesible, auth-renew antes del login y endpoint legacy de caja. No se amplió alcance para corregirlas. Validación con Chromium en Cloud, no dispositivos físicos/TV real. El Ciclo 2 se detiene para revisión; no avance a administración/rendiciones/reportes.
+
+## Evidencia adicional de cierre
+
+Ensayo de respaldo/restauración F10 aprobado en MySQL aislado: 48 tablas, 15 migraciones y 2 archivos uploads verificados. Procedimiento y hashes en `restaurant-backend/docs/BACKUP-RECOVERY.md`. No se restauró sobre el origen ni se tocó ninguna otra base.

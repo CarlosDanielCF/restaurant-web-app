@@ -1,3 +1,4 @@
+import '../../final.css';
 import { FC, ReactNode, useContext, useEffect } from 'react';
 import {
   Box,
