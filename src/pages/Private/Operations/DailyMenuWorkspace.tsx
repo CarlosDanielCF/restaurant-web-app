@@ -67,6 +67,7 @@ export function DailyMenuWorkspace({
       {editable && (
         <Button
           variant='contained'
+          sx={{ alignSelf: 'flex-start' }}
           onClick={() => {
             setDraft(blank());
             setEditor(true);
@@ -83,11 +84,31 @@ export function DailyMenuWorkspace({
               gap={1}
               justifyContent='space-between'
             >
-              <Typography>
-                {menu.name} · S/{menu.price} ·{' '}
-                {menu.serviceDate || 'Sin fecha específica'} ·{' '}
-                {menu.isAvailable ? 'Disponible' : 'No disponible'}
-              </Typography>
+              <Stack spacing={0.5}>
+                <Typography variant='overline' color='primary.main'>
+                  Menú del día · precio conjunto
+                </Typography>
+                <Typography variant='h5'>{menu.name}</Typography>
+                <Stack
+                  direction='row'
+                  gap={1}
+                  alignItems='center'
+                  flexWrap='wrap'
+                >
+                  <Typography variant='h5' fontWeight={700}>
+                    S/ {menu.price}
+                  </Typography>
+                  <Chip
+                    size='small'
+                    label={menu.isAvailable ? 'Disponible' : 'No disponible'}
+                    color={menu.isAvailable ? 'success' : 'default'}
+                    variant='outlined'
+                  />
+                  <Typography variant='caption'>
+                    {menu.serviceDate || 'Sin fecha específica'}
+                  </Typography>
+                </Stack>
+              </Stack>
               {editable && (
                 <Button
                   onClick={() => {

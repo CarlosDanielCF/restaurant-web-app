@@ -1,4 +1,6 @@
+import { OperationalHeaderMeta } from './Header/OperationalHeaderMeta';
 import '../../final.css';
+import '../../../../styles/clean-pos.css';
 import { FC, ReactNode, useContext, useEffect } from 'react';
 import {
   Box,
@@ -71,6 +73,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = () => {
         >
           {/* Shared header: navigation on small screens, context on desktop. */}
           <Box
+            className='pos-header'
             sx={{
               display: 'flex',
               flexShrink: 0,
@@ -120,9 +123,12 @@ const SidebarLayout: FC<SidebarLayoutProps> = () => {
                 </Typography>
               </Typography>
             </Box>
-            {user && <HeaderUserbox />}
+            <Box className='pos-header-team'>
+              <OperationalHeaderMeta />
+              {user && <HeaderUserbox showDetails />}
+            </Box>
           </Box>
-          <Box sx={{ p: { xs: 1.5, sm: 2, md: 3 }, flex: 1, minWidth: 0 }}>
+          <Box sx={{ p: { xs: 1.5, sm: 2, md: 2 }, flex: 1, minWidth: 0 }}>
             <Outlet />
           </Box>
         </Box>

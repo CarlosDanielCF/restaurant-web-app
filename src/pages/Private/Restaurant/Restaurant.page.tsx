@@ -49,7 +49,7 @@ const Restaurant = () => {
   };
 
   return (
-    <Container maxWidth='lg' sx={{ pb: 6 }}>
+    <Container maxWidth='lg' className='pos-settings' sx={{ pb: 6 }}>
       <TitlePage title='Configuración del Restaurante' />
 
       {restaurant ? (
@@ -233,7 +233,9 @@ const Restaurant = () => {
         </Alert>
       )}
 
-      <SecuritySettings />
+      <Box className='pos-settings-security'>
+        <SecuritySettings />
+      </Box>
       <Box mt={4}>
         <ProductionAreasList />
       </Box>

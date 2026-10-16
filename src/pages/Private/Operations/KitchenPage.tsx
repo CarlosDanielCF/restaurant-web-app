@@ -142,6 +142,35 @@ export function KitchenPage() {
       setBusy(false);
     }
   }
+  const renderNotice = (n: NonNullable<typeof board>['notices'][number]) => (
+    <Alert
+      severity={n.kind === 'CANCELLATION' ? 'error' : 'warning'}
+      key={n.id}
+    >
+      <Stack spacing={1}>
+        <Typography>
+          {n.location} · envío {n.dispatchId.slice(0, 8)}
+        </Typography>
+        <Typography fontWeight='bold'>
+          {n.kind === 'CANCELLATION'
+            ? 'CANCELACIÓN: detener preparación'
+            : n.kind === 'REPLACEMENT'
+              ? 'SUSTITUCIÓN'
+              : 'CAMBIO'}{' '}
+          · {n.beforeData.quantity} × {n.beforeData.name} →{' '}
+          {n.afterData.quantity} {n.afterData.name || 'Cancelado'}
+        </Typography>
+        <Typography>
+          Antes: {details(n.beforeData)} {n.beforeData.notes} · Ahora:{' '}
+          {details(n.afterData)} {n.afterData.notes || '—'}
+        </Typography>
+        <Typography>Motivo: {n.reason}</Typography>
+        <Button disabled={busy || stale} onClick={() => void acknowledge(n.id)}>
+          Aviso leído — no marca preparación ni salida
+        </Button>
+      </Stack>
+    </Alert>
+  );
   return (
     <Container maxWidth='xl' className='kitchen-operation'>
       <Stack spacing={2} py={2}>
@@ -184,38 +213,11 @@ export function KitchenPage() {
           {total} pendientes · {visible.length} visibles ·{' '}
           {Math.max(0, total - visible.length)} adicionales
         </Typography>
-        {board?.notices.map((n) => (
-          <Alert
-            severity={n.kind === 'CANCELLATION' ? 'error' : 'warning'}
-            key={n.id}
-          >
-            <Stack spacing={1}>
-              <Typography>
-                {n.location} · envío {n.dispatchId.slice(0, 8)}
-              </Typography>
-              <Typography fontWeight='bold'>
-                {n.kind === 'CANCELLATION'
-                  ? 'CANCELACIÓN: detener preparación'
-                  : n.kind === 'REPLACEMENT'
-                    ? 'SUSTITUCIÓN'
-                    : 'CAMBIO'}{' '}
-                · {n.beforeData.quantity} × {n.beforeData.name} →{' '}
-                {n.afterData.quantity} {n.afterData.name || 'Cancelado'}
-              </Typography>
-              <Typography>
-                Antes: {details(n.beforeData)} {n.beforeData.notes} · Ahora:{' '}
-                {details(n.afterData)} {n.afterData.notes || '—'}
-              </Typography>
-              <Typography>Motivo: {n.reason}</Typography>
-              <Button
-                disabled={busy || stale}
-                onClick={() => void acknowledge(n.id)}
-              >
-                Aviso leído — no marca preparación ni salida
-              </Button>
-            </Stack>
-          </Alert>
-        ))}
+        <section className='pos-kitchen-notices' aria-label='Avisos de cocina'>
+          {board?.notices
+            .filter((n) => !visible.some((d) => d.id === n.dispatchId))
+            .map(renderNotice)}
+        </section>
         {wide && total > 0 && (
           <Stack direction='row' spacing={2}>
             <Button disabled={page === 0} onClick={() => setPage((p) => p - 1)}>
@@ -236,6 +238,7 @@ export function KitchenPage() {
           </Stack>
         )}
         <Stack
+          className='pos-kds-tickets'
           direction={wide ? 'row' : 'column'}
           spacing={2}
           alignItems='stretch'
@@ -291,6 +294,9 @@ export function KitchenPage() {
                           ? 'ALERTA (12 min)'
                           : 'En tiempo'}
                     </Typography>
+                    {board?.notices
+                      .filter((n) => n.dispatchId === d.id)
+                      .map(renderNotice)}
                     {d.items
                       .filter((i) => i.status === 'ACTIVE' && i.pending > 0)
                       .map((i) => (
@@ -328,6 +334,9 @@ export function KitchenPage() {
             </Button>
           </div>
         )}
+        <Typography className='pos-kds-footer'>
+          Cocina toca timbre · El mozo marca la salida
+        </Typography>
         {!total && (
           <Card className='kitchen-empty'>
             <CardContent>

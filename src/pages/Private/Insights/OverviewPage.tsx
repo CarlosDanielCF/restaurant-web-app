@@ -78,7 +78,7 @@ export function OverviewPage() {
     };
   }, [load]);
   return (
-    <Container maxWidth='xl' className='final-page'>
+    <Container maxWidth='xl' className='final-page pos-overview'>
       <Stack spacing={2}>
         <Stack direction='row' justifyContent='space-between'>
           <Typography variant='h4'>Resumen operativo</Typography>

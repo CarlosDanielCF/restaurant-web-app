@@ -114,7 +114,7 @@ export function DocumentsPage() {
     }
   }
   return (
-    <Container maxWidth='lg'>
+    <Container maxWidth='lg' className='pos-documents'>
       <Stack spacing={2}>
         <Typography variant='h4'>Documentos internos</Typography>
         <Alert severity='info'>

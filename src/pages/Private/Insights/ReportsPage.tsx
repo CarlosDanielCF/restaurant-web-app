@@ -232,10 +232,38 @@ export function ReportsPage() {
     ) : (
       operationalLabel(String(value))
     );
+  const selectReport = (nextKind: string) => {
+    setKind(nextKind);
+    setPage(1);
+    const next = {
+      ...filters,
+      method: '',
+      modality: '',
+      status: '',
+      movementType: '',
+      userId: '',
+      responsibleUserId: ''
+    };
+    setFilters(next);
+    setAppliedFilters(next);
+  };
   return (
-    <Container maxWidth='xl' className='final-page'>
-      <Stack spacing={2}>
+    <Container maxWidth='xl' className='final-page pos-reports'>
+      <nav className='pos-report-nav' aria-label='Reportes disponibles'>
+        <Typography variant='overline'>Reportes</Typography>
+        {available.map((k) => (
+          <Button
+            key={k}
+            aria-current={kind === k ? 'page' : undefined}
+            onClick={() => selectReport(k)}
+          >
+            {kinds[k]}
+          </Button>
+        ))}
+      </nav>
+      <Stack spacing={2} className='pos-report-content'>
         <Typography variant='h4'>Reportes operativos</Typography>
+        <Typography variant='h6'>{kinds[kind]}</Typography>
         <Alert severity='info'>
           Venta, cobro, deuda, cuota, reembolso, propina y custodia son
           conceptos distintos. Los importes se calculan en servidor. Zona
@@ -244,22 +272,9 @@ export function ReportsPage() {
         <TextField
           select
           label='Reporte'
+          className='pos-report-select'
           value={kind}
-          onChange={(e) => {
-            setKind(e.target.value);
-            setPage(1);
-            const next = {
-              ...filters,
-              method: '',
-              modality: '',
-              status: '',
-              movementType: '',
-              userId: '',
-              responsibleUserId: ''
-            };
-            setFilters(next);
-            setAppliedFilters(next);
-          }}
+          onChange={(e) => selectReport(e.target.value)}
         >
           {available.map((k) => (
             <MenuItem key={k} value={k}>

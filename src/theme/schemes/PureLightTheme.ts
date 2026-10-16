@@ -14,15 +14,15 @@ import '@mui/lab/themeAugmentation';
 // };
 
 const themeColors = {
-  primary: '#0f766e',
+  primary: '#0D9488',
   secondary: '#475569',
   success: '#16a34a',
   warning: '#d97706',
   error: '#dc2626',
   info: '#0284c7',
-  black: '#0f172a',
+  black: '#19384B',
   white: '#ffffff',
-  primaryAlt: '#115e59'
+  primaryAlt: '#0F766E'
 };
 
 const colors = {

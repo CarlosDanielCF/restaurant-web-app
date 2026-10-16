@@ -1,6 +1,7 @@
 import { FC, useEffect } from 'react';
 
 import {
+  Avatar,
   Box,
   Card,
   IconButton,
@@ -53,15 +54,30 @@ export const TableRowUser: FC<{ user: IUser }> = ({ user }) => {
   return (
     <TableRow hover>
       <TableCell>
-        <Typography
-          variant='body1'
-          fontWeight='bold'
-          color='text.primary'
-          gutterBottom
-          noWrap
-        >
-          {user.person.lastName} {user.person.firstName}
-        </Typography>
+        <Stack direction='row' alignItems='center' spacing={1.5}>
+          <Avatar
+            sx={{
+              width: 36,
+              height: 36,
+              bgcolor: '#e8f6f3',
+              color: '#0F766E',
+              fontSize: 13
+            }}
+            aria-hidden='true'
+          >
+            {user.person.firstName?.[0]}
+            {user.person.lastName?.[0]}
+          </Avatar>
+          <Typography
+            variant='body1'
+            fontWeight='bold'
+            color='text.primary'
+            gutterBottom
+            noWrap
+          >
+            {user.person.lastName} {user.person.firstName}
+          </Typography>
+        </Stack>
       </TableCell>
       <TableCell>
         <Typography variant='body2' color='text.secondary' noWrap>

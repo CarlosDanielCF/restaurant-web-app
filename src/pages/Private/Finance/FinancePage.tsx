@@ -361,6 +361,12 @@ export function FinancePage() {
             />
           )}
         </details>
+        {ready && accounts.length === 0 && (
+          <Alert severity='info'>
+            No hay cuentas para cobrar. Las atenciones abiertas aparecerán aquí
+            con su saldo e historial.
+          </Alert>
+        )}
         <TextField
           className='finance-account-select'
           select
@@ -776,6 +782,12 @@ export function FinancePage() {
         >
           Abrir mi turno
         </Button>
+        {ready && shifts.length === 0 && (
+          <Typography color='text.secondary'>
+            Sin turnos registrados. Al abrir un turno podrás consultar sus
+            cobros, movimientos y rendición.
+          </Typography>
+        )}
         {shifts.map((s) => (
           <Paper key={s.shift.id} className='shift-card' sx={{ p: 2 }}>
             <Stack spacing={1}>
@@ -786,18 +798,41 @@ export function FinancePage() {
                   : workerNames[s.shift.workerId] || s.shift.workerId}{' '}
                 · {operationalLabel(s.shift.status)}
               </Typography>
-              <Typography>
-                Efectivo registrado en courier S/
-                {s.courierCashRecorded || '0.00'} · recibido de courier S/
-                {s.courierCashReceived || '0.00'} · Efectivo calculado S/
-                {s.expectedCash} · abonos incluidos en cobros S/
-                {s.installmentsIncludedInPayments}
-              </Typography>
-              {s.payments.map((p) => (
-                <Typography key={p.method}>
-                  {operationalLabel(p.method)}: S/{p.amount}
-                </Typography>
-              ))}
+              <div className='pos-shift-summary'>
+                <section>
+                  <Typography variant='overline'>
+                    Efectivo y custodia
+                  </Typography>
+                  <dl>
+                    <div>
+                      <dt>Registrado en courier</dt>
+                      <dd>S/ {s.courierCashRecorded || '0.00'}</dd>
+                    </div>
+                    <div>
+                      <dt>Recibido del courier</dt>
+                      <dd>S/ {s.courierCashReceived || '0.00'}</dd>
+                    </div>
+                    <div>
+                      <dt>Abonos incluidos en cobros</dt>
+                      <dd>S/ {s.installmentsIncludedInPayments}</dd>
+                    </div>
+                  </dl>
+                </section>
+                <section>
+                  <Typography variant='overline'>Cobros por medio</Typography>
+                  <dl>
+                    {s.payments.map((p) => (
+                      <div key={p.method}>
+                        <dt>{operationalLabel(p.method)}</dt>
+                        <dd>S/ {p.amount}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                  <Typography variant='caption'>
+                    Propinas separadas en el historial de movimientos.
+                  </Typography>
+                </section>
+              </div>
               {s.settlement && (
                 <Typography>
                   Rendición {s.settlement.status}: esperado S/
@@ -813,7 +848,16 @@ export function FinancePage() {
                   ['Faltante', s.shortage],
                   ['Sobrante', s.overage]
                 ].map(([label, value]) => (
-                  <div key={label}>
+                  <div
+                    key={label}
+                    data-financial-state={
+                      label === 'Faltante' && value !== '0.00' && value !== '—'
+                        ? 'shortage'
+                        : label === 'Sobrante'
+                          ? 'overage'
+                          : 'neutral'
+                    }
+                  >
                     <Typography variant='caption'>{label}</Typography>
                     <Typography fontWeight={700}>S/ {value}</Typography>
                   </div>

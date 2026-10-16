@@ -3,6 +3,7 @@ import { Alert, Button, Card, Chip, Stack, Typography } from '@mui/material';
 import { restauranteApi } from '@/api';
 import { Account, Operator } from './types';
 import { modalityLabel, paymentLabel } from './OffsitePanel';
+import { DeliveryProgress } from './DeliveryProgress';
 import { Dispatch } from './fulfillment.types';
 interface Delivery {
   customerName: string;
@@ -59,7 +60,7 @@ function OffsiteCard({
     };
   }, [account.id, account.version]);
   return (
-    <Card variant='outlined'>
+    <Card variant='outlined' className='pos-delivery-card'>
       <Typography fontWeight={700}>
         {modalityLabel[account.modality]}
       </Typography>
@@ -83,12 +84,21 @@ function OffsiteCard({
                 ? 'Comida pendiente'
                 : 'Sin comida pendiente'}
           </Typography>
+          {view?.delivery && (
+            <DeliveryProgress
+              status={view.delivery.status}
+              takeaway={account.modality === 'TAKE_AWAY'}
+            />
+          )}
           <Chip
             size='small'
             label={`Entrega: ${view ? stateNames[view.delivery?.status || 'PREPARING'] : 'Consultando…'}`}
           />
         </>
       )}
+      <Typography variant='caption' color='text.secondary'>
+        Entrega y pago son estados independientes.
+      </Typography>
       <Typography variant='body2'>
         Pago: {paymentLabel[account.paymentStatus] || account.paymentStatus} ·
         Saldo S/ {account.balance}
