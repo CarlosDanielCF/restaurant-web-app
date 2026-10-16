@@ -1,3 +1,4 @@
+import { OffsiteCards } from './OffsiteCards';
 import CheckCircleOutline from '@mui/icons-material/CheckCircleOutline';
 import { ServiceCatalog } from './ServiceCatalog';
 import TableRestaurantOutlined from '@mui/icons-material/TableRestaurantOutlined';
@@ -1201,6 +1202,13 @@ export function AttentionWorkspace({
             </DialogContent>
           </Dialog>
         </>
+      )}
+      {!account && (
+        <OffsiteCards
+          accounts={accounts}
+          operators={operators}
+          onSelect={selectAccount}
+        />
       )}
       {accountSelector}
     </Stack>

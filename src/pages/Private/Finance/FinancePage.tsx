@@ -1,9 +1,14 @@
+import { DebtCards } from './DebtCards';
+import '../Operations/cycle2.css';
+import { Link } from 'react-router-dom';
+import { cents, difference, displayCents, sumMoney } from './displayMoney';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import {
   Alert,
   Box,
   Button,
   Checkbox,
+  Chip,
   Container,
   Dialog,
   DialogActions,
@@ -44,7 +49,13 @@ interface Financial {
   account: Account & { grossTotal: string; discountTotal: string };
   payments: Payment[];
   refunds: { id: string; amount: string; method: string; reason: string }[];
-  debts: { id: string; principal: string }[];
+  debts: {
+    id: string;
+    principal: string;
+    installmentsTotal: string;
+    outstanding: string;
+    clientId: string;
+  }[];
   debtBalance: string;
   tips: Tip[];
   yapeQr: string;
@@ -131,6 +142,7 @@ export function FinancePage() {
     };
   }, [selected, data?.account.modality, data?.account.version]);
   const [people, setPeople] = useState('2');
+  const [showDebts, setShowDebts] = useState(false);
   const [clientSearch, setClientSearch] = useState('');
   const [clients, setClients] = useState<
     { id: string; person: { firstName: string; lastName: string } }[]
@@ -278,12 +290,23 @@ export function FinancePage() {
     });
   const disabled = busy || !ready;
   return (
-    <Container maxWidth='lg' sx={{ py: 3 }}>
+    <Container maxWidth='xl' className='finance-operation' sx={{ py: 2 }}>
       <Stack spacing={2}>
-        <Typography variant='h3'>Cobros y rendición</Typography>
+        <Stack
+          direction='row'
+          justifyContent='space-between'
+          alignItems='center'
+          flexWrap='wrap'
+          gap={1}
+        >
+          <Typography variant='h4'>Cobros y rendición</Typography>
+          <Button onClick={() => void refresh()} disabled={busy}>
+            Actualizar información
+          </Button>
+        </Stack>
         <Alert severity='info'>
-          Registro manual de dinero recibido o entregado. No ejecuta
-          transferencias Yape ni operaciones del POS. Pagar no libera la mesa.
+          Cobros manuales · pagar no libera la mesa. Yape y POS se verifican
+          externamente.
         </Alert>
         {!online && (
           <Alert severity='warning'>
@@ -293,10 +316,25 @@ export function FinancePage() {
         )}
         {error && <Alert severity='error'>{error}</Alert>}
         {notice && <Alert severity='success'>{notice}</Alert>}
-        <Button onClick={() => void refresh()} disabled={busy}>
-          Actualizar información
-        </Button>
+        <details
+          className='service-details'
+          onToggle={(e) => setShowDebts(e.currentTarget.open)}
+        >
+          <summary>Fiados y abonos · consultar cuentas</summary>
+          {showDebts && (
+            <DebtCards
+              accounts={accounts}
+              onSelect={(id) => {
+                setPayment(false);
+                setAction(undefined);
+                setSelected(id);
+                setLineIds([]);
+              }}
+            />
+          )}
+        </details>
         <TextField
+          className='finance-account-select'
           select
           label='Cuenta de atención'
           value={selected}
@@ -316,15 +354,57 @@ export function FinancePage() {
           ))}
         </TextField>
         {data && (
-          <Paper sx={{ p: 2 }}>
-            <Stack spacing={2}>
-              <Typography variant='h4'>
-                Consumo S/{data.account.grossTotal} · descuentos S/
-                {data.account.discountTotal} · total S/{data.account.total}
-              </Typography>
+          <Paper className='finance-workbench' sx={{ p: 2 }}>
+            <div className='finance-summary'>
+              <Typography variant='h6'>Resumen de cuenta</Typography>
               <Typography>
-                Saldo S/{data.account.balance} · {data.account.paymentStatus} ·
-                deuda vigente S/{data.debtBalance}
+                {data.account.tables.map((t) => t.name).join(' + ') ||
+                  data.account.modality}
+              </Typography>
+              <dl className='money-summary'>
+                <div>
+                  <dt>Consumo</dt>
+                  <dd>S/ {data.account.grossTotal}</dd>
+                </div>
+                <div>
+                  <dt>Descuentos</dt>
+                  <dd>S/ {data.account.discountTotal}</dd>
+                </div>
+                <div>
+                  <dt>Total</dt>
+                  <dd>S/ {data.account.total}</dd>
+                </div>
+                <div>
+                  <dt>Cobros registrados</dt>
+                  <dd>
+                    S/ {sumMoney(data.payments.map((p) => p.appliedAmount))}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Devuelto</dt>
+                  <dd>S/ {sumMoney(data.refunds.map((r) => r.amount))}</dd>
+                </div>
+                <div className='balance'>
+                  <dt>
+                    {data.account.paymentStatus === 'CREDIT'
+                      ? 'SALDO A FAVOR'
+                      : 'SALDO'}
+                  </dt>
+                  <dd>S/ {data.account.balance}</dd>
+                </div>
+              </dl>
+              <Typography variant='caption'>
+                Estado de pago:{' '}
+                {{
+                  UNPAID: 'Pendiente',
+                  PARTIAL: 'Pago parcial',
+                  SETTLED: 'Saldada',
+                  CREDIT: 'Saldo a favor'
+                }[data.account.paymentStatus] || data.account.paymentStatus}
+                . Deuda vigente S/ {data.debtBalance}.
+              </Typography>
+              <Typography variant='subtitle1' fontWeight={700}>
+                Productos / división del cobro
               </Typography>
               {data.account.lines
                 .filter((l) => l.status === 'ACTIVE')
@@ -349,6 +429,13 @@ export function FinancePage() {
               <Typography variant='caption'>
                 Seleccione productos para limitar el cobro a esos consumos. Sin
                 selección, el importe se distribuye sobre el saldo.
+              </Typography>
+            </div>
+            <div className='finance-actions'>
+              <Typography variant='h6'>Registrar pago</Typography>
+              <Typography variant='body2'>
+                El saldo se valida nuevamente al confirmar. Pagar no libera la
+                mesa.
               </Typography>
               <Stack direction='row' spacing={1} flexWrap='wrap'>
                 <Button
@@ -421,6 +508,7 @@ export function FinancePage() {
                       'Solo se permite devolver saldo a favor. No ejecuta una reversión externa.'
                     )
                   }
+                  color='error'
                 >
                   Reembolso
                 </Button>
@@ -569,15 +657,66 @@ export function FinancePage() {
                   Dividir saldo
                 </Button>
               </Stack>
-              <Typography variant='h5'>Pagos anteriores</Typography>
+              <Stack direction='row' gap={1} flexWrap='wrap'>
+                <Button
+                  component={Link}
+                  to={`/internal-documents?accountId=${selected}`}
+                >
+                  Ver cuenta
+                </Button>
+                <Button
+                  component={Link}
+                  to={`/internal-documents?accountId=${selected}`}
+                  disabled={!data.payments.length}
+                >
+                  Ticket interno
+                </Button>
+              </Stack>
+              <Typography variant='caption'>
+                DOCUMENTO INTERNO · cuenta, emisión y reimpresión.
+              </Typography>
+            </div>
+            <div className='finance-history'>
+              {!!data.debts.length && (
+                <section className='debt-summary'>
+                  <Typography variant='h6'>Fiados y abonos</Typography>
+                  <Typography>
+                    Cliente:{' '}
+                    {clients.find((c) => c.id === data.account.clientId)?.person
+                      .firstName || data.account.clientId}
+                  </Typography>
+                  {data.debts.map((d) => (
+                    <div className='debt-card' key={d.id}>
+                      <Typography>Deuda original S/ {d.principal}</Typography>
+                      <Typography>Abonado S/ {d.installmentsTotal}</Typography>
+                      <Typography fontWeight={700}>
+                        Saldo S/ {d.outstanding}
+                      </Typography>
+                    </div>
+                  ))}
+                  <Typography variant='caption'>
+                    Los abonos son cobros de deuda, no ventas nuevas. Consulte
+                    el historial de pagos de esta cuenta.
+                  </Typography>
+                </section>
+              )}
+              <Typography variant='h6'>Pagos anteriores</Typography>
+              {!data.payments.length && (
+                <Typography color='text.secondary'>
+                  Sin pagos registrados.
+                </Typography>
+              )}
               {data.payments.map((p) => (
-                <Typography key={p.id}>
+                <Typography key={p.id} className='payment-history-row'>
                   {new Date(p.confirmedAt).toLocaleString('es-PE', {
                     timeZone: restaurant?.timeZone || 'America/Lima'
                   })}{' '}
                   · {p.method} · aplicado S/{p.appliedAmount} · recibido S/
                   {p.receivedAmount} · vuelto S/{p.changeAmount} · reembolsado
-                  S/{p.refunded}
+                  S/{p.refunded} · cobrador{' '}
+                  {p.collectorId === user?.id
+                    ? user.person.firstName
+                    : p.collectorId}
                 </Typography>
               ))}
               {data.refunds.map((r) => (
@@ -585,12 +724,21 @@ export function FinancePage() {
                   Devolución {r.method}: S/{r.amount} · {r.reason}
                 </Typography>
               ))}
+              <Typography variant='subtitle1'>
+                Propinas · separadas de la venta
+              </Typography>
               {data.tips.map((t) => (
                 <Typography key={t.id}>
-                  Propina {t.kind}: S/{t.amount} · entregado S/{t.paidOut}
+                  Propina{' '}
+                  {t.kind === 'DIRECT'
+                    ? 'directa al cobrador'
+                    : t.kind === 'DIGITAL_RECEIPT'
+                      ? 'digital recibida'
+                      : 'digital entregada'}
+                  : S/{t.amount} · entregado S/{t.paidOut}
                 </Typography>
               ))}
-            </Stack>
+            </div>
           </Paper>
         )}
         <Typography variant='h4'>Turnos y rendiciones</Typography>
@@ -731,9 +879,54 @@ export function FinancePage() {
         >
           <DialogTitle>{action?.title}</DialogTitle>
           <DialogContent>
+            {error && <Alert severity='error'>{error}</Alert>}
             <Stack spacing={2} sx={{ pt: 1 }}>
               {action?.explanation && (
                 <Alert severity='info'>{action.explanation}</Alert>
+              )}
+              {action?.path.endsWith('/refunds') &&
+                (() => {
+                  const original = data?.payments.find(
+                    (p) => p.id === values.paymentId
+                  );
+                  if (!original)
+                    return (
+                      <Alert severity='warning'>
+                        Seleccione el pago original. Devolver dinero no cancela
+                        ni elimina ese pago.
+                      </Alert>
+                    );
+                  const remaining =
+                    (cents(original.appliedAmount) || BigInt(0)) -
+                    (cents(original.refunded) || BigInt(0));
+                  const credit = -(
+                    cents(data?.account.balance || '0') || BigInt(0)
+                  );
+                  const max = remaining < credit ? remaining : credit;
+                  return (
+                    <Paper className='refund-summary' variant='outlined'>
+                      <Typography>
+                        Pago original S/ {original.appliedAmount}
+                      </Typography>
+                      <Typography>
+                        Ya devuelto S/ {original.refunded}
+                      </Typography>
+                      <Typography fontWeight={700}>
+                        Máximo disponible S/{' '}
+                        {displayCents(max > BigInt(0) ? max : BigInt(0))}
+                      </Typography>
+                      <Typography variant='caption'>
+                        Sujeto a validación del servidor. Yape/POS no se
+                        revierten automáticamente.
+                      </Typography>
+                    </Paper>
+                  );
+                })()}
+              {action?.path.endsWith('/tips') && (
+                <Alert severity='info'>
+                  Propina voluntaria, separada de la venta. Beneficiario: la
+                  persona que realizó el cobro seleccionado.
+                </Alert>
               )}
               {action?.fields.map((f) => (
                 <TextField
@@ -784,7 +977,9 @@ export function FinancePage() {
                 void run(action.path, body);
               }}
             >
-              Confirmar registro
+              {action?.path.endsWith('/refunds')
+                ? 'Registrar devolución'
+                : 'Confirmar registro'}
             </Button>
           </DialogActions>
         </Dialog>
@@ -793,9 +988,24 @@ export function FinancePage() {
           onClose={() => !busy && setPayment(false)}
           fullWidth
         >
-          <DialogTitle>Confirmar dinero recibido</DialogTitle>
+          <DialogTitle>
+            {installment ? 'Registrar abono' : 'Confirmar dinero recibido'}
+          </DialogTitle>
           <DialogContent>
+            {error && <Alert severity='error'>{error}</Alert>}
             <Stack spacing={2} sx={{ pt: 1 }}>
+              <Paper className='payment-balance' variant='outlined'>
+                <Typography variant='caption'>SALDO ACTUAL</Typography>
+                <Typography variant='h5'>S/ {data?.account.balance}</Typography>
+                <Typography variant='body2'>
+                  Cobrador: {user?.person.firstName || user?.id}
+                </Typography>
+              </Paper>
+              {installment && (
+                <Alert severity='info'>
+                  Abono a deuda existente. No registra una segunda venta.
+                </Alert>
+              )}
               {data?.account.version !== payVersion && (
                 <Alert severity='warning'>
                   La cuenta cambió. Cierre este formulario y revise el saldo
@@ -820,7 +1030,24 @@ export function FinancePage() {
                 </Alert>
               )}
               {parts.map((part, i) => (
-                <Stack key={i} spacing={1}>
+                <Stack key={i} spacing={1} className='payment-part'>
+                  <Stack direction='row' gap={1} flexWrap='wrap'>
+                    {methods.map((m) => (
+                      <Chip
+                        key={m.id}
+                        clickable
+                        color={part.method === m.id ? 'primary' : 'default'}
+                        label={m.name}
+                        onClick={() =>
+                          setParts((p) =>
+                            p.map((v, j) =>
+                              j === i ? { ...v, method: m.id } : v
+                            )
+                          )
+                        }
+                      />
+                    ))}
+                  </Stack>
                   <TextField
                     select
                     label='Método'
@@ -857,8 +1084,28 @@ export function FinancePage() {
                       }
                     />
                   ))}
+                  {part.method === 'CASH' && (
+                    <Typography className='cash-change'>
+                      Vuelto estimado: S/{' '}
+                      {difference(part.receivedAmount, part.amount)}
+                    </Typography>
+                  )}
+                  {part.method === 'CARD' && (
+                    <Alert severity='info'>
+                      Confirme manualmente el cobro en el POS externo antes de
+                      registrar. No ingrese datos sensibles de tarjeta.
+                    </Alert>
+                  )}
                 </Stack>
               ))}
+              <Typography variant='body2'>
+                Saldo estimado después del cobro: S/{' '}
+                {difference(
+                  data?.account.balance || '',
+                  sumMoney(parts.map((p) => p.amount))
+                )}
+                . El servidor valida el importe final.
+              </Typography>
               <Button
                 disabled={parts.length >= 20}
                 onClick={() =>
@@ -891,8 +1138,8 @@ export function FinancePage() {
                       .filter((p) => p.method === 'YAPE')
                       .map((p) => `S/${p.amount || '0.00'}`)
                       .join(' + ')}
-                    . Verifique el dinero recibido; el QR no incorpora este
-                    importe.
+                    . Verifica visualmente el pago antes de confirmarlo. El QR
+                    no incorpora este importe.
                   </Typography>
                   <FormControlLabel
                     control={

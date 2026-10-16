@@ -1,3 +1,4 @@
+import { useSearchParams } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
@@ -26,10 +27,11 @@ export function DocumentsPage() {
       document.documentElement.classList.remove('internal-print-mode');
     };
   }, []);
+  const [searchParams] = useSearchParams();
   const user = useSelector(selectAuth).user,
     restaurant = useRestaurantStore((s) => s.restaurant);
   const [accounts, setAccounts] = useState<Account[]>([]),
-    [selected, setSelected] = useState(''),
+    [selected, setSelected] = useState(searchParams.get('accountId') || ''),
     [doc, setDoc] = useState<InternalDocument>(),
     [rows, setRows] = useState<
       { id: string; kind: string; createdAt: string }[]

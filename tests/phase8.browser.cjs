@@ -179,6 +179,27 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
     await page
       .getByText('Efectivo en poder del courier', { exact: true })
       .waitFor();
+    for (const [width, height] of [
+      [390, 844],
+      [900, 1100],
+      [1440, 900]
+    ]) {
+      await page.setViewportSize({ width, height });
+      await page.locator('.offsite-operation').scrollIntoViewIfNeeded();
+      if (
+        await page.evaluate(
+          () =>
+            document.documentElement.scrollWidth > innerWidth + 2 ||
+            document.querySelector('[data-testid=app-content]').scrollWidth >
+              document.querySelector('[data-testid=app-content]').clientWidth +
+                2
+        )
+      )
+        throw Error('Delivery horizontal overflow');
+      await page.screenshot({
+        path: `/workspace/cloud-setup/cycle2-delivery-${width}.png`
+      });
+    }
     console.log('RESOURCE_DIAGNOSTICS', JSON.stringify(resources));
     const unexpected = resources.filter(
       (r) =>

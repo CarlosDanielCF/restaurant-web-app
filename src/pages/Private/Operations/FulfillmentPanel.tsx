@@ -1,3 +1,4 @@
+import './cycle2.css';
 import { useRestaurantStore } from '../Common/store/restaurantStore';
 import { useCallback, useContext, useEffect, useState } from 'react';
 import {
@@ -126,7 +127,7 @@ export function FulfillmentPanel({
           <details className='service-details'>
             <summary>Envíos ({dispatches.length})</summary>
             {dispatches.map((d) => (
-              <Stack key={d.id} spacing={1}>
+              <Stack key={d.id} spacing={1} className='dispatch-summary'>
                 <Typography fontWeight='bold'>
                   Comanda {d.sequenceNumber} ·{' '}
                   {new Date(d.confirmedAt).toLocaleTimeString('es-PE', {
@@ -137,11 +138,11 @@ export function FulfillmentPanel({
                     ` · ${Math.max(0, Math.floor((Date.now() - new Date(d.confirmedAt).getTime()) / 60000))} min desde el envío`}
                 </Typography>
                 {d.items.map((i) => (
-                  <Typography key={i.id}>
+                  <Typography key={i.id} className='dispatch-line'>
                     {i.itemSnapshot.name} ·{' '}
                     {i.status === 'CANCELLED'
                       ? 'Cancelado'
-                      : `${i.delivered} salieron · ${i.pending} pendientes`}{' '}
+                      : `Enviado: ${i.quantity} · Entregado: ${i.delivered} · Pendiente: ${i.pending}`}{' '}
                     · {i.itemSnapshot.notes}
                   </Typography>
                 ))}
@@ -167,14 +168,41 @@ export function FulfillmentPanel({
                   </MenuItem>
                 ))}
               </TextField>
-              <TextField
-                label='Unidades de salida o corrección'
-                type='number'
-                inputProps={{ min: 0.001, step: 0.001 }}
-                value={quantity}
-                onChange={(e) => setQuantity(Number(e.target.value))}
-              />
+              {itemId && (
+                <Typography className='exit-pending'>
+                  Pendiente: {items.find((i) => i.id === itemId)?.pending} ·
+                  Entregado: {items.find((i) => i.id === itemId)?.delivered}
+                </Typography>
+              )}
+              <Stack
+                direction='row'
+                gap={1}
+                alignItems='center'
+                className='exit-stepper'
+              >
+                <Button
+                  aria-label='Reducir unidades de salida'
+                  disabled={quantity <= 1}
+                  onClick={() => setQuantity((q) => Math.max(0.001, q - 1))}
+                >
+                  −
+                </Button>
+                <TextField
+                  label='Unidades de salida o corrección'
+                  type='number'
+                  inputProps={{ min: 0.001, step: 0.001 }}
+                  value={quantity}
+                  onChange={(e) => setQuantity(Number(e.target.value))}
+                />
+                <Button
+                  aria-label='Aumentar unidades de salida'
+                  onClick={() => setQuantity((q) => q + 1)}
+                >
+                  +
+                </Button>
+              </Stack>
               <Button
+                variant='contained'
                 disabled={!itemId || quantity <= 0 || error}
                 onClick={() =>
                   void action(`dispatch-items/${itemId}/exits`, { quantity })

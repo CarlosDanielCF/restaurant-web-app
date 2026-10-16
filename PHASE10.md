@@ -55,3 +55,26 @@ Catálogo compartido con búsqueda, categorías reales, imagen autenticada cuand
 Sin cambios backend, contratos, permisos, idempotencia ni cálculo monetario. Los campos opcionales de lectura category/images/createdAt/grossTotal/discountTotal ya existen en respuestas del backend. Sidebar conservado. CSS responsive 390×844, 900×1100 y 1440×900, sin overflow global. No Ciclo 2.
 
 Validación: typecheck, build, lint focalizado; tests de idempotencia y arranque; navegador con backend real para Atención, integración, F6–7, F8 y F9. El fixture de Atención utiliza identificación única para evitar colisión con otro test; datos propios eliminados al finalizar. El recorrido espera el layout visible tras navegación diferida. Persisten avisos históricos de bundles/dependencias, recursos externos, auth-renew previo a sesión y endpoint legacy de caja; no son excepciones nuevas de esta corrección.
+
+## Ciclo 2 — Cocina, cobros, delivery y fiados/devoluciones
+
+Base aprobada frontend `c2808355211b78dcb4353cd0e6615d3ed5a11912`; backend `f312cb5fff101a75983bd1f869b072b434b97469`, sin cambios. Misma rama `codex/phase-10`, sin merge a main. No se rediseñan administración, rendiciones ni reportes.
+
+- Cocina: tarjetas legibles, cantidades pendientes y observaciones destacadas; conexión, reloj y alerta/demora con texto. Se conservan orden, tres envíos en TV, navegación, avisos persistentes, timbre/sonido y autoridad del servidor. No se incorporan acciones de preparación/salida para cocina.
+- Mozo: enviado/entregado/pendiente por plato, selector de unidades con controles táctiles y formulario existente para salidas parciales/correcciones. Motivo obligatorio y reloj original intactos.
+- Cobros: resumen y acciones en dos columnas, saldo destacado; pagos originales, devoluciones y propinas separados. Métodos seleccionables, QR original, verificación manual Yape, explicación POS externo, vuelto y saldo estimados usando aritmética entera BigInt de céntimos. No se envían estimaciones ni se sustituyen validaciones del backend. Reglas de pagos mixtos, división, responsables, turnos y retry sin cambios.
+- Devoluciones: pago original, devuelto y máximo mostrados según pago y saldo a favor actuales; confirmación destructiva con motivo. El servidor vuelve a validar versiones y límites. Propina identifica al beneficiario del pago, separada de ventas.
+- Fiados: consulta paginada de seis cuentas identificadas por página usando endpoints existentes; deuda original, abonos y saldo del servidor; acceso al historial/cobro. Carga bajo demanda al desplegar. No se infiere el último abono individual: el resumen actual no expone los vínculos cuota/pago ni su fecha por deuda. Se conserva el historial de pagos con fecha y cobrador. Esto queda como límite de presentación, sin extender contratos por una mejora visual.
+- Delivery/para llevar: tarjetas filtrables con contacto, cocina pendiente, entrega y pago separados; detalle/dirección, operaciones existentes y custodia courier organizados. Recepción física no se presenta como venta nueva. Las consultas de tarjetas se limitan a seis cuentas visibles por página.
+- Documentos desde Cobros: enlaces `Ver cuenta` / `Ticket interno` a `/internal-documents?accountId=<id>`. Único cambio de navegación: preselección de cuenta; no emisión automática, ni modificación de snapshot/impresión. Identificación DOCUMENTO INTERNO conservada.
+
+### Validación Ciclo 2
+
+- Typecheck, build y ESLint focalizado. Sin cambios de dependencias/migraciones.
+- Seis tests de idempotencia existentes y tres tests nuevos de precisión de importes presentados.
+- 51 pruebas HTTP/MySQL existentes: fulfillment, finance y offsite, sobre fixtures propios en restaurante_app. Incluyen concurrencia, permisos, aislamiento, parcial/mixto, devoluciones, deuda, propinas y custodia del courier.
+- `phase10-cycle2.browser.cjs`: cuenta real, envíos adicionales, cuatro comandas/tres visibles y navegación TV, salida parcial, corrección con motivo y reloj preservado, reemplazo al completar, cancelación/historial, responsive.
+- `phase10-finance.browser.cjs`: efectivo/vuelto, parcial, retry tras respuesta perdida/doble clic, Yape manual, propina, descuento, devolución, fiado y abono sin venta nueva; tres tamaños de pantalla.
+- Regresiones browser F6–7, F8 y F9 (incluye pago mixto/tarjeta y documentos). F8 amplía comprobación de overflow y capturas 390×844, 900×1100 y 1440×900. Cocina 1920×1080.
+
+Limitaciones heredadas: advertencias de bundle/dependencias/React Router/MUI, imagen externa inaccesible, auth-renew antes del login y endpoint legacy de caja. No se amplió alcance para corregirlas. Validación con Chromium en Cloud, no dispositivos físicos/TV real. El Ciclo 2 se detiene para revisión; no avance a administración/rendiciones/reportes.

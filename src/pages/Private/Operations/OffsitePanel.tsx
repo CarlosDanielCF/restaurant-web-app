@@ -1,6 +1,8 @@
+import './cycle2.css';
 import { useEffect, useRef, useState } from 'react';
 import {
   Alert,
+  Chip,
   Button,
   Card,
   CardContent,
@@ -21,6 +23,12 @@ export const modalityLabel: Record<string, string> = {
   TAKE_AWAY: 'PARA LLEVAR',
   OWN_DELIVERY: 'DELIVERY PROPIO',
   EXTERNAL_COURIER: 'COURIER EXTERNO'
+};
+export const paymentLabel: Record<string, string> = {
+  UNPAID: 'Pendiente',
+  PARTIAL: 'Pago parcial',
+  SETTLED: 'Saldado',
+  CREDIT: 'Saldo a favor'
 };
 interface Details {
   customerName: string;
@@ -134,7 +142,7 @@ export function OffsitePanel({ account, run }: { account: Account; run: Run }) {
     CANCELLED: 'Entrega cancelada'
   };
   return (
-    <Card>
+    <Card className='offsite-operation'>
       <CardContent>
         <Stack spacing={2}>
           <Typography variant='h5'>
@@ -149,97 +157,131 @@ export function OffsitePanel({ account, run }: { account: Account; run: Run }) {
             Estado: {labels[data?.delivery?.status || 'PREPARING']} · saldo S/
             {account.balance}
           </Typography>
-          {(['customerName', 'phone', 'address', 'reference'] as const).map(
-            (key) => (
-              <TextField
-                key={key}
-                label={
-                  {
-                    customerName: 'Nombre de quien recibe',
-                    phone: 'Teléfono de contacto',
-                    address: 'Dirección de entrega',
-                    reference: 'Referencia de entrega'
-                  }[key]
-                }
-                value={fields[key]}
-                onChange={(e) =>
-                  setFields((f) => ({ ...f, [key]: e.target.value }))
-                }
-              />
-            )
-          )}
-          {account.modality !== 'TAKE_AWAY' && (
-            <>
-              <TextField
-                select
-                label='Repartidor / courier'
-                value={fields.courierId}
-                onChange={(e) =>
-                  setFields((f) => ({ ...f, courierId: e.target.value }))
-                }
-              >
-                <MenuItem value=''>Sin asignar</MenuItem>
-                {couriers
-                  .filter((c) => c.kind === account.modality)
-                  .map((c) => (
-                    <MenuItem key={c.id} value={c.id}>
-                      {c.name}
-                    </MenuItem>
-                  ))}
-              </TextField>
-              <TextField
-                label='Nuevo repartidor: nombre'
-                value={courierName}
-                onChange={(e) => setCourierName(e.target.value)}
-              />
-              <TextField
-                label='Nuevo repartidor: teléfono'
-                value={courierPhone}
-                onChange={(e) => setCourierPhone(e.target.value)}
-              />
-              <Button
-                onClick={async () => {
-                  if (
-                    await run('/offsite/couriers', {
-                      name: courierName,
-                      phone: courierPhone,
-                      kind: account.modality
-                    })
-                  ) {
-                    setCouriers(
-                      (
-                        await restauranteApi.get<typeof couriers>(
-                          '/offsite/couriers'
-                        )
-                      ).data
-                    );
-                    setCourierName('');
-                    setCourierPhone('');
-                  }
-                }}
-              >
-                Registrar repartidor/courier
-              </Button>
-            </>
-          )}
-          <TextField
-            label='Motivo de operación de entrega'
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-          />
-          <Button
-            disabled={!data || !reason.trim()}
-            onClick={() =>
-              void run(`${base}/details`, {
-                ...fields,
-                courierId: fields.courierId || undefined,
-                expectedVersion: account.version,
-                reason
-              })
-            }
+          <Stack
+            direction='row'
+            gap={1}
+            flexWrap='wrap'
+            className='offsite-states'
           >
-            Guardar datos de entrega
-          </Button>
+            <Chip
+              label={`Entrega: ${labels[data?.delivery?.status || 'PREPARING']}`}
+              color='primary'
+              variant='outlined'
+            />
+            <Chip
+              label={`Pago: ${paymentLabel[account.paymentStatus] || account.paymentStatus} · saldo S/ ${account.balance}`}
+              variant='outlined'
+            />
+            <Chip
+              label={`Atención: ${account.attentionStatus === 'OPEN' ? 'Abierta' : 'Cerrada'}`}
+              variant='outlined'
+            />
+          </Stack>
+          {data?.delivery && (
+            <Stack className='offsite-contact'>
+              <Typography fontWeight={700}>
+                {data.delivery.customerName || 'Sin nombre registrado'}
+              </Typography>
+              <Typography>{data.delivery.phone}</Typography>
+              <Typography>{data.delivery.address}</Typography>
+              <Typography variant='caption'>
+                {data.delivery.reference}
+              </Typography>
+            </Stack>
+          )}
+          <div className='offsite-fields'>
+            {(['customerName', 'phone', 'address', 'reference'] as const).map(
+              (key) => (
+                <TextField
+                  key={key}
+                  label={
+                    {
+                      customerName: 'Nombre de quien recibe',
+                      phone: 'Teléfono de contacto',
+                      address: 'Dirección de entrega',
+                      reference: 'Referencia de entrega'
+                    }[key]
+                  }
+                  value={fields[key]}
+                  onChange={(e) =>
+                    setFields((f) => ({ ...f, [key]: e.target.value }))
+                  }
+                />
+              )
+            )}
+            {account.modality !== 'TAKE_AWAY' && (
+              <>
+                <TextField
+                  select
+                  label='Repartidor / courier'
+                  value={fields.courierId}
+                  onChange={(e) =>
+                    setFields((f) => ({ ...f, courierId: e.target.value }))
+                  }
+                >
+                  <MenuItem value=''>Sin asignar</MenuItem>
+                  {couriers
+                    .filter((c) => c.kind === account.modality)
+                    .map((c) => (
+                      <MenuItem key={c.id} value={c.id}>
+                        {c.name}
+                      </MenuItem>
+                    ))}
+                </TextField>
+                <TextField
+                  label='Nuevo repartidor: nombre'
+                  value={courierName}
+                  onChange={(e) => setCourierName(e.target.value)}
+                />
+                <TextField
+                  label='Nuevo repartidor: teléfono'
+                  value={courierPhone}
+                  onChange={(e) => setCourierPhone(e.target.value)}
+                />
+                <Button
+                  onClick={async () => {
+                    if (
+                      await run('/offsite/couriers', {
+                        name: courierName,
+                        phone: courierPhone,
+                        kind: account.modality
+                      })
+                    ) {
+                      setCouriers(
+                        (
+                          await restauranteApi.get<typeof couriers>(
+                            '/offsite/couriers'
+                          )
+                        ).data
+                      );
+                      setCourierName('');
+                      setCourierPhone('');
+                    }
+                  }}
+                >
+                  Registrar repartidor/courier
+                </Button>
+              </>
+            )}
+            <TextField
+              label='Motivo de operación de entrega'
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+            />
+            <Button
+              disabled={!data || !reason.trim()}
+              onClick={() =>
+                void run(`${base}/details`, {
+                  ...fields,
+                  courierId: fields.courierId || undefined,
+                  expectedVersion: account.version,
+                  reason
+                })
+              }
+            >
+              Guardar datos de entrega
+            </Button>
+          </div>
           <Stack direction='row' spacing={1} flexWrap='wrap'>
             {(states[data?.delivery?.status || 'PREPARING'] || []).map(
               (status) => (
@@ -276,65 +318,71 @@ export function OffsitePanel({ account, run }: { account: Account; run: Run }) {
           <Button component={Link} to='/finance'>
             Cobros, propinas y rendición
           </Button>
-          <Typography variant='h6'>Efectivo en poder del courier</Typography>
-          {(data?.cash || []).map((c) => (
-            <Typography key={c.id}>
-              Cobrado S/{c.appliedAmount} · por recibir S/{c.pendingAmount}
+          <section className='courier-custody'>
+            <Typography variant='h6'>Efectivo en poder del courier</Typography>
+            <Typography variant='body2'>
+              Custodia de dinero ya cobrado. Recibirlo no registra otra venta ni
+              otro pago.
             </Typography>
-          ))}
-          <TextField
-            select
-            label='Cobro a recibir del courier'
-            value={custody}
-            onChange={(e) => setCustody(e.target.value)}
-          >
-            <MenuItem value=''>Seleccione</MenuItem>
-            {data?.cash
-              .filter((c) => Number(c.pendingAmount) > 0)
-              .map((c) => (
-                <MenuItem key={c.id} value={c.id}>
-                  {c.id.slice(0, 8)} · pendiente S/{c.pendingAmount}
-                </MenuItem>
-              ))}
-          </TextField>
-          <TextField
-            label='Efectivo recibido del courier S/'
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-          />
-          <Button
-            disabled={
-              !data ||
-              !shift ||
-              !custody ||
-              !reason.trim() ||
-              account.responsibleUserId !== user?.id
-            }
-            onClick={() =>
-              void run(`${base}/cash-receipts`, {
-                expectedVersion: account.version,
-                custodyId: custody,
-                shiftId: shift,
-                amount,
-                reason
-              })
-            }
-          >
-            Confirmo recepción física del efectivo
-          </Button>
-          {!shift && (
-            <Typography>
-              Abra su turno en Cobros y rendición para recibir efectivo.
-            </Typography>
-          )}
-          {data?.receipts.map((r) => (
-            <Typography key={r.id}>
-              Recibido S/{r.amount} · responsable {r.recipientId} ·{' '}
-              {new Date(r.createdAt).toLocaleString('es-PE', {
-                timeZone: zone
-              })}
-            </Typography>
-          ))}
+            {(data?.cash || []).map((c) => (
+              <Typography key={c.id}>
+                Cobrado S/{c.appliedAmount} · por recibir S/{c.pendingAmount}
+              </Typography>
+            ))}
+            <TextField
+              select
+              label='Cobro a recibir del courier'
+              value={custody}
+              onChange={(e) => setCustody(e.target.value)}
+            >
+              <MenuItem value=''>Seleccione</MenuItem>
+              {data?.cash
+                .filter((c) => Number(c.pendingAmount) > 0)
+                .map((c) => (
+                  <MenuItem key={c.id} value={c.id}>
+                    {c.id.slice(0, 8)} · pendiente S/{c.pendingAmount}
+                  </MenuItem>
+                ))}
+            </TextField>
+            <TextField
+              label='Efectivo recibido del courier S/'
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+            />
+            <Button
+              disabled={
+                !data ||
+                !shift ||
+                !custody ||
+                !reason.trim() ||
+                account.responsibleUserId !== user?.id
+              }
+              onClick={() =>
+                void run(`${base}/cash-receipts`, {
+                  expectedVersion: account.version,
+                  custodyId: custody,
+                  shiftId: shift,
+                  amount,
+                  reason
+                })
+              }
+            >
+              Confirmo recepción física del efectivo
+            </Button>
+            {!shift && (
+              <Typography>
+                Abra su turno en Cobros y rendición para recibir efectivo.
+              </Typography>
+            )}
+            {data?.receipts.map((r) => (
+              <Typography key={r.id}>
+                Recibido S/{r.amount} · responsable {r.recipientId} ·{' '}
+                {new Date(r.createdAt).toLocaleString('es-PE', {
+                  timeZone: zone
+                })}
+              </Typography>
+            ))}
+          </section>
         </Stack>
       </CardContent>
     </Card>

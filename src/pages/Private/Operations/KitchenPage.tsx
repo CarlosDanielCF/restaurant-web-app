@@ -1,8 +1,10 @@
+import './cycle2.css';
 import { modalityLabel } from './OffsitePanel';
 import { useRestaurantStore } from '../Common/store/restaurantStore';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import {
   Alert,
+  Chip,
   Button,
   Card,
   CardContent,
@@ -140,9 +142,24 @@ export function KitchenPage() {
     }
   }
   return (
-    <Container maxWidth='xl'>
+    <Container maxWidth='xl' className='kitchen-operation'>
       <Stack spacing={2} py={2}>
-        <Typography variant='h4'>Cocina · comandas</Typography>
+        <Stack
+          direction='row'
+          justifyContent='space-between'
+          alignItems='center'
+        >
+          <Typography variant='h4'>Cocina · comandas</Typography>
+          <Chip
+            label={
+              stale
+                ? 'Desconectado · datos posiblemente desactualizados'
+                : 'Conectado'
+            }
+            color={stale ? 'warning' : 'success'}
+            variant='outlined'
+          />
+        </Stack>
         <Typography>
           Cocina avisa con timbre o verbalmente. El mozo registra la salida.
         </Typography>
@@ -162,7 +179,7 @@ export function KitchenPage() {
             recientes.
           </Alert>
         )}
-        <Typography variant='h5'>
+        <Typography variant='h5' className='kitchen-counts'>
           {total} pendientes · {visible.length} visibles ·{' '}
           {Math.max(0, total - visible.length)} adicionales
         </Typography>
@@ -232,6 +249,7 @@ export function KitchenPage() {
               warning = seconds >= 720;
             return (
               <Card
+                className={`kitchen-ticket ${late ? 'late' : warning ? 'warning' : ''}`}
                 key={d.id}
                 sx={{
                   flex: 1,
@@ -244,7 +262,7 @@ export function KitchenPage() {
               >
                 <CardContent>
                   <Stack spacing={1}>
-                    <Typography variant='h5'>
+                    <Typography variant='h5' className='ticket-location'>
                       {d.tables.map((t) => t.name).join(' + ') ||
                         modalityLabel[d.modality]}{' '}
                       · #{d.sequenceNumber}
@@ -259,6 +277,7 @@ export function KitchenPage() {
                       })}
                     </Typography>
                     <Typography
+                      className='ticket-clock'
                       color={
                         late ? 'error' : warning ? 'warning.main' : undefined
                       }
@@ -274,12 +293,16 @@ export function KitchenPage() {
                     {d.items
                       .filter((i) => i.status === 'ACTIVE' && i.pending > 0)
                       .map((i) => (
-                        <Stack key={i.id}>
+                        <Stack key={i.id} className='ticket-line'>
                           <Typography fontWeight='bold'>
                             {i.pending} × {i.itemSnapshot.name}
                           </Typography>
                           <Typography>{details(i.itemSnapshot)}</Typography>
-                          <Typography>{i.itemSnapshot.notes}</Typography>
+                          {i.itemSnapshot.notes && (
+                            <Typography className='ticket-notes'>
+                              {i.itemSnapshot.notes}
+                            </Typography>
+                          )}
                           {i.itemSnapshot.consumptionKind === 'STAFF' && (
                             <Typography>Consumo de personal</Typography>
                           )}

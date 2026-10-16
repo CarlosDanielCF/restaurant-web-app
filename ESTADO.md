@@ -1,4 +1,6 @@
-# Estado vigente — Fase 10: arranque y atención
+# Estado vigente — Fase 10: Ciclo 2
+
+Ciclo 1 aprobado. Ciclo 2: Cocina, salidas del mozo, Cobros, Delivery, Fiados y Devoluciones con presentación compacta. Backend y contratos F0–F9 preservados. Navegación a documentos con cuenta preseleccionada. Pruebas y límites en [PHASE10.md](PHASE10.md), sección Ciclo 2. No avance a Administración/Rendiciones/Reportes.
 
 Rama `codex/phase-10`, desde main frontend `6998c748c59e2b060d52b1f232a22d2ab7389c73` y backend `f312cb5fff101a75983bd1f869b072b434b97469`. Barrera A ya fue aprobada e integrada; su registro previo se conserva abajo como histórico. Sin merge de F10 a main.
 

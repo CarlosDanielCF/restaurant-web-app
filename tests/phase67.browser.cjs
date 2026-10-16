@@ -139,7 +139,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
       } else await route.continue();
     });
     await page.getByRole('button', { name: 'Confirmar cobro manual' }).click();
-    await page.getByText(/Sin confirmación. Consulte el estado/).waitFor();
+    await page.getByText(/Sin confirmación. Consulte el estado/).first().waitFor();
     // Version guard blocks stale dialogs: reconstruct the same intent after refreshing.
     await page.getByRole('button', { name: 'Volver', exact: true }).click();
     await page
@@ -164,7 +164,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
     if ((await response).status() !== 201) throw Error('Payment retry failed');
     if (paymentKeys.length !== 2 || paymentKeys[0] !== paymentKeys[1])
       throw Error('Retry/double click changed logical payment identity');
-    await page.getByText(/Saldo S\/10.00/).waitFor();
+    await page.locator('.balance dd').filter({ hasText: 'S/ 10.00' }).waitFor();
     console.log('Browser cash partial payment/change and shift passed');
     await page
       .getByRole('button', { name: 'Registrar pago', exact: true })
@@ -192,7 +192,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
     if ((await response).status() !== 201) throw Error('Yape payment failed');
     if (paymentKeys[2] === paymentKeys[0])
       throw Error('New payment reused old key');
-    await page.getByText(/Saldo S\/0.00/).waitFor();
+    await page.locator('.balance dd').filter({ hasText: 'S/ 0.00' }).waitFor();
     console.log(
       'Browser manual Yape, missing QR warning and full settlement passed'
     );
