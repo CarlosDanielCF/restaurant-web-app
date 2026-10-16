@@ -1,3 +1,17 @@
+# Estado vigente — Fase 10: arranque y atención
+
+Rama `codex/phase-10`, desde main frontend `6998c748c59e2b060d52b1f232a22d2ab7389c73` y backend `f312cb5fff101a75983bd1f869b072b434b97469`. Barrera A ya fue aprobada e integrada; su registro previo se conserva abajo como histórico. Sin merge de F10 a main.
+
+Puerto 3030 estricto, carga diferida de módulos no necesarios para login y estado de arranque visible. Diagnóstico Windows y comandos en [WINDOWS.md](WINDOWS.md). Se verificó el cambio de puerto automático reportado y se redujo el grafo inicial de 487 a 87 módulos; no se atribuye una URL pendiente no registrada ni se afirma haber reproducido Windows nativo.
+
+Mejoras limitadas a estructura/header/sidebar y atención: mesas, pedidos/adicionales, reservas, carta, menú del día y disponibilidad. Mismos contratos, payloads, autorizaciones y reglas del servidor. Backend sin cambios; 15 migraciones existentes, ninguna nueva.
+
+Pruebas y alcance en [PHASE10.md](PHASE10.md). Recorrido de atención/pedidos, responsive y regresiones F6–F9 ejecutados con backend real, sin excepciones JavaScript nuevas. No se avanzan otras pantallas. Pendiente revisión de esta rama y comprobación del arranque en Windows nativo.
+
+---
+
+## Registro histórico — Barrera A
+
 # Estado vigente — Integración controlada Barrera A
 
 Frontend `integration/f0-f9` desde `2e020095df2b284d13471151ccd51c61691eb0dd`. Backend intacto en `codex/phase-9`, `f312cb5fff101a75983bd1f869b072b434b97469`. Sin merge a main, sin modificar Gemini, sin F10/release. Barrera A pendiente de aprobación.

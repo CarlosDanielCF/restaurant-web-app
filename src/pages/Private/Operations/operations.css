@@ -1,0 +1,107 @@
+.operations-workspace {
+  min-width: 0;
+}
+.operations-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+.operations-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.operations-metrics > div {
+  padding: 16px 20px;
+  border: 1px solid #dce9e6;
+  border-radius: 14px;
+  background: #fff;
+  color: #134e4a;
+}
+.operations-workspace .operations-tabs {
+  height: auto;
+  min-height: 48px;
+  padding: 4px;
+  border-radius: 12px;
+  background: #eaf3f1;
+}
+.operations-workspace .operations-tabs .MuiTabs-indicator {
+  display: none;
+}
+.operations-workspace .operations-tabs .MuiTab-root {
+  min-height: 44px;
+  height: auto;
+  white-space: nowrap;
+}
+.operations-workspace .operations-tabs .MuiTab-root.Mui-selected {
+  background: #107e76;
+  color: #fff;
+}
+.operations-section {
+  margin-top: 16px;
+  min-width: 0;
+}
+.operations-section .MuiCard-root {
+  border: 1px solid #e0e9e7;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px #183d3210;
+}
+.operations-section .MuiCardContent-root {
+  padding: 24px;
+}
+.operations-section .MuiButton-root {
+  min-height: 44px;
+}
+.operations-section .MuiInputBase-root {
+  background: #fff;
+}
+.table-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+  width: 100%;
+}
+.table-choice-grid .MuiFormControlLabel-root {
+  margin: 0;
+  min-height: 76px;
+}
+.operation-empty {
+  padding: 24px;
+  background: #f0f6f4;
+  border: 1px dashed #b6d3ca;
+  border-radius: 12px;
+}
+@media (min-width: 900px) {
+  .operations-section .operation-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+  }
+  .operations-section .operation-form-grid > * {
+    margin-top: 0 !important;
+    min-width: 0;
+    grid-column: 1 / -1;
+  }
+  .operations-section .operation-form-grid > .MuiFormControl-root {
+    grid-column: auto;
+  }
+}
+@media (max-width: 599px) {
+  .operations-workspace.MuiContainer-root {
+    padding: 0;
+  }
+  .operations-metrics {
+    gap: 6px;
+  }
+  .operations-metrics > div {
+    padding: 12px 8px;
+  }
+  .operations-metrics .MuiTypography-body1 {
+    font-size: 12px;
+  }
+  .operations-section .MuiCardContent-root {
+    padding: 16px;
+  }
+}

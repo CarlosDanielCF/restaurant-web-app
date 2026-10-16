@@ -8,7 +8,8 @@ import {
   useMediaQuery
 } from '@mui/material';
 import MenuTwoToneIcon from '@mui/icons-material/MenuTwoTone';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
+import { menuSections } from './data/MenuData';
 
 import Sidebar from './Sidebar/Sidebar.component';
 import HeaderUserbox from './Header/components/Userbox.component';
@@ -24,6 +25,10 @@ interface SidebarLayoutProps {
 
 const SidebarLayout: FC<SidebarLayoutProps> = () => {
   const theme = useTheme();
+  const location = useLocation();
+  const currentSection = menuSections
+    .flatMap((section) => section.items)
+    .find((item) => location.pathname.startsWith(item.to))?.title;
   const mobile = useMediaQuery(theme.breakpoints.down('lg'));
   const { toggleSidebar, closeSidebar } = useContext(SidebarContext);
   const restaurant = useRestaurantStore((state) => state.restaurant);
@@ -38,7 +43,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = () => {
       <Box
         sx={{
           display: 'flex',
-          height: '100vh',
+          height: '100dvh',
           overflow: 'hidden'
         }}
       >
@@ -56,17 +61,18 @@ const SidebarLayout: FC<SidebarLayoutProps> = () => {
             minWidth: 0,
             width: '100%',
             overflow: 'auto',
-            height: '100vh',
+            height: '100dvh',
             transition: theme.transitions.create(['margin', 'width'], {
               easing: theme.transitions.easing.sharp,
               duration: theme.transitions.duration.leavingScreen
             })
           }}
         >
-          {/* Mobile Top Navigation Bar */}
+          {/* Shared header: navigation on small screens, context on desktop. */}
           <Box
             sx={{
-              display: { xs: 'flex', lg: 'none' },
+              display: 'flex',
+              flexShrink: 0,
               alignItems: 'center',
               justifyContent: 'space-between',
               px: 2,
@@ -92,6 +98,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = () => {
                 edge='start'
                 aria-label='Abrir menú de navegación'
                 size='medium'
+                sx={{ display: { xs: 'inline-flex', lg: 'none' } }}
               >
                 <MenuTwoToneIcon />
               </IconButton>
@@ -102,11 +109,19 @@ const SidebarLayout: FC<SidebarLayoutProps> = () => {
                 noWrap
               >
                 {restaurant?.name || 'Sistema Restaurante'}
+                <Typography
+                  component='span'
+                  variant='caption'
+                  color='text.secondary'
+                  sx={{ display: { xs: 'none', lg: 'block' } }}
+                >
+                  Sección: {currentSection || 'Restaurante'}
+                </Typography>
               </Typography>
             </Box>
             {user && <HeaderUserbox />}
           </Box>
-          <Box sx={{ p: { xs: 1.5, sm: 2, md: 3 }, flex: 1 }}>
+          <Box sx={{ p: { xs: 1.5, sm: 2, md: 3 }, flex: 1, minWidth: 0 }}>
             <Outlet />
           </Box>
         </Box>

@@ -53,9 +53,15 @@ export function ReservationsWorkspace({
   const [reason, setReason] = useState('');
   return (
     <Stack spacing={2}>
+      <Typography variant='h5' component='h2'>
+        Reservas
+      </Typography>
+      <Typography color='text.secondary'>
+        Registra la visita y elige las mesas cuando llegue el cliente.
+      </Typography>
       <Card>
         <CardContent>
-          <Stack spacing={2}>
+          <Stack spacing={2} className='operation-form-grid'>
             <Typography variant='h6'>
               {draft.id ? 'Editar reserva' : 'Registrar reserva'}
             </Typography>
@@ -97,7 +103,7 @@ export function ReservationsWorkspace({
               value={draft.notes}
               onChange={(e) => setDraft({ ...draft, notes: e.target.value })}
             />
-            <Stack direction='row'>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
               <Button
                 variant='contained'
                 onClick={async () => {
@@ -126,6 +132,11 @@ export function ReservationsWorkspace({
         value={reason}
         onChange={(e) => setReason(e.target.value)}
       />
+      {!reservations.length && (
+        <Typography className='operation-empty'>
+          Todavía no hay reservas registradas.
+        </Typography>
+      )}
       {reservations.map((r) => (
         <Card key={r.id}>
           <CardContent>

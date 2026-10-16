@@ -5,7 +5,11 @@ import { selectAuth } from '../redux/slices/auth';
 import { useAppSelector } from '../hooks/useRedux';
 
 import { Public } from '../pages/Public/Public.page';
-import { SetupRestaurant } from '@/pages/Private/SetupRestaurant';
+const SetupRestaurant = lazy(() =>
+  import('@/pages/Private/SetupRestaurant').then((m) => ({
+    default: m.SetupRestaurant
+  }))
+);
 import { useRestaurantStore } from '@/pages/Private/Common/store/restaurantStore';
 import { useRenewToken } from '@/pages/Public/Auth/hooks/useAuth';
 import { Box, CircularProgress, Typography } from '@mui/material';

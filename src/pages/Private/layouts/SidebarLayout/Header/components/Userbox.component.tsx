@@ -109,6 +109,9 @@ export const Userbox = ({ showDetails = false }: UserboxProps) => {
         alignItems='center'
         sx={{
           cursor: 'pointer',
+          minWidth: 0,
+          maxWidth: '100%',
+          overflow: 'hidden',
           p: showDetails ? 1 : 0.5,
           borderRadius: 2,
           transition: 'all 0.2s ease',
@@ -133,6 +136,7 @@ export const Userbox = ({ showDetails = false }: UserboxProps) => {
             variant='circular'
             alt={user.name}
             sx={{
+              flexShrink: 0,
               width: showDetails ? 38 : 34,
               height: showDetails ? 38 : 34,
               bgcolor: 'primary.main',

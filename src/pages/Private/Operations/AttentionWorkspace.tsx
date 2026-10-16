@@ -4,6 +4,9 @@ import { FulfillmentPanel } from './FulfillmentPanel';
 import { useRestaurantStore } from '../Common/store/restaurantStore';
 import { useEffect, useState } from 'react';
 import {
+  Alert,
+  Box,
+  Chip,
   Button,
   Card,
   CardContent,
@@ -30,7 +33,11 @@ export function TableChoices({
   accountId?: string;
 }) {
   return (
-    <Stack direction='row' flexWrap='wrap'>
+    <Box
+      className='table-choice-grid'
+      role='group'
+      aria-label='Seleccionar mesas'
+    >
       {tables
         .filter((t) => t.isActive)
         .map((t) => {
@@ -42,11 +49,27 @@ export function TableChoices({
           return (
             <FormControlLabel
               key={t.id}
-              label={`${t.name} · ${occupied ? 'Ocupada' : 'Libre'}`}
+              label={
+                <Stack spacing={0.25}>
+                  <Typography fontWeight={700}>{t.name}</Typography>
+                  <Typography variant='caption'>
+                    {!t.isAvailable
+                      ? 'No disponible'
+                      : occupied
+                        ? 'Ocupada'
+                        : 'Libre'}
+                  </Typography>
+                </Stack>
+              }
               sx={{
                 m: 0.5,
                 p: 1,
-                minWidth: 135,
+                minWidth: 0,
+                width: '100%',
+                boxSizing: 'border-box',
+                transition: 'border-color .15s',
+                outline: selected.includes(t.id) ? '2px solid' : 'none',
+                outlineColor: 'primary.main',
                 border: '1px solid',
                 borderColor: occupied ? 'primary.main' : 'divider',
                 borderRadius: 2,
@@ -54,6 +77,9 @@ export function TableChoices({
               }}
               control={
                 <Checkbox
+                  inputProps={{
+                    'aria-label': `${t.name} · ${occupied ? 'Ocupada' : 'Libre'}`
+                  }}
                   checked={selected.includes(t.id)}
                   disabled={
                     !t.isAvailable || (!!occupied && occupied.id !== accountId)
@@ -70,7 +96,7 @@ export function TableChoices({
             />
           );
         })}
-    </Stack>
+    </Box>
   );
 }
 export function OperatorSelect({
@@ -148,6 +174,7 @@ export function AttentionWorkspace({
     'PRODUCT'
   );
   const [sourceId, setSourceId] = useState('');
+  const [productSearch, setProductSearch] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [notes, setNotes] = useState('');
   const [accountNotes, setAccountNotes] = useState('');
@@ -239,6 +266,12 @@ export function AttentionWorkspace({
   }
   return (
     <Stack spacing={2}>
+      <Typography variant='h5' component='h2'>
+        Cuentas y mesas
+      </Typography>
+      <Typography color='text.secondary'>
+        Selecciona una cuenta para tomar pedidos o abre una nueva atención.
+      </Typography>
       <TextField
         select
         label='Cuenta de atención'
@@ -259,8 +292,10 @@ export function AttentionWorkspace({
       {!account ? (
         <Card>
           <CardContent>
-            <Stack spacing={2}>
-              <Typography variant='h6'>Abrir atención</Typography>
+            <Stack spacing={2} className='operation-form-grid'>
+              <Typography variant='h6' component='h2'>
+                Abrir atención
+              </Typography>
               <TextField
                 select
                 label='Modalidad'
@@ -384,15 +419,33 @@ export function AttentionWorkspace({
                   · Consumo S/{account.total} · Saldo S/{account.balance}
                 </Typography>
                 <Typography>{account.notes}</Typography>
+                {!account.lines.length && (
+                  <Alert severity='info'>
+                    Esta cuenta aún no tiene consumos. Agrega el primer producto
+                    en el formulario de pedido.
+                  </Alert>
+                )}
                 {account.lines.map((line) => (
                   <Card variant='outlined' key={line.id}>
                     <CardContent>
                       <Typography>
                         {line.quantity} × {line.productSnapshot.name} · S/
                         {line.appliedUnitPrice} · Subtotal S/{line.subtotal} ·{' '}
-                        {line.status === 'CANCELLED' ? 'Cancelado' : 'Borrador'}
+                        {line.status === 'CANCELLED' ? 'Cancelado' : 'Activo'}
                       </Typography>
-                      <Typography>{line.notes}</Typography>
+                      <Stack direction='row' gap={1} flexWrap='wrap' mt={1}>
+                        <Chip
+                          size='small'
+                          variant='outlined'
+                          label={`Confirmado: ${line.confirmedQuantity}`}
+                        />
+                        {line.status === 'CANCELLED' && (
+                          <Chip size='small' color='error' label='Cancelado' />
+                        )}
+                      </Stack>
+                      <Typography color='text.secondary' mt={1}>
+                        {line.notes}
+                      </Typography>
                       {line.kind === 'STAFF' && (
                         <Typography>
                           Consumo de personal ·{' '}
@@ -437,7 +490,7 @@ export function AttentionWorkspace({
             <>
               <Card>
                 <CardContent>
-                  <Stack spacing={2}>
+                  <Stack spacing={2} className='operation-form-grid'>
                     <Typography variant='h6'>
                       Agregar o sustituir consumo
                     </Typography>
@@ -511,6 +564,12 @@ export function AttentionWorkspace({
                       <MenuItem value='DAILY_MENU'>Menú compuesto</MenuItem>
                     </TextField>
                     <TextField
+                      label='Buscar producto o menú'
+                      value={productSearch}
+                      onChange={(e) => setProductSearch(e.target.value)}
+                      placeholder='Escribe un nombre para filtrar las opciones'
+                    />
+                    <TextField
                       select
                       label='Producto o menú'
                       value={sourceId}
@@ -521,11 +580,21 @@ export function AttentionWorkspace({
                             (p) => p.isActive && p.status === 'AVAILABLE'
                           )
                         : menus.filter((m) => m.isAvailable)
-                      ).map((p) => (
-                        <MenuItem key={p.id} value={p.id}>
-                          {p.name} · S/{p.price}
-                        </MenuItem>
-                      ))}
+                      )
+                        .filter(
+                          (p) =>
+                            p.id === sourceId ||
+                            p.name
+                              .toLocaleLowerCase()
+                              .includes(
+                                productSearch.trim().toLocaleLowerCase()
+                              )
+                        )
+                        .map((p) => (
+                          <MenuItem key={p.id} value={p.id}>
+                            {p.name} · S/{p.price}
+                          </MenuItem>
+                        ))}
                     </TextField>
                     {sourceType === 'PRODUCT' && product && (
                       <>
@@ -761,9 +830,8 @@ export function AttentionWorkspace({
                     </Button>
                     <Typography>
                       Con saldo pendiente se requiere una deuda registrada. Los
-                      cobros y el registro de fiados estarán disponibles en la
-                      fase financiera. El pago nunca libera una mesa
-                      automáticamente.
+                      cobros y el registro de fiados se gestionan en Finanzas.
+                      El pago nunca libera una mesa automáticamente.
                     </Typography>
                   </Stack>
                 </CardContent>

@@ -19,7 +19,8 @@ export default defineConfig({
     }
   },
   server: {
-    port: 3030
+    port: 3030,
+    strictPort: true
   },
   preview: {
     port: 8080

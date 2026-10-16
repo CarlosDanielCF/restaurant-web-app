@@ -1,10 +1,25 @@
+import { lazy } from 'react';
 import { Navigate, RouteObject } from 'react-router-dom';
-import { Shop } from '../Shop/Shop.page';
+const Shop = lazy(() =>
+  import('../Shop/Shop.page').then((m) => ({ default: m.Shop }))
+);
 import { Login } from '../Auth/Login';
-import { Signup } from '../Auth/Signup';
-import { ProductsMenu } from '../Shop/views/ProductsMenu/ProductsMenu.view';
-import { Product } from '../Shop/views/Product/Product.page';
-import { Home } from '../Home/Home.page';
+const Signup = lazy(() =>
+  import('../Auth/Signup').then((m) => ({ default: m.Signup }))
+);
+const ProductsMenu = lazy(() =>
+  import('../Shop/views/ProductsMenu/ProductsMenu.view').then((m) => ({
+    default: m.ProductsMenu
+  }))
+);
+const Product = lazy(() =>
+  import('../Shop/views/Product/Product.page').then((m) => ({
+    default: m.Product
+  }))
+);
+const Home = lazy(() =>
+  import('../Home/Home.page').then((m) => ({ default: m.Home }))
+);
 import { ForgotPassword } from '../Auth/ForgotPassword';
 import ResetPassword from '../Auth/ResetPassword/ResetPassword.page';
 

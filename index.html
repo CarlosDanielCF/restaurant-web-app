@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
     <!-- Favicons for all browsers and devices -->
@@ -27,10 +27,6 @@
 
     <meta content="Santiago_Quirumbay" name="author" />
 
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400&display=swap"
-      rel="stylesheet"
-    />
     <title>Teikio</title>
     <meta
       name="description"
@@ -43,7 +39,32 @@
     />
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div
+        id="startup-status"
+        role="status"
+        style="
+          max-width: 440px;
+          margin: 15vh auto;
+          padding: 24px;
+          font: 16px/1.6 system-ui;
+          color: #134e4a;
+        "
+      >
+        <strong>Iniciando el restaurante…</strong>
+        <p id="startup-message">
+          Cargando la aplicación. Mantén esta pestaña activa.
+        </p>
+      </div>
+    </div>
+    <script>
+      window.setTimeout(function () {
+        var message = document.getElementById('startup-message');
+        if (message)
+          message.textContent =
+            'La carga está tardando. Comprueba la terminal de Vite y que esta dirección coincida con su puerto. Después recarga la página. No reinicies operaciones pendientes.';
+      }, 20000);
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

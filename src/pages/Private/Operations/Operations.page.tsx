@@ -1,6 +1,10 @@
+import './operations.css';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import {
   Alert,
+  Box,
+  Chip,
+  LinearProgress,
   Button,
   Container,
   Stack,
@@ -169,14 +173,77 @@ export function OperationsPage() {
     }
   };
   return (
-    <Container maxWidth='lg'>
+    <Container maxWidth='xl' className='operations-workspace'>
       <Stack spacing={2} py={2}>
-        <Typography variant='h4'>Atención del restaurante</Typography>
-        <Typography>
-          Zona horaria: {restaurant?.timeZone}. Agregue consumos y confirme los
-          nuevos envíos. La salida se registra por mozo, independientemente del
-          pago.
-        </Typography>
+        <Box className='operations-heading'>
+          <Box>
+            <Typography variant='overline' color='primary'>
+              Servicio diario
+            </Typography>
+            <Typography variant='h4' component='h1'>
+              Atención del restaurante
+            </Typography>
+            <Typography color='text.secondary' mt={1}>
+              Mesas, pedidos y reservas en un solo lugar.
+            </Typography>
+          </Box>
+          <Stack direction='row' gap={1} flexWrap='wrap' alignItems='center'>
+            <Chip
+              size='small'
+              variant='outlined'
+              label={restaurant?.timeZone || 'Zona horaria del restaurante'}
+            />
+            <Chip
+              size='small'
+              color={online && loaded ? 'success' : 'warning'}
+              label={online && loaded ? 'Conectado' : 'Revisar conexión'}
+            />
+            <Button
+              variant='outlined'
+              onClick={() => void refresh()}
+              disabled={busy}
+            >
+              Actualizar datos
+            </Button>
+          </Stack>
+        </Box>
+        {!cook && loaded && (
+          <Box className='operations-metrics' aria-label='Resumen de atención'>
+            <Box>
+              <Typography color='text.secondary'>Cuentas abiertas</Typography>
+              <Typography variant='h4'>
+                {accounts.filter((a) => a.attentionStatus === 'OPEN').length}
+              </Typography>
+            </Box>
+            <Box>
+              <Typography color='text.secondary'>Mesas ocupadas</Typography>
+              <Typography variant='h4'>
+                {
+                  tables.filter(
+                    (t) =>
+                      t.isActive &&
+                      accounts.some(
+                        (a) =>
+                          a.attentionStatus === 'OPEN' &&
+                          a.tables.some((x) => x.id === t.id)
+                      )
+                  ).length
+                }
+              </Typography>
+            </Box>
+            <Box>
+              <Typography color='text.secondary'>
+                Reservas pendientes
+              </Typography>
+              <Typography variant='h4'>
+                {reservations.filter((r) => r.status === 'BOOKED').length}
+              </Typography>
+            </Box>
+          </Box>
+        )}
+        {(busy || !loaded) && (
+          <LinearProgress aria-label='Actualizando atención' />
+        )}
         {(!online || !loaded) && (
           <Alert severity='warning'>
             Sin conexión en tiempo real o datos sin actualizar. Revise la
@@ -193,10 +260,9 @@ export function OperationsPage() {
             {message}
           </Alert>
         )}
-        <Button onClick={() => void refresh()} disabled={busy}>
-          Actualizar datos
-        </Button>
         <Tabs
+          className='operations-tabs'
+          aria-label='Secciones de atención'
           value={tab}
           onChange={(_, value: number) => setTab(value)}
           variant='scrollable'
@@ -211,45 +277,58 @@ export function OperationsPage() {
           disabled={busy || !loaded}
           style={{ border: 0, padding: 0, minWidth: 0 }}
         >
-          {tab === 0 && !cook && (
-            <AttentionWorkspace
-              accounts={accounts}
-              tables={tables}
-              operators={operators}
-              products={products}
-              menus={menus}
-              portions={portions}
-              clients={clients}
-              run={run}
-            />
-          )}
-          {tab === 1 && !cook && (
-            <ReservationsWorkspace
-              reservations={reservations}
-              accounts={accounts}
-              tables={tables}
-              operators={operators}
-              run={run}
-              zone={restaurant?.timeZone || 'America/Lima'}
-            />
-          )}
-          {tab === 2 && (
-            <DailyMenuWorkspace
-              menus={menus}
-              products={products}
-              editable={manager || cook}
-              run={run}
-            />
-          )}
-          {tab === 3 && (
-            <CatalogWorkspace
-              products={products}
-              portions={portions}
-              manager={manager}
-              availability={manager || cook}
-              run={run}
-            />
-          )}
+          <Box
+            className='operations-section'
+            role='tabpanel'
+            aria-label={
+              [
+                'Cuentas y mesas',
+                'Reservas',
+                'Menú compuesto',
+                'Carta y disponibilidad'
+              ][tab]
+            }
+          >
+            {tab === 0 && !cook && (
+              <AttentionWorkspace
+                accounts={accounts}
+                tables={tables}
+                operators={operators}
+                products={products}
+                menus={menus}
+                portions={portions}
+                clients={clients}
+                run={run}
+              />
+            )}
+            {tab === 1 && !cook && (
+              <ReservationsWorkspace
+                reservations={reservations}
+                accounts={accounts}
+                tables={tables}
+                operators={operators}
+                run={run}
+                zone={restaurant?.timeZone || 'America/Lima'}
+              />
+            )}
+            {tab === 2 && (
+              <DailyMenuWorkspace
+                menus={menus}
+                products={products}
+                editable={manager || cook}
+                run={run}
+              />
+            )}
+            {tab === 3 && (
+              <CatalogWorkspace
+                products={products}
+                portions={portions}
+                manager={manager}
+                availability={manager || cook}
+                run={run}
+              />
+            )}
+          </Box>
         </fieldset>
       </Stack>
     </Container>

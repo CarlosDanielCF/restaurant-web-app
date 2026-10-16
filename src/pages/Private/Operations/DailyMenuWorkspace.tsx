@@ -43,14 +43,30 @@ export function DailyMenuWorkspace({
   }
   return (
     <Stack spacing={2}>
+      <Typography variant='h5' component='h2'>
+        Menú del día
+      </Typography>
+      <Typography color='text.secondary'>
+        Configura un precio conjunto y las opciones incluidas para cada
+        servicio.
+      </Typography>
       <Typography>
         Menú compuesto con precio propio. La carta permanece disponible. Cada
         componente permite elegir una opción incluida.
       </Typography>
+      {!menus.length && (
+        <Typography className='operation-empty'>
+          Aún no hay menús configurados. La carta permanente sigue disponible.
+        </Typography>
+      )}
       {menus.map((menu) => (
         <Card key={menu.id}>
           <CardContent>
-            <Stack direction='row' justifyContent='space-between'>
+            <Stack
+              direction={{ xs: 'column', sm: 'row' }}
+              gap={1}
+              justifyContent='space-between'
+            >
               <Typography>
                 {menu.name} · S/{menu.price} ·{' '}
                 {menu.serviceDate || 'Sin fecha específica'} ·{' '}
@@ -79,7 +95,7 @@ export function DailyMenuWorkspace({
       {editable && (
         <Card>
           <CardContent>
-            <Stack spacing={2}>
+            <Stack spacing={2} className='operation-form-grid'>
               <Typography variant='h6'>
                 {draft.id ? 'Editar menú compuesto' : 'Crear menú compuesto'}
               </Typography>

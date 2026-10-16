@@ -66,9 +66,19 @@ export function CatalogWorkspace({
   }
   return (
     <Stack spacing={2}>
+      <Typography variant='h5' component='h2'>
+        Carta y disponibilidad
+      </Typography>
+      <Typography color='text.secondary'>
+        Consulta la carta permanente y actualiza las porciones disponibles.
+      </Typography>
       {manager && (
-        <Stack direction='row' spacing={2}>
-          <Button component={Link} to='/menu/products/create'>
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+          <Button
+            variant='contained'
+            component={Link}
+            to='/menu/products/create'
+          >
             Crear producto
           </Button>
           <Button component={Link} to='/menu/products'>

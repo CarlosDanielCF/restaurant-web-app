@@ -1,3 +1,7 @@
+# Fase 10 — desarrollo local y atención
+
+Guía de arranque Windows y diagnóstico de módulos pendientes: [WINDOWS.md](WINDOWS.md). Frontend con pnpm 8.15.0; usar `pnpm dev` (3030 estricto), `pnpm typecheck` y `pnpm build`. Alcance y validación: [PHASE10.md](PHASE10.md).
+
 # Integración controlada — Barrera A
 
 Rama `integration/f0-f9`, sobre Codex F9. Matriz de los 59 archivos, decisiones de compatibilidad y pruebas: [INTEGRATION-BARRIER-A.md](INTEGRATION-BARRIER-A.md). Pendiente revisión; sin merge a main ni F10.
