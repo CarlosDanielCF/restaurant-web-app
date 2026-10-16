@@ -1,5 +1,9 @@
 import { useState } from 'react';
 import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  Chip,
   Button,
   Card,
   CardContent,
@@ -32,6 +36,7 @@ export function DailyMenuWorkspace({
   editable: boolean;
   run: Run;
 }) {
+  const [editor, setEditor] = useState(false);
   const [draft, setDraft] = useState<DailyMenu>(blank());
   function component(index: number, change: Partial<Component>) {
     setDraft({
@@ -59,8 +64,19 @@ export function DailyMenuWorkspace({
           Aún no hay menús configurados. La carta permanente sigue disponible.
         </Typography>
       )}
+      {editable && (
+        <Button
+          variant='contained'
+          onClick={() => {
+            setDraft(blank());
+            setEditor(true);
+          }}
+        >
+          Nuevo menú compuesto
+        </Button>
+      )}
       {menus.map((menu) => (
-        <Card key={menu.id}>
+        <Card key={menu.id} className='daily-menu-card'>
           <CardContent>
             <Stack
               direction={{ xs: 'column', sm: 'row' }}
@@ -73,234 +89,272 @@ export function DailyMenuWorkspace({
                 {menu.isAvailable ? 'Disponible' : 'No disponible'}
               </Typography>
               {editable && (
-                <Button onClick={() => setDraft(structuredClone(menu))}>
+                <Button
+                  onClick={() => {
+                    setDraft(structuredClone(menu));
+                    setEditor(true);
+                  }}
+                >
                   Editar menú
                 </Button>
               )}
             </Stack>
             {menu.components.map((c) => (
-              <Typography key={c.id}>
-                {c.name}:{' '}
-                {c.options
-                  .map(
-                    (o) =>
-                      `${products.find((p) => p.id === o.productId)?.name || 'Producto'}${o.isAvailable ? '' : ' (agotado)'}`
-                  )
-                  .join(', ')}
-              </Typography>
+              <Stack key={c.id} spacing={0.5} mt={1}>
+                <Typography fontWeight={700}>{c.name} · incluido</Typography>
+                <Stack direction='row' gap={0.75} flexWrap='wrap'>
+                  {c.options.map((o) => (
+                    <Chip
+                      key={o.id}
+                      size='small'
+                      variant='outlined'
+                      color={
+                        o.isAvailable && (o.portions == null || o.portions > 0)
+                          ? 'success'
+                          : 'warning'
+                      }
+                      label={`${products.find((p) => p.id === o.productId)?.name || 'Producto'} · ${o.isAvailable && (o.portions == null || o.portions > 0) ? 'Disponible' : 'Agotado'}${o.portions == null ? '' : ` · ${o.portions} porciones`}`}
+                    />
+                  ))}
+                </Stack>
+              </Stack>
             ))}
           </CardContent>
         </Card>
       ))}
       {editable && (
-        <Card>
-          <CardContent>
-            <Stack spacing={2} className='operation-form-grid'>
-              <Typography variant='h6'>
-                {draft.id ? 'Editar menú compuesto' : 'Crear menú compuesto'}
-              </Typography>
-              <TextField
-                label='Nombre del menú'
-                value={draft.name}
-                onChange={(e) => setDraft({ ...draft, name: e.target.value })}
-              />
-              <TextField
-                label='Precio conjunto (S/)'
-                type='number'
-                inputProps={{ min: 0, step: 0.01 }}
-                value={draft.price}
-                onChange={(e) =>
-                  setDraft({ ...draft, price: Number(e.target.value) })
-                }
-              />
-              <TextField
-                label='Fecha de servicio (opcional)'
-                type='date'
-                InputLabelProps={{ shrink: true }}
-                value={draft.serviceDate || ''}
-                onChange={(e) =>
-                  setDraft({ ...draft, serviceDate: e.target.value || null })
-                }
-              />
-              <FormControlLabel
-                label='Menú disponible'
-                control={
-                  <Checkbox
-                    checked={!!draft.isAvailable}
+        <Dialog
+          open={editor}
+          onClose={() => setEditor(false)}
+          fullWidth
+          maxWidth='sm'
+        >
+          <DialogTitle>
+            {draft.id ? 'Editar menú compuesto' : 'Crear menú compuesto'}
+          </DialogTitle>
+          <DialogContent>
+            <Button onClick={() => setEditor(false)}>Volver a menús</Button>
+            <Card>
+              <CardContent>
+                <Stack spacing={2} className='operation-form-grid'>
+                  <Typography variant='h6'>
+                    {draft.id
+                      ? 'Editar menú compuesto'
+                      : 'Crear menú compuesto'}
+                  </Typography>
+                  <TextField
+                    label='Nombre del menú'
+                    value={draft.name}
                     onChange={(e) =>
-                      setDraft({ ...draft, isAvailable: e.target.checked })
+                      setDraft({ ...draft, name: e.target.value })
                     }
                   />
-                }
-              />
-              {draft.components.map((c, ci) => (
-                <Card variant='outlined' key={c.id}>
-                  <CardContent>
-                    <Stack spacing={2}>
-                      <TextField
-                        label='Componente (entrada, segundo, bebida...)'
-                        value={c.name}
+                  <TextField
+                    label='Precio conjunto (S/)'
+                    type='number'
+                    inputProps={{ min: 0, step: 0.01 }}
+                    value={draft.price}
+                    onChange={(e) =>
+                      setDraft({ ...draft, price: Number(e.target.value) })
+                    }
+                  />
+                  <TextField
+                    label='Fecha de servicio (opcional)'
+                    type='date'
+                    InputLabelProps={{ shrink: true }}
+                    value={draft.serviceDate || ''}
+                    onChange={(e) =>
+                      setDraft({
+                        ...draft,
+                        serviceDate: e.target.value || null
+                      })
+                    }
+                  />
+                  <FormControlLabel
+                    label='Menú disponible'
+                    control={
+                      <Checkbox
+                        checked={!!draft.isAvailable}
                         onChange={(e) =>
-                          component(ci, { name: e.target.value })
+                          setDraft({ ...draft, isAvailable: e.target.checked })
                         }
                       />
-                      {c.options.map((o, oi) => (
-                        <Stack
-                          direction={{ xs: 'column', md: 'row' }}
-                          spacing={1}
-                          key={o.id}
-                        >
+                    }
+                  />
+                  {draft.components.map((c, ci) => (
+                    <Card variant='outlined' key={c.id}>
+                      <CardContent>
+                        <Stack spacing={2}>
                           <TextField
-                            select
-                            fullWidth
-                            label='Opción incluida'
-                            value={o.productId}
+                            label='Componente (entrada, segundo, bebida...)'
+                            value={c.name}
                             onChange={(e) =>
-                              component(ci, {
-                                options: c.options.map((x, i) =>
-                                  i === oi
-                                    ? { ...x, productId: e.target.value }
-                                    : x
-                                )
-                              })
-                            }
-                          >
-                            {products
-                              .filter((p) => p.isActive)
-                              .map((p) => (
-                                <MenuItem key={p.id} value={p.id}>
-                                  {p.name}
-                                </MenuItem>
-                              ))}
-                          </TextField>
-                          <TextField
-                            label='Porciones (vacío: sin límite)'
-                            type='number'
-                            inputProps={{ min: 0, step: 0.001 }}
-                            value={o.portions ?? ''}
-                            onChange={(e) =>
-                              component(ci, {
-                                options: c.options.map((x, i) =>
-                                  i === oi
-                                    ? {
-                                        ...x,
-                                        portions:
-                                          e.target.value === ''
-                                            ? null
-                                            : Number(e.target.value)
-                                      }
-                                    : x
-                                )
-                              })
+                              component(ci, { name: e.target.value })
                             }
                           />
-                          <FormControlLabel
-                            label='Disponible'
-                            control={
-                              <Checkbox
-                                checked={!!o.isAvailable}
+                          {c.options.map((o, oi) => (
+                            <Stack
+                              direction={{ xs: 'column', md: 'row' }}
+                              spacing={1}
+                              key={o.id}
+                            >
+                              <TextField
+                                select
+                                fullWidth
+                                label='Opción incluida'
+                                value={o.productId}
+                                onChange={(e) =>
+                                  component(ci, {
+                                    options: c.options.map((x, i) =>
+                                      i === oi
+                                        ? { ...x, productId: e.target.value }
+                                        : x
+                                    )
+                                  })
+                                }
+                              >
+                                {products
+                                  .filter((p) => p.isActive)
+                                  .map((p) => (
+                                    <MenuItem key={p.id} value={p.id}>
+                                      {p.name}
+                                    </MenuItem>
+                                  ))}
+                              </TextField>
+                              <TextField
+                                label='Porciones (vacío: sin límite)'
+                                type='number'
+                                inputProps={{ min: 0, step: 0.001 }}
+                                value={o.portions ?? ''}
                                 onChange={(e) =>
                                   component(ci, {
                                     options: c.options.map((x, i) =>
                                       i === oi
                                         ? {
                                             ...x,
-                                            isAvailable: e.target.checked
+                                            portions:
+                                              e.target.value === ''
+                                                ? null
+                                                : Number(e.target.value)
                                           }
                                         : x
                                     )
                                   })
                                 }
                               />
-                            }
-                          />
+                              <FormControlLabel
+                                label='Disponible'
+                                control={
+                                  <Checkbox
+                                    checked={!!o.isAvailable}
+                                    onChange={(e) =>
+                                      component(ci, {
+                                        options: c.options.map((x, i) =>
+                                          i === oi
+                                            ? {
+                                                ...x,
+                                                isAvailable: e.target.checked
+                                              }
+                                            : x
+                                        )
+                                      })
+                                    }
+                                  />
+                                }
+                              />
+                              <Button
+                                onClick={() =>
+                                  component(ci, {
+                                    options: c.options.filter(
+                                      (_, i) => i !== oi
+                                    )
+                                  })
+                                }
+                              >
+                                Quitar opción
+                              </Button>
+                            </Stack>
+                          ))}
                           <Button
                             onClick={() =>
                               component(ci, {
-                                options: c.options.filter((_, i) => i !== oi)
+                                options: [
+                                  ...c.options,
+                                  {
+                                    id: crypto.randomUUID(),
+                                    productId: '',
+                                    isAvailable: true,
+                                    portions: null
+                                  }
+                                ]
                               })
                             }
                           >
-                            Quitar opción
+                            Agregar opción incluida
+                          </Button>
+                          <Button
+                            color='error'
+                            onClick={() =>
+                              setDraft({
+                                ...draft,
+                                components: draft.components.filter(
+                                  (_, i) => i !== ci
+                                )
+                              })
+                            }
+                          >
+                            Quitar componente
                           </Button>
                         </Stack>
-                      ))}
-                      <Button
-                        onClick={() =>
-                          component(ci, {
-                            options: [
-                              ...c.options,
-                              {
-                                id: crypto.randomUUID(),
-                                productId: '',
-                                isAvailable: true,
-                                portions: null
-                              }
-                            ]
-                          })
+                      </CardContent>
+                    </Card>
+                  ))}
+                  <Button
+                    onClick={() =>
+                      setDraft({
+                        ...draft,
+                        components: [
+                          ...draft.components,
+                          { id: crypto.randomUUID(), name: '', options: [] }
+                        ]
+                      })
+                    }
+                  >
+                    Agregar componente
+                  </Button>
+                  <Stack direction='row' spacing={2}>
+                    <Button
+                      variant='contained'
+                      onClick={async () => {
+                        const { id, version, ...data } = draft;
+                        if (
+                          await run(
+                            `/daily-menus${id ? '/' + id : ''}`,
+                            {
+                              ...data,
+                              price: Number(data.price),
+                              isAvailable: !!data.isAvailable,
+                              ...(id ? { expectedVersion: version } : {})
+                            },
+                            id ? 'patch' : 'post'
+                          )
+                        ) {
+                          setDraft(blank());
+                          setEditor(false);
                         }
-                      >
-                        Agregar opción incluida
-                      </Button>
-                      <Button
-                        color='error'
-                        onClick={() =>
-                          setDraft({
-                            ...draft,
-                            components: draft.components.filter(
-                              (_, i) => i !== ci
-                            )
-                          })
-                        }
-                      >
-                        Quitar componente
-                      </Button>
-                    </Stack>
-                  </CardContent>
-                </Card>
-              ))}
-              <Button
-                onClick={() =>
-                  setDraft({
-                    ...draft,
-                    components: [
-                      ...draft.components,
-                      { id: crypto.randomUUID(), name: '', options: [] }
-                    ]
-                  })
-                }
-              >
-                Agregar componente
-              </Button>
-              <Stack direction='row' spacing={2}>
-                <Button
-                  variant='contained'
-                  onClick={async () => {
-                    const { id, version, ...data } = draft;
-                    if (
-                      await run(
-                        `/daily-menus${id ? '/' + id : ''}`,
-                        {
-                          ...data,
-                          price: Number(data.price),
-                          isAvailable: !!data.isAvailable,
-                          ...(id ? { expectedVersion: version } : {})
-                        },
-                        id ? 'patch' : 'post'
-                      )
-                    )
-                      setDraft(blank());
-                  }}
-                >
-                  Guardar menú compuesto
-                </Button>
-                <Button onClick={() => setDraft(blank())}>
-                  Nuevo / descartar edición
-                </Button>
-              </Stack>
-            </Stack>
-          </CardContent>
-        </Card>
+                      }}
+                    >
+                      Guardar menú compuesto
+                    </Button>
+                    <Button onClick={() => setDraft(blank())}>
+                      Nuevo / descartar edición
+                    </Button>
+                  </Stack>
+                </Stack>
+              </CardContent>
+            </Card>
+          </DialogContent>
+        </Dialog>
       )}
     </Stack>
   );

@@ -113,16 +113,25 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
         r.request().method() === 'POST'
     );
     await page
-      .getByRole('button', { name: 'Abrir cuenta', exact: true })
+      .getByRole('button', { name: 'Abrir atención', exact: true })
       .click();
     const result = await created;
     if (result.status() !== 201) throw Error(await result.text());
     const account = await result.json();
+    await page
+      .getByText('Buscar otra cuenta / historial de cuentas', { exact: true })
+      .click();
     await page.getByLabel('Cuenta de atención', { exact: true }).click();
     await page
       .getByRole('option', { name: new RegExp(account.id.slice(0, 8)) })
       .click();
     await page.getByText('DELIVERY PROPIO · envío gratuito').waitFor();
+    await page
+      .getByRole('button', {
+        name: 'Agregar productos / personalizar',
+        exact: true
+      })
+      .click();
     await page.getByLabel('Tipo de consumo', { exact: true }).click();
     await page.getByRole('option', { name: /personal/i }).click();
     await page.getByLabel('Trabajador beneficiario').click();

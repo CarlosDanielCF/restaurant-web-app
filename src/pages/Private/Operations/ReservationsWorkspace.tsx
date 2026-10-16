@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import {
+  Box,
   Button,
   Card,
   CardContent,
@@ -52,16 +53,16 @@ export function ReservationsWorkspace({
   const [tableIds, setTableIds] = useState<string[]>([]);
   const [reason, setReason] = useState('');
   return (
-    <Stack spacing={2}>
+    <Stack spacing={1.5} className='reservation-workbench'>
       <Typography variant='h5' component='h2'>
         Reservas
       </Typography>
       <Typography color='text.secondary'>
         Registra la visita y elige las mesas cuando llegue el cliente.
       </Typography>
-      <Card>
+      <Card className='reservation-form'>
         <CardContent>
-          <Stack spacing={2} className='operation-form-grid'>
+          <Stack spacing={1.5}>
             <Typography variant='h6'>
               {draft.id ? 'Editar reserva' : 'Registrar reserva'}
             </Typography>
@@ -127,86 +128,93 @@ export function ReservationsWorkspace({
           </Stack>
         </CardContent>
       </Card>
-      <TextField
-        label='Motivo de cancelación de reserva'
-        value={reason}
-        onChange={(e) => setReason(e.target.value)}
-      />
-      {!reservations.length && (
-        <Typography className='operation-empty'>
-          Todavía no hay reservas registradas.
+      <Box className='reservation-list'>
+        <Typography variant='h6' mb={1}>
+          Reservas registradas
         </Typography>
-      )}
-      {reservations.map((r) => (
-        <Card key={r.id}>
-          <CardContent>
-            <Stack spacing={1}>
-              <Typography variant='h6'>
-                {r.name} · {r.people} personas
-              </Typography>
-              <Typography>
-                {new Date(r.scheduledAt).toLocaleString('es-PE', {
-                  timeZone: zone
-                })}{' '}
-                · {r.phone} ·{' '}
-                {{
-                  BOOKED: 'Reservada',
-                  ARRIVED: 'Llegó',
-                  CANCELLED: 'Cancelada'
-                }[r.status] || r.status}
-              </Typography>
-              <Typography>{r.notes}</Typography>
-              {r.status === 'BOOKED' && (
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
-                  <Button
-                    onClick={() =>
-                      setDraft({
-                        id: r.id,
-                        version: r.version,
-                        name: r.name,
-                        phone: r.phone,
-                        people: r.people,
-                        notes: r.notes,
-                        localDateTime: localInput(r.scheduledAt, zone)
-                      })
-                    }
-                  >
-                    Editar reserva
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      setArrival(r);
-                      setTableIds([]);
-                      setResponsible('');
-                    }}
-                  >
-                    Registrar llegada y elegir mesa
-                  </Button>
-                  <Button
-                    disabled={reason.trim().length < 2}
-                    color='error'
-                    onClick={() =>
-                      void run(`/reservations/${r.id}/cancel`, {
-                        expectedVersion: r.version,
-                        reason
-                      })
-                    }
-                  >
-                    Cancelar reserva
-                  </Button>
-                </Stack>
-              )}
-              {r.accountId && (
-                <Typography>
-                  Cuenta iniciada: {r.accountId.slice(0, 8)}
+        <TextField
+          size='small'
+          fullWidth
+          label='Motivo de cancelación de reserva'
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+        />
+        {!reservations.length && (
+          <Typography className='operation-empty'>
+            Todavía no hay reservas registradas.
+          </Typography>
+        )}
+        {reservations.map((r) => (
+          <Card key={r.id}>
+            <CardContent>
+              <Stack spacing={1}>
+                <Typography variant='h6'>
+                  {r.name} · {r.people} personas
                 </Typography>
-              )}
-            </Stack>
-          </CardContent>
-        </Card>
-      ))}
+                <Typography>
+                  {new Date(r.scheduledAt).toLocaleString('es-PE', {
+                    timeZone: zone
+                  })}{' '}
+                  · {r.phone} ·{' '}
+                  {{
+                    BOOKED: 'Reservada',
+                    ARRIVED: 'Llegó',
+                    CANCELLED: 'Cancelada'
+                  }[r.status] || r.status}
+                </Typography>
+                <Typography>{r.notes}</Typography>
+                {r.status === 'BOOKED' && (
+                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
+                    <Button
+                      onClick={() =>
+                        setDraft({
+                          id: r.id,
+                          version: r.version,
+                          name: r.name,
+                          phone: r.phone,
+                          people: r.people,
+                          notes: r.notes,
+                          localDateTime: localInput(r.scheduledAt, zone)
+                        })
+                      }
+                    >
+                      Editar reserva
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setArrival(r);
+                        setTableIds([]);
+                        setResponsible('');
+                      }}
+                    >
+                      Registrar llegada y elegir mesa
+                    </Button>
+                    <Button
+                      disabled={reason.trim().length < 2}
+                      color='error'
+                      onClick={() =>
+                        void run(`/reservations/${r.id}/cancel`, {
+                          expectedVersion: r.version,
+                          reason
+                        })
+                      }
+                    >
+                      Cancelar reserva
+                    </Button>
+                  </Stack>
+                )}
+                {r.accountId && (
+                  <Typography>
+                    Cuenta iniciada: {r.accountId.slice(0, 8)}
+                  </Typography>
+                )}
+              </Stack>
+            </CardContent>
+          </Card>
+        ))}
+      </Box>
       {arrival && (
-        <Card>
+        <Card className='reservation-arrival'>
           <CardContent>
             <Stack spacing={2}>
               <Typography variant='h6'>Llegada de {arrival.name}</Typography>

@@ -87,7 +87,7 @@ export function FulfillmentPanel({
       await refresh();
   }
   return (
-    <Card>
+    <Card className='fulfillment-card'>
       <CardContent>
         <Stack spacing={2}>
           <Typography variant='h6'>Envíos y salida por mozo</Typography>
@@ -123,162 +123,178 @@ export function FulfillmentPanel({
             Solo confirma unidades nuevas. Las bebidas no aparecen en cocina.
             Cada envío conserva su hora; no registra pago ni cierra la cuenta.
           </Typography>
-          {dispatches.map((d) => (
-            <Stack key={d.id} spacing={1}>
-              <Typography fontWeight='bold'>
-                Comanda {d.sequenceNumber} ·{' '}
-                {new Date(d.confirmedAt).toLocaleTimeString('es-PE', {
-                  timeZone: zone
-                })}{' '}
-                · {d.pending ? 'Pendiente' : 'Sin comida pendiente'}
-              </Typography>
-              {d.items.map((i) => (
-                <Typography key={i.id}>
-                  {i.itemSnapshot.name} ·{' '}
-                  {i.status === 'CANCELLED'
-                    ? 'Cancelado'
-                    : `${i.delivered} salieron · ${i.pending} pendientes`}{' '}
-                  · {i.itemSnapshot.notes}
+          <details className='service-details'>
+            <summary>Envíos ({dispatches.length})</summary>
+            {dispatches.map((d) => (
+              <Stack key={d.id} spacing={1}>
+                <Typography fontWeight='bold'>
+                  Comanda {d.sequenceNumber} ·{' '}
+                  {new Date(d.confirmedAt).toLocaleTimeString('es-PE', {
+                    timeZone: zone
+                  })}{' '}
+                  · {d.pending ? 'Pendiente' : 'Sin comida pendiente'}
+                  {d.pending &&
+                    ` · ${Math.max(0, Math.floor((Date.now() - new Date(d.confirmedAt).getTime()) / 60000))} min desde el envío`}
                 </Typography>
-              ))}
-            </Stack>
-          ))}
-          <TextField
-            select
-            label='Plato de la comanda'
-            value={itemId}
-            onChange={(e) => {
-              setItemId(e.target.value);
-              setEventId('');
-            }}
-          >
-            <MenuItem value=''>Seleccione</MenuItem>
-            {items.map((i) => (
-              <MenuItem key={i.id} value={i.id}>
-                #{i.sequence} {i.itemSnapshot.name} · {i.pending} pendientes
-              </MenuItem>
+                {d.items.map((i) => (
+                  <Typography key={i.id}>
+                    {i.itemSnapshot.name} ·{' '}
+                    {i.status === 'CANCELLED'
+                      ? 'Cancelado'
+                      : `${i.delivered} salieron · ${i.pending} pendientes`}{' '}
+                    · {i.itemSnapshot.notes}
+                  </Typography>
+                ))}
+              </Stack>
             ))}
-          </TextField>
-          <TextField
-            label='Unidades de salida o corrección'
-            type='number'
-            inputProps={{ min: 0.001, step: 0.001 }}
-            value={quantity}
-            onChange={(e) => setQuantity(Number(e.target.value))}
-          />
-          <Button
-            disabled={!itemId || quantity <= 0 || error}
-            onClick={() =>
-              void action(`dispatch-items/${itemId}/exits`, { quantity })
-            }
-          >
-            Registrar salida de platos
-          </Button>
-          <TextField
-            select
-            label='Salida a corregir'
-            value={eventId}
-            onChange={(e) => setEventId(e.target.value)}
-          >
-            <MenuItem value=''>Seleccione</MenuItem>
-            {events.map((e) => (
-              <MenuItem key={e.id} value={e.id}>
-                {e.quantityDelta} unidades ·{' '}
-                {new Date(e.createdAt).toLocaleTimeString('es-PE', {
-                  timeZone: zone
-                })}
-              </MenuItem>
-            ))}
-          </TextField>
-          <TextField
-            label='Motivo de corrección o recuperación'
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-          />
-          <Button
-            disabled={
-              !eventId || reason.trim().length < 2 || quantity <= 0 || error
-            }
-            onClick={() =>
-              void action(`dispatch-items/${itemId}/corrections`, {
-                eventId,
-                quantity,
-                reason
-              })
-            }
-          >
-            Corregir salida con motivo
-          </Button>
-          <Typography variant='h6'>
-            Observaciones y recuperación manual
-          </Typography>
-          <TextField
-            select
-            label='Consumo a revisar'
-            value={lineId}
-            onChange={(e) => {
-              setLineId(e.target.value);
-              setNotes(
-                account.lines.find((l) => l.id === e.target.value)?.notes || ''
-              );
-              setNotPrepared(false);
-            }}
-          >
-            <MenuItem value=''>Seleccione</MenuItem>
-            {account.lines.map((l) => (
-              <MenuItem key={l.id} value={l.id}>
-                {l.productSnapshot.name} ·{' '}
-                {l.status === 'ACTIVE' ? 'Activo' : 'Cancelado'}
-              </MenuItem>
-            ))}
-          </TextField>
-          <TextField
-            label='Nuevas observaciones del plato'
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-          />
-          <Button
-            disabled={
-              !line || line.status !== 'ACTIVE' || reason.trim().length < 2
-            }
-            onClick={() =>
-              void action(`lines/${lineId}/notes`, { notes, reason }, 'patch')
-            }
-          >
-            Cambiar observaciones con motivo
-          </Button>
-          <FormControlLabel
-            label='Confirmo que estas unidades canceladas no fueron preparadas ni entregadas'
-            control={
-              <Checkbox
-                checked={notPrepared}
-                onChange={(e) => setNotPrepared(e.target.checked)}
+          </details>
+          <details className='service-details'>
+            <summary>Salidas, cambios y correcciones</summary>
+            <Stack spacing={1.5} mt={1}>
+              <TextField
+                select
+                label='Plato de la comanda'
+                value={itemId}
+                onChange={(e) => {
+                  setItemId(e.target.value);
+                  setEventId('');
+                }}
+              >
+                <MenuItem value=''>Seleccione</MenuItem>
+                {items.map((i) => (
+                  <MenuItem key={i.id} value={i.id}>
+                    #{i.sequence} {i.itemSnapshot.name} · {i.pending} pendientes
+                  </MenuItem>
+                ))}
+              </TextField>
+              <TextField
+                label='Unidades de salida o corrección'
+                type='number'
+                inputProps={{ min: 0.001, step: 0.001 }}
+                value={quantity}
+                onChange={(e) => setQuantity(Number(e.target.value))}
               />
-            }
-          />
-          <Button
-            disabled={
-              !line ||
-              line.status !== 'CANCELLED' ||
-              !Number(line.confirmedQuantity) ||
-              !notPrepared ||
-              reason.trim().length < 2 ||
-              quantity <= 0
-            }
-            onClick={() =>
-              void action(`lines/${lineId}/restore`, {
-                quantity,
-                reason,
-                notPrepared: true
-              })
-            }
-          >
-            Recuperar las unidades indicadas
-          </Button>
-          <Typography variant='caption'>
-            Cancelar nunca devuelve porciones automáticamente. La recuperación
-            usa el consumo original configurado, independiente del precio.
-          </Typography>
+              <Button
+                disabled={!itemId || quantity <= 0 || error}
+                onClick={() =>
+                  void action(`dispatch-items/${itemId}/exits`, { quantity })
+                }
+              >
+                Registrar salida de platos
+              </Button>
+              <TextField
+                select
+                label='Salida a corregir'
+                value={eventId}
+                onChange={(e) => setEventId(e.target.value)}
+              >
+                <MenuItem value=''>Seleccione</MenuItem>
+                {events.map((e) => (
+                  <MenuItem key={e.id} value={e.id}>
+                    {e.quantityDelta} unidades ·{' '}
+                    {new Date(e.createdAt).toLocaleTimeString('es-PE', {
+                      timeZone: zone
+                    })}
+                  </MenuItem>
+                ))}
+              </TextField>
+              <TextField
+                label='Motivo de corrección o recuperación'
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+              />
+              <Button
+                disabled={
+                  !eventId || reason.trim().length < 2 || quantity <= 0 || error
+                }
+                onClick={() =>
+                  void action(`dispatch-items/${itemId}/corrections`, {
+                    eventId,
+                    quantity,
+                    reason
+                  })
+                }
+              >
+                Corregir salida con motivo
+              </Button>
+              <Typography variant='h6'>
+                Observaciones y recuperación manual
+              </Typography>
+              <TextField
+                select
+                label='Consumo a revisar'
+                value={lineId}
+                onChange={(e) => {
+                  setLineId(e.target.value);
+                  setNotes(
+                    account.lines.find((l) => l.id === e.target.value)?.notes ||
+                      ''
+                  );
+                  setNotPrepared(false);
+                }}
+              >
+                <MenuItem value=''>Seleccione</MenuItem>
+                {account.lines.map((l) => (
+                  <MenuItem key={l.id} value={l.id}>
+                    {l.productSnapshot.name} ·{' '}
+                    {l.status === 'ACTIVE' ? 'Activo' : 'Cancelado'}
+                  </MenuItem>
+                ))}
+              </TextField>
+              <TextField
+                label='Nuevas observaciones del plato'
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+              />
+              <Button
+                disabled={
+                  !line || line.status !== 'ACTIVE' || reason.trim().length < 2
+                }
+                onClick={() =>
+                  void action(
+                    `lines/${lineId}/notes`,
+                    { notes, reason },
+                    'patch'
+                  )
+                }
+              >
+                Cambiar observaciones con motivo
+              </Button>
+              <FormControlLabel
+                label='Confirmo que estas unidades canceladas no fueron preparadas ni entregadas'
+                control={
+                  <Checkbox
+                    checked={notPrepared}
+                    onChange={(e) => setNotPrepared(e.target.checked)}
+                  />
+                }
+              />
+              <Button
+                disabled={
+                  !line ||
+                  line.status !== 'CANCELLED' ||
+                  !Number(line.confirmedQuantity) ||
+                  !notPrepared ||
+                  reason.trim().length < 2 ||
+                  quantity <= 0
+                }
+                onClick={() =>
+                  void action(`lines/${lineId}/restore`, {
+                    quantity,
+                    reason,
+                    notPrepared: true
+                  })
+                }
+              >
+                Recuperar las unidades indicadas
+              </Button>
+              <Typography variant='caption'>
+                Cancelar nunca devuelve porciones automáticamente. La
+                recuperación usa el consumo original configurado, independiente
+                del precio.
+              </Typography>
+            </Stack>
+          </details>
         </Stack>
       </CardContent>
     </Card>

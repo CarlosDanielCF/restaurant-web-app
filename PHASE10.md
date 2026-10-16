@@ -45,3 +45,13 @@ Typecheck y build finales aprobados; lint focalizado de archivos modificados y s
 Windows validado por el Product Owner: backend/frontend arrancan e ingreso correcto. Corrección limitada a Atención: indicadores de baja altura, pestaña activa reforzada, márgenes compactos, selector de cuentas acotado y apertura con mesas a la izquierda/formulario corto a la derecha (apilados en móvil). Mesas con icono, nombre, texto libre/ocupada/no disponible, checkbox y texto de selección; no se inventa estado reservada porque las reservas vigentes no preasignan mesas. Empty states existentes conservados, sin datos ficticios en la interfaz.
 
 Prueba de navegador con datos propios de test: selección de mesa libre, mesa ocupada deshabilitada, selección explícita, sin overflow a 390×844/900×1100/1440×900; continúa pasando la creación de consumos, confirmación y adicionales sin duplicados. Capturas revisadas. Sin cambios de contratos/backend, finanzas, cocina ni otras pantallas. No avance al Ciclo 2.
+
+## Corrección operativa de Atención — base 0374828
+
+Mesas dominantes y apertura lateral; cuentas abiertas como tarjetas con importes y responsables reales. Selector histórico secundario. Estados de mesa con texto/icono y selección múltiple; no se inventan reservas anticipadas de mesas.
+
+Catálogo compartido con búsqueda, categorías reales, imagen autenticada cuando existe, precio y disponibilidad. Personalización en diálogo con las opciones y payloads existentes. Pedido lateral con líneas, observaciones, importes del servidor y acciones; cancelación con motivo en diálogo. Envíos compactos con hora original persistida, sin reiniciar relojes. Gestión de mesas/responsable e historial desplegables. Reservas en lista y formulario lateral; carta/disponibilidad y edición de menú en diálogos. Componentes de menú muestran disponibilidad, sin cobro adicional.
+
+Sin cambios backend, contratos, permisos, idempotencia ni cálculo monetario. Los campos opcionales de lectura category/images/createdAt/grossTotal/discountTotal ya existen en respuestas del backend. Sidebar conservado. CSS responsive 390×844, 900×1100 y 1440×900, sin overflow global. No Ciclo 2.
+
+Validación: typecheck, build, lint focalizado; tests de idempotencia y arranque; navegador con backend real para Atención, integración, F6–7, F8 y F9. El fixture de Atención utiliza identificación única para evitar colisión con otro test; datos propios eliminados al finalizar. El recorrido espera el layout visible tras navegación diferida. Persisten avisos históricos de bundles/dependencias, recursos externos, auth-renew previo a sesión y endpoint legacy de caja; no son excepciones nuevas de esta corrección.

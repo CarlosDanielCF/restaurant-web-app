@@ -6,7 +6,9 @@ Puerto 3030 estricto, carga diferida de módulos no necesarios para login y esta
 
 Mejoras limitadas a estructura/header/sidebar y atención: mesas, pedidos/adicionales, reservas, carta, menú del día y disponibilidad. Mismos contratos, payloads, autorizaciones y reglas del servidor. Backend sin cambios; 15 migraciones existentes, ninguna nueva.
 
-Pruebas y alcance en [PHASE10.md](PHASE10.md). Recorrido de atención/pedidos, responsive y regresiones F6–F9 ejecutados con backend real, sin excepciones JavaScript nuevas. No se avanzan otras pantallas. Pendiente revisión de esta rama y comprobación del arranque en Windows nativo.
+Pruebas y alcance en [PHASE10.md](PHASE10.md). Recorrido de atención/pedidos, responsive y regresiones F6–F9 ejecutados con backend real, sin excepciones JavaScript nuevas. No se avanzan otras pantallas. Windows fue validado por el usuario. Pendiente revisión visual de esta rama.
+
+Corrección operativa sobre 0374828: mesas y tarjetas de cuentas como entrada principal; apertura lateral, catálogo con chips/búsqueda y personalización en diálogo, pedido lateral y envíos compactos, reservas lista/formulario, menú y disponibilidad en tarjetas. Sin backend ni reglas nuevas. Detalle y validación en PHASE10.md. No Ciclo 2.
 
 ---
 

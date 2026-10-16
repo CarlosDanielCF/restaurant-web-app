@@ -1,3 +1,5 @@
+import CheckCircleOutline from '@mui/icons-material/CheckCircleOutline';
+import { ServiceCatalog } from './ServiceCatalog';
 import TableRestaurantOutlined from '@mui/icons-material/TableRestaurantOutlined';
 import { OffsitePanel, modalityLabel } from './OffsitePanel';
 import { restauranteApi } from '@/api';
@@ -6,6 +8,9 @@ import { useRestaurantStore } from '../Common/store/restaurantStore';
 import { useEffect, useState } from 'react';
 import {
   Alert,
+  Dialog,
+  DialogContent,
+  DialogTitle,
   Box,
   Chip,
   Button,
@@ -25,13 +30,15 @@ export function TableChoices({
   accounts,
   selected,
   setSelected,
-  accountId
+  accountId,
+  operators = []
 }: {
   tables: Table[];
   accounts: Account[];
   selected: string[];
   setSelected: (ids: string[]) => void;
   accountId?: string;
+  operators?: Operator[];
 }) {
   return (
     <Box
@@ -53,7 +60,6 @@ export function TableChoices({
               label={
                 <Stack spacing={0.25}>
                   <Stack direction='row' spacing={0.75} alignItems='center'>
-                    <TableRestaurantOutlined fontSize='small' />
                     <Typography fontWeight={700}>{t.name}</Typography>
                   </Stack>
                   <Typography variant='caption'>
@@ -61,8 +67,25 @@ export function TableChoices({
                       ? 'No disponible'
                       : occupied
                         ? 'Ocupada'
-                        : 'Libre'}
+                        : 'Disponible'}
                     {selected.includes(t.id) ? ' · Seleccionada' : ''}
+                    {occupied &&
+                      operators.find(
+                        (o) => o.id === occupied.responsibleUserId
+                      ) && (
+                        <Typography
+                          component='span'
+                          variant='caption'
+                          display='block'
+                        >
+                          Mozo:{' '}
+                          {
+                            operators.find(
+                              (o) => o.id === occupied.responsibleUserId
+                            )?.firstName
+                          }
+                        </Typography>
+                      )}
                   </Typography>
                 </Stack>
               }
@@ -82,6 +105,8 @@ export function TableChoices({
               }}
               control={
                 <Checkbox
+                  icon={<TableRestaurantOutlined />}
+                  checkedIcon={<CheckCircleOutline />}
                   inputProps={{
                     'aria-label': `${t.name} · ${occupied ? 'Ocupada' : 'Libre'}`
                   }}
@@ -168,6 +193,8 @@ export function AttentionWorkspace({
   };
   const [modality, setModality] = useState<Account['modality']>('TABLE');
   const [selected, setSelected] = useState('');
+  const [customizing, setCustomizing] = useState(false);
+  const [cancelLine, setCancelLine] = useState('');
   const account = accounts.find((a) => a.id === selected);
   const [tableIds, setTableIds] = useState<string[]>([]);
   const [responsible, setResponsible] = useState('');
@@ -267,35 +294,97 @@ export function AttentionWorkspace({
       setNotes('');
       setQuantity(1);
       setReplaceLine('');
+      setCustomizing(false);
     }
   }
+  const accountCards = (
+    <>
+      {' '}
+      {!account && (
+        <Box className='account-cards'>
+          {accounts
+            .filter((a) => a.attentionStatus === 'OPEN')
+            .map((a) => (
+              <Card variant='outlined' className='account-tile' key={a.id}>
+                <Typography fontWeight={700}>
+                  {a.tables.map((t) => t.name).join(' + ') ||
+                    modalityLabel[a.modality]}
+                </Typography>
+                <Typography variant='body2'>
+                  Mozo:{' '}
+                  {operators.find((o) => o.id === a.responsibleUserId)
+                    ?.firstName || a.responsibleUserId}
+                </Typography>
+                <Typography variant='body2'>
+                  {a.lines.filter((l) => l.status === 'ACTIVE').length} consumos
+                  · S/ {a.total}
+                </Typography>
+                {a.createdAt && (
+                  <Typography variant='caption'>
+                    Abierta:{' '}
+                    {new Date(a.createdAt).toLocaleString('es-PE', {
+                      timeZone: zone
+                    })}
+                  </Typography>
+                )}
+                <Button
+                  size='small'
+                  onClick={() => selectAccount(a.id)}
+                  aria-label={`Ver cuenta ${a.tables.map((t) => t.name).join(' + ') || a.id.slice(0, 8)}`}
+                >
+                  Ver cuenta
+                </Button>
+              </Card>
+            ))}
+          {!accounts.some((a) => a.attentionStatus === 'OPEN') && (
+            <Typography color='text.secondary'>
+              No hay cuentas abiertas. Selecciona mesas para iniciar la
+              atención.
+            </Typography>
+          )}
+        </Box>
+      )}{' '}
+    </>
+  );
+  const accountSelector = (
+    <>
+      {' '}
+      <details className='secondary-account-selector'>
+        <summary>Buscar otra cuenta / historial de cuentas</summary>
+        <TextField
+          select
+          sx={{ maxWidth: 560 }}
+          size='small'
+          label='Cuenta de atención'
+          fullWidth
+          value={selected}
+          onChange={(e) => selectAccount(e.target.value)}
+        >
+          <MenuItem value=''>Abrir nueva cuenta</MenuItem>
+          {accounts.map((a) => (
+            <MenuItem key={a.id} value={a.id}>
+              {a.tables.map((t) => t.name).join(' + ') ||
+                modalityLabel[a.modality] + ' ' + a.id.slice(0, 8)}{' '}
+              · {a.attentionStatus === 'OPEN' ? 'Abierta' : 'Cerrada'} · S/
+              {a.total}
+            </MenuItem>
+          ))}
+        </TextField>
+      </details>{' '}
+    </>
+  );
   return (
     <Stack spacing={1.5} className='attention-service'>
-      <Typography variant='h5' component='h2'>
-        Cuentas y mesas
-      </Typography>
-      <Typography color='text.secondary'>
-        Selecciona una cuenta para tomar pedidos o abre una nueva atención.
-      </Typography>
-      <TextField
-        select
-        sx={{ maxWidth: 560 }}
-        size='small'
-        label='Cuenta de atención'
-        fullWidth
-        value={selected}
-        onChange={(e) => selectAccount(e.target.value)}
-      >
-        <MenuItem value=''>Abrir nueva cuenta</MenuItem>
-        {accounts.map((a) => (
-          <MenuItem key={a.id} value={a.id}>
-            {a.tables.map((t) => t.name).join(' + ') ||
-              modalityLabel[a.modality] + ' ' + a.id.slice(0, 8)}{' '}
-            · {a.attentionStatus === 'OPEN' ? 'Abierta' : 'Cerrada'} · S/
-            {a.total}
-          </MenuItem>
-        ))}
-      </TextField>
+      <Stack direction='row' justifyContent='space-between' alignItems='center'>
+        <Typography variant='h5' component='h2'>
+          {account ? 'Tomar pedido' : 'Mesas y cuentas'}
+        </Typography>
+        {account && (
+          <Button variant='outlined' onClick={() => selectAccount('')}>
+            Volver a mesas
+          </Button>
+        )}
+      </Stack>
       {!account ? (
         <Card
           className={modality === 'TABLE' ? 'open-attention-card' : undefined}
@@ -322,7 +411,7 @@ export function AttentionWorkspace({
                     />
                   </Stack>
                   <Typography variant='body2' color='text.secondary' mb={1.5}>
-                    Libre: puedes seleccionarla. Ocupada: tiene una cuenta
+                    Disponible: puedes seleccionarla. Ocupada: tiene una cuenta
                     activa.
                   </Typography>
                   {!tables.some((t) => t.isActive) && (
@@ -331,11 +420,16 @@ export function AttentionWorkspace({
                     </Typography>
                   )}
                   <TableChoices
+                    operators={operators}
                     tables={tables}
                     accounts={accounts}
                     selected={tableIds}
                     setSelected={setTableIds}
                   />
+                  <Typography variant='h6' mt={2} mb={1}>
+                    Cuentas abiertas
+                  </Typography>
+                  {accountCards}
                   <Typography
                     variant='caption'
                     color='text.secondary'
@@ -447,7 +541,7 @@ export function AttentionWorkspace({
                     }
                   }}
                 >
-                  Abrir cuenta
+                  Abrir atención
                 </Button>
               </Stack>
             </Box>
@@ -455,89 +549,209 @@ export function AttentionWorkspace({
         </Card>
       ) : (
         <>
-          <Card>
-            <CardContent>
-              <Stack spacing={2}>
-                <Typography variant='h5'>
-                  {account.modality === 'TABLE'
-                    ? 'Mesas: ' +
-                      (account.tables.map((t) => t.name).join(' + ') ||
-                        'Liberadas')
-                    : modalityLabel[account.modality]}
+          <Box className='order-workbench'>
+            <Box className='order-catalog' id='service-catalog'>
+              <Button
+                sx={{ display: { md: 'none' } }}
+                onClick={() =>
+                  document
+                    .getElementById('current-order')
+                    ?.scrollIntoView({ behavior: 'smooth' })
+                }
+              >
+                Ver pedido actual
+              </Button>
+              {account.attentionStatus === 'OPEN' ? (
+                <>
+                  <Typography variant='h6' mb={1}>
+                    Carta permanente
+                  </Typography>
+                  <ServiceCatalog
+                    products={products}
+                    onSelect={(id) => {
+                      setSourceType('PRODUCT');
+                      selectSource(id);
+                      setReplaceLine('');
+                      setCustomizing(true);
+                    }}
+                  />
+                  <Typography variant='h6' mt={2} mb={1}>
+                    Menú compuesto · precio conjunto
+                  </Typography>
+                  <Box className='account-cards'>
+                    {menus
+                      .filter((m) => m.isAvailable)
+                      .map((m) => (
+                        <Card className='account-tile' key={m.id}>
+                          <Typography fontWeight={700}>{m.name}</Typography>
+                          <Typography>S/ {m.price}</Typography>
+                          <Typography variant='caption'>
+                            {m.components.map((c) => c.name).join(' · ')}{' '}
+                            incluidos
+                          </Typography>
+                          <Button
+                            onClick={() => {
+                              setSourceType('DAILY_MENU');
+                              selectSource(m.id);
+                              setReplaceLine('');
+                              setCustomizing(true);
+                            }}
+                          >
+                            Elegir menú {m.name}
+                          </Button>
+                        </Card>
+                      ))}
+                  </Box>
+                  <Button
+                    onClick={() => {
+                      setReplaceLine('');
+                      setCustomizing(true);
+                    }}
+                  >
+                    Agregar productos / personalizar
+                  </Button>
+                </>
+              ) : (
+                <Typography className='operation-empty'>
+                  Atención cerrada. Consulta los consumos y su historial.
                 </Typography>
-                <Typography>
-                  Responsable:{' '}
-                  {operators.find((o) => o.id === account.responsibleUserId)
-                    ?.firstName || account.responsibleUserId}
-                </Typography>
-                <Typography>
-                  Atención:{' '}
-                  {account.attentionStatus === 'OPEN' ? 'Abierta' : 'Cerrada'} ·
-                  Pago:{' '}
-                  {paymentLabels[account.paymentStatus] ||
-                    account.paymentStatus}{' '}
-                  · Consumo S/{account.total} · Saldo S/{account.balance}
-                </Typography>
-                <Typography>{account.notes}</Typography>
-                {!account.lines.length && (
-                  <Alert severity='info'>
-                    Esta cuenta aún no tiene consumos. Agrega el primer producto
-                    en el formulario de pedido.
-                  </Alert>
-                )}
-                {account.lines.map((line) => (
-                  <Card variant='outlined' key={line.id}>
-                    <CardContent>
-                      <Typography>
-                        {line.quantity} × {line.productSnapshot.name} · S/
-                        {line.appliedUnitPrice} · Subtotal S/{line.subtotal} ·{' '}
-                        {line.status === 'CANCELLED' ? 'Cancelado' : 'Activo'}
-                      </Typography>
-                      <Stack direction='row' gap={1} flexWrap='wrap' mt={1}>
-                        <Chip
-                          size='small'
-                          variant='outlined'
-                          label={`Confirmado: ${line.confirmedQuantity}`}
-                        />
-                        {line.status === 'CANCELLED' && (
-                          <Chip size='small' color='error' label='Cancelado' />
-                        )}
-                      </Stack>
-                      <Typography color='text.secondary' mt={1}>
-                        {line.notes}
-                      </Typography>
-                      {line.kind === 'STAFF' && (
+              )}
+            </Box>
+            <Box className='current-order' id='current-order'>
+              <Button
+                sx={{ display: { md: 'none' } }}
+                onClick={() =>
+                  document
+                    .getElementById('service-catalog')
+                    ?.scrollIntoView({ behavior: 'smooth' })
+                }
+              >
+                Volver a productos
+              </Button>
+              <Card className='current-order-card'>
+                <CardContent>
+                  <Stack spacing={2}>
+                    <Typography variant='overline'>Pedido actual</Typography>
+                    <Typography variant='h5'>
+                      {account.modality === 'TABLE'
+                        ? 'Mesas: ' +
+                          (account.tables.map((t) => t.name).join(' + ') ||
+                            'Liberadas')
+                        : modalityLabel[account.modality]}
+                    </Typography>
+                    <Typography>
+                      Responsable:{' '}
+                      {operators.find((o) => o.id === account.responsibleUserId)
+                        ?.firstName || account.responsibleUserId}
+                    </Typography>
+                    <Typography>
+                      Atención:{' '}
+                      {account.attentionStatus === 'OPEN'
+                        ? 'Abierta'
+                        : 'Cerrada'}{' '}
+                      · Pago:{' '}
+                      {paymentLabels[account.paymentStatus] ||
+                        account.paymentStatus}{' '}
+                      · Consumo S/{account.total} · Saldo S/{account.balance}
+                    </Typography>
+                    <Typography>{account.notes}</Typography>
+                    {!account.lines.length && (
+                      <Alert severity='info'>
+                        Esta cuenta aún no tiene consumos. Agrega el primer
+                        producto en el formulario de pedido.
+                      </Alert>
+                    )}
+                    {account.lines.map((line) => (
+                      <Card variant='outlined' key={line.id}>
+                        <CardContent>
+                          <Typography>
+                            {line.quantity} × {line.productSnapshot.name} · S/
+                            {line.appliedUnitPrice} · Subtotal S/{line.subtotal}{' '}
+                            ·{' '}
+                            {line.status === 'CANCELLED'
+                              ? 'Cancelado'
+                              : 'Activo'}
+                          </Typography>
+                          <Stack direction='row' gap={1} flexWrap='wrap' mt={1}>
+                            <Chip
+                              size='small'
+                              variant='outlined'
+                              label={`Confirmado: ${line.confirmedQuantity}`}
+                            />
+                            {line.status === 'CANCELLED' && (
+                              <Chip
+                                size='small'
+                                color='error'
+                                label='Cancelado'
+                              />
+                            )}
+                          </Stack>
+                          <Typography color='text.secondary' mt={1}>
+                            {line.notes}
+                          </Typography>
+                          {line.kind === 'STAFF' && (
+                            <Typography>
+                              Consumo de personal ·{' '}
+                              {workers.find(
+                                (w) => w.id === line.beneficiaryUserId
+                              )?.firstName || line.beneficiaryUserId}{' '}
+                              · valor original S/{line.originalUnitPrice}
+                            </Typography>
+                          )}
+                          {line.kind === 'COURTESY' && (
+                            <Typography>Cortesía de cliente</Typography>
+                          )}
+                          {account.attentionStatus === 'OPEN' &&
+                            line.status === 'ACTIVE' && (
+                              <Stack direction='row' gap={1}>
+                                <Button
+                                  size='small'
+                                  onClick={() => {
+                                    setReplaceLine(line.id);
+                                    selectSource('');
+                                    setReason('');
+                                    setCustomizing(true);
+                                  }}
+                                >
+                                  Sustituir
+                                </Button>
+                                <Button
+                                  size='small'
+                                  color='error'
+                                  onClick={() => {
+                                    setCancelLine(line.id);
+                                    setReason('');
+                                  }}
+                                >
+                                  Cancelar
+                                </Button>
+                              </Stack>
+                            )}
+                        </CardContent>
+                      </Card>
+                    ))}
+                    <Box className='order-total'>
+                      {account.grossTotal != null && (
                         <Typography>
-                          Consumo de personal ·{' '}
-                          {workers.find((w) => w.id === line.beneficiaryUserId)
-                            ?.firstName || line.beneficiaryUserId}{' '}
-                          · valor original S/{line.originalUnitPrice}
+                          Subtotal S/ {account.grossTotal}
                         </Typography>
                       )}
-                      {line.kind === 'COURTESY' && (
-                        <Typography>Cortesía de cliente</Typography>
+                      {account.discountTotal != null && (
+                        <Typography>
+                          Descuento S/ {account.discountTotal}
+                        </Typography>
                       )}
-                      {account.attentionStatus === 'OPEN' &&
-                        line.status === 'ACTIVE' && (
-                          <Button
-                            color='error'
-                            disabled={reason.trim().length < 2}
-                            onClick={() =>
-                              void run(
-                                `/attention-accounts/${account.id}/lines/${line.id}/cancel`,
-                                { expectedVersion: account.version, reason }
-                              )
-                            }
-                          >
-                            Cancelar consumo con motivo indicado
-                          </Button>
-                        )}
-                    </CardContent>
-                  </Card>
-                ))}
-              </Stack>
-            </CardContent>
-          </Card>
+                      <Typography variant='h5'>
+                        Total S/ {account.total}
+                      </Typography>
+                      <Typography>Saldo S/ {account.balance}</Typography>
+                    </Box>
+                  </Stack>
+                </CardContent>
+              </Card>
+              <FulfillmentPanel key={account.id} account={account} run={run} />
+            </Box>
+          </Box>
           {account.modality !== 'TABLE' && (
             <OffsitePanel
               key={'offsite-' + account.id}
@@ -545,372 +759,450 @@ export function AttentionWorkspace({
               run={run}
             />
           )}
-          <FulfillmentPanel key={account.id} account={account} run={run} />
+
           {account.attentionStatus === 'OPEN' && (
             <>
-              <Card>
-                <CardContent>
-                  <Stack spacing={2} className='operation-form-grid'>
-                    <Typography variant='h6'>
-                      Agregar o sustituir consumo
-                    </Typography>
-                    <TextField
-                      select
-                      label='Tipo de consumo'
-                      value={kind}
-                      onChange={(e) => setKind(e.target.value)}
-                    >
-                      <MenuItem value=''>
-                        Venta / configuración de carta
-                      </MenuItem>
-                      <MenuItem value='STAFF'>
-                        Consumo gratuito de personal
-                      </MenuItem>
-                      <MenuItem value='COURTESY'>Cortesía permitida</MenuItem>
-                    </TextField>
-                    {kind === 'STAFF' && (
-                      <TextField
-                        select
-                        label='Trabajador beneficiario'
-                        value={beneficiary}
-                        onChange={(e) => setBeneficiary(e.target.value)}
-                      >
-                        {workers.map((w) => (
-                          <MenuItem key={w.id} value={w.id}>
-                            {w.firstName} {w.lastName}
+              <Dialog
+                open={customizing}
+                onClose={() => setCustomizing(false)}
+                fullWidth
+                maxWidth='sm'
+              >
+                <DialogTitle>Personalizar consumo</DialogTitle>
+                <DialogContent>
+                  <Button onClick={() => setCustomizing(false)}>
+                    Volver al catálogo
+                  </Button>
+                  <Card>
+                    <CardContent>
+                      <Stack spacing={2} className='operation-form-grid'>
+                        <Typography variant='h6'>
+                          Agregar o sustituir consumo
+                        </Typography>
+                        <TextField
+                          select
+                          label='Tipo de consumo'
+                          value={kind}
+                          onChange={(e) => setKind(e.target.value)}
+                        >
+                          <MenuItem value=''>
+                            Venta / configuración de carta
                           </MenuItem>
-                        ))}
-                      </TextField>
-                    )}
-                    <TextField
-                      select
-                      label='Operación del consumo'
-                      value={replaceLine}
-                      onChange={(e) => setReplaceLine(e.target.value)}
-                    >
-                      <MenuItem value=''>Agregar nuevo consumo</MenuItem>
-                      {account.lines
-                        .filter((l) => l.status === 'ACTIVE')
-                        .map((l) => (
-                          <MenuItem key={l.id} value={l.id}>
-                            Sustituir {l.productSnapshot.name} ({l.quantity})
+                          <MenuItem value='STAFF'>
+                            Consumo gratuito de personal
                           </MenuItem>
-                        ))}
-                    </TextField>
-                    {replaceLine && (
-                      <Typography>
-                        La sustitución cancela toda la línea anterior y solicita
-                        las nuevas unidades indicadas, incluso si hubo salidas
-                        previas. Requiere el motivo indicado abajo; no recupera
-                        porciones automáticamente. Para cambiar solo
-                        instrucciones use Observaciones.
-                      </Typography>
-                    )}
-                    <Typography>
-                      Cualquier mozo puede agregar consumos en borrador, sin
-                      descontar porciones. Sustituir comida ya enviada confirma
-                      la sustitución y descuenta sus nuevas porciones.
-                    </Typography>
-                    <TextField
-                      select
-                      label='Origen del consumo'
-                      value={sourceType}
-                      onChange={(e) => {
-                        setSourceType(e.target.value as typeof sourceType);
-                        selectSource('');
-                      }}
-                    >
-                      <MenuItem value='PRODUCT'>Carta permanente</MenuItem>
-                      <MenuItem value='DAILY_MENU'>Menú compuesto</MenuItem>
-                    </TextField>
-                    <TextField
-                      label='Buscar producto o menú'
-                      value={productSearch}
-                      onChange={(e) => setProductSearch(e.target.value)}
-                      placeholder='Escribe un nombre para filtrar las opciones'
-                    />
-                    <TextField
-                      select
-                      label='Producto o menú'
-                      value={sourceId}
-                      onChange={(e) => selectSource(e.target.value)}
-                    >
-                      {(sourceType === 'PRODUCT'
-                        ? products.filter(
-                            (p) => p.isActive && p.status === 'AVAILABLE'
-                          )
-                        : menus.filter((m) => m.isAvailable)
-                      )
-                        .filter(
-                          (p) =>
-                            p.id === sourceId ||
-                            p.name
-                              .toLocaleLowerCase()
-                              .includes(
-                                productSearch.trim().toLocaleLowerCase()
-                              )
-                        )
-                        .map((p) => (
-                          <MenuItem key={p.id} value={p.id}>
-                            {p.name} · S/{p.price}
+                          <MenuItem value='COURTESY'>
+                            Cortesía permitida
                           </MenuItem>
-                        ))}
-                    </TextField>
-                    {sourceType === 'PRODUCT' && product && (
-                      <>
-                        {!!product.options.length && (
+                        </TextField>
+                        {kind === 'STAFF' && (
                           <TextField
                             select
-                            label='Presentación'
-                            value={option}
-                            onChange={(e) => setOption(e.target.value)}
+                            label='Trabajador beneficiario'
+                            value={beneficiary}
+                            onChange={(e) => setBeneficiary(e.target.value)}
                           >
-                            <MenuItem value=''>Estándar</MenuItem>
-                            {product.options
-                              .filter((o) => o.isActive && o.isAvailable)
-                              .map((o) => (
-                                <MenuItem key={o.id} value={String(o.id)}>
-                                  {o.name} · S/{o.price}
-                                </MenuItem>
-                              ))}
+                            {workers.map((w) => (
+                              <MenuItem key={w.id} value={w.id}>
+                                {w.firstName} {w.lastName}
+                              </MenuItem>
+                            ))}
                           </TextField>
                         )}
-                        {product.configuration?.modifiers
-                          .filter((m) => m.isAvailable)
-                          .map((m) => (
-                            <FormControlLabel
-                              key={m.id}
-                              label={`${m.name} (+S/${m.price})`}
-                              control={
-                                <Checkbox
-                                  checked={modifiers.includes(m.id)}
-                                  onChange={(e) =>
-                                    setModifiers(
-                                      e.target.checked
-                                        ? [...modifiers, m.id]
-                                        : modifiers.filter((id) => id !== m.id)
-                                    )
-                                  }
-                                />
-                              }
-                            />
-                          ))}
                         <TextField
                           select
-                          label='Porción'
-                          value={portion}
-                          onChange={(e) => setPortion(e.target.value)}
+                          label='Operación del consumo'
+                          value={replaceLine}
+                          onChange={(e) => setReplaceLine(e.target.value)}
                         >
-                          <MenuItem value=''>Estándar</MenuItem>
-                          {portions
-                            .filter((p) => p.isActive)
+                          <MenuItem value=''>Agregar nuevo consumo</MenuItem>
+                          {account.lines
+                            .filter((l) => l.status === 'ACTIVE')
+                            .map((l) => (
+                              <MenuItem key={l.id} value={l.id}>
+                                Sustituir {l.productSnapshot.name} ({l.quantity}
+                                )
+                              </MenuItem>
+                            ))}
+                        </TextField>
+                        {replaceLine && (
+                          <Typography>
+                            La sustitución cancela toda la línea anterior y
+                            solicita las nuevas unidades indicadas, incluso si
+                            hubo salidas previas. Requiere el motivo indicado
+                            abajo; no recupera porciones automáticamente. Para
+                            cambiar solo instrucciones use Observaciones.
+                          </Typography>
+                        )}
+                        <Typography>
+                          Cualquier mozo puede agregar consumos en borrador, sin
+                          descontar porciones. Sustituir comida ya enviada
+                          confirma la sustitución y descuenta sus nuevas
+                          porciones.
+                        </Typography>
+                        {replaceLine && (
+                          <TextField
+                            label='Motivo de sustitución'
+                            value={reason}
+                            onChange={(e) => setReason(e.target.value)}
+                          />
+                        )}
+                        <TextField
+                          select
+                          label='Origen del consumo'
+                          value={sourceType}
+                          onChange={(e) => {
+                            setSourceType(e.target.value as typeof sourceType);
+                            selectSource('');
+                          }}
+                        >
+                          <MenuItem value='PRODUCT'>Carta permanente</MenuItem>
+                          <MenuItem value='DAILY_MENU'>Menú compuesto</MenuItem>
+                        </TextField>
+                        <TextField
+                          label='Buscar producto o menú'
+                          value={productSearch}
+                          onChange={(e) => setProductSearch(e.target.value)}
+                          placeholder='Escribe un nombre para filtrar las opciones'
+                        />
+                        <TextField
+                          select
+                          label='Producto o menú'
+                          value={sourceId}
+                          onChange={(e) => selectSource(e.target.value)}
+                        >
+                          {(sourceType === 'PRODUCT'
+                            ? products.filter(
+                                (p) => p.isActive && p.status === 'AVAILABLE'
+                              )
+                            : menus.filter((m) => m.isAvailable)
+                          )
+                            .filter(
+                              (p) =>
+                                p.id === sourceId ||
+                                p.name
+                                  .toLocaleLowerCase()
+                                  .includes(
+                                    productSearch.trim().toLocaleLowerCase()
+                                  )
+                            )
                             .map((p) => (
                               <MenuItem key={p.id} value={p.id}>
-                                {p.name} · consume {p.availabilityUnits}
+                                {p.name} · S/{p.price}
                               </MenuItem>
                             ))}
                         </TextField>
-                        {portion && (
+                        {sourceType === 'PRODUCT' && product && (
                           <>
+                            {!!product.options.length && (
+                              <TextField
+                                select
+                                label='Presentación'
+                                value={option}
+                                onChange={(e) => setOption(e.target.value)}
+                              >
+                                <MenuItem value=''>Estándar</MenuItem>
+                                {product.options
+                                  .filter((o) => o.isActive && o.isAvailable)
+                                  .map((o) => (
+                                    <MenuItem key={o.id} value={String(o.id)}>
+                                      {o.name} · S/{o.price}
+                                    </MenuItem>
+                                  ))}
+                              </TextField>
+                            )}
+                            {product.configuration?.modifiers
+                              .filter((m) => m.isAvailable)
+                              .map((m) => (
+                                <FormControlLabel
+                                  key={m.id}
+                                  label={`${m.name} (+S/${m.price})`}
+                                  control={
+                                    <Checkbox
+                                      checked={modifiers.includes(m.id)}
+                                      onChange={(e) =>
+                                        setModifiers(
+                                          e.target.checked
+                                            ? [...modifiers, m.id]
+                                            : modifiers.filter(
+                                                (id) => id !== m.id
+                                              )
+                                        )
+                                      }
+                                    />
+                                  }
+                                />
+                              ))}
                             <TextField
-                              label='Precio de porción sin extras (S/)'
-                              type='number'
-                              value={specialPrice}
-                              inputProps={{ min: 0, step: 0.01 }}
-                              onChange={(e) => setSpecialPrice(e.target.value)}
-                            />
-                            <TextField
-                              label='Motivo / indicación de porción especial'
-                              value={priceReason}
-                              onChange={(e) => setPriceReason(e.target.value)}
-                            />
+                              select
+                              label='Porción'
+                              value={portion}
+                              onChange={(e) => setPortion(e.target.value)}
+                            >
+                              <MenuItem value=''>Estándar</MenuItem>
+                              {portions
+                                .filter((p) => p.isActive)
+                                .map((p) => (
+                                  <MenuItem key={p.id} value={p.id}>
+                                    {p.name} · consume {p.availabilityUnits}
+                                  </MenuItem>
+                                ))}
+                            </TextField>
+                            {portion && (
+                              <>
+                                <TextField
+                                  label='Precio de porción sin extras (S/)'
+                                  type='number'
+                                  value={specialPrice}
+                                  inputProps={{ min: 0, step: 0.01 }}
+                                  onChange={(e) =>
+                                    setSpecialPrice(e.target.value)
+                                  }
+                                />
+                                <TextField
+                                  label='Motivo / indicación de porción especial'
+                                  value={priceReason}
+                                  onChange={(e) =>
+                                    setPriceReason(e.target.value)
+                                  }
+                                />
+                              </>
+                            )}
                           </>
                         )}
-                      </>
-                    )}
-                    {sourceType === 'DAILY_MENU' &&
-                      menu?.components.map((c) => (
+                        {sourceType === 'DAILY_MENU' &&
+                          menu?.components.map((c) => (
+                            <TextField
+                              select
+                              key={c.id}
+                              label={`Elegir ${c.name} (incluido)`}
+                              value={selections[c.id] || ''}
+                              onChange={(e) =>
+                                setSelections({
+                                  ...selections,
+                                  [c.id]: e.target.value
+                                })
+                              }
+                            >
+                              {c.options
+                                .filter(
+                                  (o) =>
+                                    o.isAvailable &&
+                                    (o.portions == null || o.portions > 0)
+                                )
+                                .map((o) => (
+                                  <MenuItem key={o.id} value={o.id}>
+                                    {products.find((p) => p.id === o.productId)
+                                      ?.name || 'Producto'}{' '}
+                                    · incluido
+                                  </MenuItem>
+                                ))}
+                            </TextField>
+                          ))}
                         <TextField
-                          select
-                          key={c.id}
-                          label={`Elegir ${c.name} (incluido)`}
-                          value={selections[c.id] || ''}
-                          onChange={(e) =>
-                            setSelections({
-                              ...selections,
-                              [c.id]: e.target.value
-                            })
+                          label='Cantidad'
+                          type='number'
+                          inputProps={{ min: 0.001, step: 0.001 }}
+                          value={quantity}
+                          onChange={(e) => setQuantity(Number(e.target.value))}
+                        />
+                        <TextField
+                          label='Observaciones por plato'
+                          multiline
+                          value={notes}
+                          onChange={(e) => setNotes(e.target.value)}
+                        />
+                        <Button
+                          variant='contained'
+                          disabled={
+                            !sourceId ||
+                            (!!replaceLine && reason.trim().length < 2)
                           }
+                          onClick={() => void add()}
                         >
-                          {c.options
-                            .filter(
-                              (o) =>
-                                o.isAvailable &&
-                                (o.portions == null || o.portions > 0)
-                            )
-                            .map((o) => (
-                              <MenuItem key={o.id} value={o.id}>
-                                {products.find((p) => p.id === o.productId)
-                                  ?.name || 'Producto'}{' '}
-                                · incluido
-                              </MenuItem>
-                            ))}
-                        </TextField>
-                      ))}
-                    <TextField
-                      label='Cantidad'
-                      type='number'
-                      inputProps={{ min: 0.001, step: 0.001 }}
-                      value={quantity}
-                      onChange={(e) => setQuantity(Number(e.target.value))}
-                    />
-                    <TextField
-                      label='Observaciones por plato'
-                      multiline
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
-                    />
-                    <Button
-                      variant='contained'
-                      disabled={
-                        !sourceId || (!!replaceLine && reason.trim().length < 2)
-                      }
-                      onClick={() => void add()}
-                    >
-                      {replaceLine
-                        ? 'Sustituir consumo con motivo'
-                        : 'Agregar consumo'}
-                    </Button>
-                  </Stack>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent>
-                  <Stack spacing={2}>
-                    <Typography variant='h6'>Mesas y responsable</Typography>
-                    <TextField
-                      label='Motivo de la operación / cancelación'
-                      value={reason}
-                      onChange={(e) => setReason(e.target.value)}
-                      fullWidth
-                    />
-                    <TableChoices
-                      tables={tables}
-                      accounts={accounts}
-                      selected={tableIds}
-                      setSelected={setTableIds}
-                      accountId={account.id}
-                    />
-                    <Button
-                      disabled={!tableIds.length || reason.trim().length < 2}
-                      onClick={() =>
-                        void run(`/attention-accounts/${account.id}/tables`, {
-                          expectedVersion: account.version,
-                          tableIds,
-                          reason
-                        })
-                      }
-                    >
-                      Trasladar / asociar mesas seleccionadas
-                    </Button>
-                    <OperatorSelect
-                      operators={operators}
-                      value={responsible}
-                      onChange={setResponsible}
-                    />
-                    <Button
-                      disabled={!responsible || reason.trim().length < 2}
-                      onClick={() =>
-                        void run(`/attention-accounts/${account.id}/transfer`, {
-                          expectedVersion: account.version,
-                          responsibleUserId: responsible,
-                          reason
-                        })
-                      }
-                    >
-                      Transferir responsable
-                    </Button>
-                    <TextField
-                      select
-                      label='Unir otra cuenta a esta (conserva responsable de esta cuenta)'
-                      value={sourceAccount}
-                      onChange={(e) => setSourceAccount(e.target.value)}
-                    >
-                      {accounts
-                        .filter(
-                          (a) =>
-                            a.id !== account.id && a.attentionStatus === 'OPEN'
-                        )
-                        .map((a) => (
-                          <MenuItem key={a.id} value={a.id}>
-                            {a.tables.map((t) => t.name).join(' + ')} · S/
-                            {a.total}
-                          </MenuItem>
-                        ))}
-                    </TextField>
-                    <Button
-                      disabled={!sourceAccount || reason.trim().length < 2}
-                      onClick={() =>
-                        void run(`/attention-accounts/${account.id}/merge`, {
-                          expectedVersion: account.version,
-                          sourceAccountId: sourceAccount,
-                          sourceExpectedVersion: accounts.find(
-                            (a) => a.id === sourceAccount
-                          )?.version,
-                          reason
-                        })
-                      }
-                    >
-                      Unir cuentas y mesas
-                    </Button>
-                    <Button
-                      color='warning'
-                      disabled={reason.trim().length < 2}
-                      onClick={() =>
-                        void run(`/attention-accounts/${account.id}/close`, {
-                          expectedVersion: account.version,
-                          reason,
-                          mode: 'END_ATTENTION'
-                        })
-                      }
-                    >
-                      Finalizar atención y liberar mesas
-                    </Button>
-                    <Button
-                      disabled={reason.trim().length < 2}
-                      onClick={() =>
-                        void run(`/attention-accounts/${account.id}/close`, {
-                          expectedVersion: account.version,
-                          reason,
-                          mode: 'WITH_DEBT'
-                        })
-                      }
-                    >
-                      Finalizar con deuda previamente registrada
-                    </Button>
-                    <Typography>
-                      Con saldo pendiente se requiere una deuda registrada. Los
-                      cobros y el registro de fiados se gestionan en Finanzas.
-                      El pago nunca libera una mesa automáticamente.
-                    </Typography>
-                  </Stack>
-                </CardContent>
-              </Card>
+                          {replaceLine
+                            ? 'Sustituir consumo con motivo'
+                            : 'Agregar consumo'}
+                        </Button>
+                      </Stack>
+                    </CardContent>
+                  </Card>
+                </DialogContent>
+              </Dialog>
+              <details className='service-details'>
+                <summary>
+                  Mesas y responsable · unir, trasladar o transferir
+                </summary>
+                <Card>
+                  <CardContent>
+                    <Stack spacing={2}>
+                      <Typography variant='h6'>Mesas y responsable</Typography>
+                      <TextField
+                        label='Motivo de la operación / cancelación'
+                        value={reason}
+                        onChange={(e) => setReason(e.target.value)}
+                        fullWidth
+                      />
+                      <TableChoices
+                        tables={tables}
+                        accounts={accounts}
+                        selected={tableIds}
+                        setSelected={setTableIds}
+                        accountId={account.id}
+                      />
+                      <Button
+                        disabled={!tableIds.length || reason.trim().length < 2}
+                        onClick={() =>
+                          void run(`/attention-accounts/${account.id}/tables`, {
+                            expectedVersion: account.version,
+                            tableIds,
+                            reason
+                          })
+                        }
+                      >
+                        Trasladar / asociar mesas seleccionadas
+                      </Button>
+                      <OperatorSelect
+                        operators={operators}
+                        value={responsible}
+                        onChange={setResponsible}
+                      />
+                      <Button
+                        disabled={!responsible || reason.trim().length < 2}
+                        onClick={() =>
+                          void run(
+                            `/attention-accounts/${account.id}/transfer`,
+                            {
+                              expectedVersion: account.version,
+                              responsibleUserId: responsible,
+                              reason
+                            }
+                          )
+                        }
+                      >
+                        Transferir responsable
+                      </Button>
+                      <TextField
+                        select
+                        label='Unir otra cuenta a esta (conserva responsable de esta cuenta)'
+                        value={sourceAccount}
+                        onChange={(e) => setSourceAccount(e.target.value)}
+                      >
+                        {accounts
+                          .filter(
+                            (a) =>
+                              a.id !== account.id &&
+                              a.attentionStatus === 'OPEN'
+                          )
+                          .map((a) => (
+                            <MenuItem key={a.id} value={a.id}>
+                              {a.tables.map((t) => t.name).join(' + ')} · S/
+                              {a.total}
+                            </MenuItem>
+                          ))}
+                      </TextField>
+                      <Button
+                        disabled={!sourceAccount || reason.trim().length < 2}
+                        onClick={() =>
+                          void run(`/attention-accounts/${account.id}/merge`, {
+                            expectedVersion: account.version,
+                            sourceAccountId: sourceAccount,
+                            sourceExpectedVersion: accounts.find(
+                              (a) => a.id === sourceAccount
+                            )?.version,
+                            reason
+                          })
+                        }
+                      >
+                        Unir cuentas y mesas
+                      </Button>
+                      <Button
+                        color='warning'
+                        disabled={reason.trim().length < 2}
+                        onClick={() =>
+                          void run(`/attention-accounts/${account.id}/close`, {
+                            expectedVersion: account.version,
+                            reason,
+                            mode: 'END_ATTENTION'
+                          })
+                        }
+                      >
+                        Finalizar atención y liberar mesas
+                      </Button>
+                      <Button
+                        disabled={reason.trim().length < 2}
+                        onClick={() =>
+                          void run(`/attention-accounts/${account.id}/close`, {
+                            expectedVersion: account.version,
+                            reason,
+                            mode: 'WITH_DEBT'
+                          })
+                        }
+                      >
+                        Finalizar con deuda previamente registrada
+                      </Button>
+                      <Typography>
+                        Con saldo pendiente se requiere una deuda registrada.
+                        Los cobros y el registro de fiados se gestionan en
+                        Finanzas. El pago nunca libera una mesa automáticamente.
+                      </Typography>
+                    </Stack>
+                  </CardContent>
+                </Card>
+              </details>
             </>
           )}
-          <Typography variant='h6'>Historial</Typography>
-          {account.history.map((h, index) => (
-            <Typography key={index}>
-              {new Date(h.createdAt).toLocaleString('es-PE', {
-                timeZone: zone
-              })}{' '}
-              · {historyLabels[h.action] || 'Operación registrada'} ·{' '}
-              {operators.find((o) => o.id === h.actorId)?.firstName ||
-                'Administración'}
-            </Typography>
-          ))}
+          <details className='service-details'>
+            <summary>Historial de la cuenta</summary>
+            <Typography variant='h6'>Historial</Typography>
+            {account.history.map((h, index) => (
+              <Typography key={index}>
+                {new Date(h.createdAt).toLocaleString('es-PE', {
+                  timeZone: zone
+                })}{' '}
+                · {historyLabels[h.action] || 'Operación registrada'} ·{' '}
+                {operators.find((o) => o.id === h.actorId)?.firstName ||
+                  'Administración'}
+              </Typography>
+            ))}
+          </details>
+          <Dialog
+            open={!!cancelLine}
+            onClose={() => setCancelLine('')}
+            fullWidth
+            maxWidth='xs'
+          >
+            <DialogTitle>Cancelar consumo</DialogTitle>
+            <DialogContent>
+              <Stack spacing={2} pt={1}>
+                <TextField
+                  label='Motivo de cancelación'
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                />
+                <Button
+                  color='error'
+                  variant='contained'
+                  disabled={reason.trim().length < 2}
+                  onClick={async () => {
+                    if (
+                      await run(
+                        `/attention-accounts/${account.id}/lines/${cancelLine}/cancel`,
+                        { expectedVersion: account.version, reason }
+                      )
+                    )
+                      setCancelLine('');
+                  }}
+                >
+                  Confirmar cancelación
+                </Button>
+                <Button onClick={() => setCancelLine('')}>Volver</Button>
+              </Stack>
+            </DialogContent>
+          </Dialog>
         </>
       )}
+      {accountSelector}
     </Stack>
   );
 }

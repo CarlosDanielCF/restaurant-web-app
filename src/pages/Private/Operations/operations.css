@@ -220,3 +220,227 @@
     padding: 12px;
   }
 }
+
+/* Operational service view: catalog and order retain independent scroll on desktop. */
+.secondary-account-selector,
+.service-details {
+  border: 1px solid #dde7e4;
+  background: #fff;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.secondary-account-selector summary,
+.service-details summary {
+  cursor: pointer;
+  color: #22534f;
+  font-weight: 600;
+  min-height: 24px;
+}
+.secondary-account-selector > .MuiFormControl-root {
+  margin-top: 12px;
+}
+.account-cards {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.operations-section .account-tile {
+  padding: 12px;
+  flex: 0 1 220px;
+  min-width: 0;
+  border-radius: 12px;
+}
+.account-tile .MuiButton-root {
+  display: block;
+}
+.order-workbench {
+  display: grid;
+  grid-template-columns: minmax(0, 1.85fr) minmax(300px, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+.order-catalog,
+.current-order {
+  min-width: 0;
+}
+.current-order {
+  position: sticky;
+  top: 82px;
+  max-height: calc(100dvh - 100px);
+  overflow: auto;
+  display: grid;
+  gap: 10px;
+}
+.operations-section .current-order .MuiCardContent-root {
+  padding: 12px;
+}
+.operations-section
+  .current-order-card
+  > .MuiCardContent-root
+  > .MuiStack-root {
+  gap: 8px;
+}
+.operations-section
+  .current-order-card
+  > .MuiCardContent-root
+  > .MuiStack-root
+  > * {
+  margin-top: 0;
+}
+.order-total {
+  border-top: 1px solid #d8e5e1;
+  padding-top: 10px;
+  color: #183c4e;
+}
+.service-product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
+}
+.operations-section .service-product {
+  border-radius: 12px;
+  overflow: hidden;
+}
+.service-product img,
+.product-symbol {
+  width: 100%;
+  height: 86px;
+  object-fit: cover;
+  background: #edf5f2;
+}
+.product-symbol {
+  display: grid;
+  place-items: center;
+  color: #4e8279;
+}
+.product-info {
+  padding: 10px;
+  display: grid;
+  gap: 5px;
+}
+.product-info .MuiChip-root {
+  justify-self: start;
+  max-width: 100%;
+}
+.product-info .MuiTypography-root {
+  overflow-wrap: anywhere;
+}
+.operations-workspace .operations-heading .MuiTypography-overline {
+  display: none;
+}
+.operations-heading .MuiTypography-body1 {
+  margin-top: 4px;
+}
+.operations-metrics > div {
+  padding: 6px 12px;
+}
+.operations-section .table-choice-grid .MuiFormControlLabel-root {
+  border-radius: 12px;
+}
+.operations-section
+  .table-choice-grid
+  .MuiFormControlLabel-root:has(.Mui-checked) {
+  background: #e7f5f1;
+}
+.operations-section .reservation-workbench {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(280px, 1fr);
+  gap: 12px;
+}
+.reservation-workbench > * {
+  margin-top: 0 !important;
+  min-width: 0;
+}
+.reservation-workbench > .MuiTypography-root,
+.reservation-arrival {
+  grid-column: 1 / -1;
+}
+.reservation-form {
+  grid-column: 2;
+  grid-row: 3;
+}
+.reservation-list {
+  grid-column: 1;
+  grid-row: 3;
+  display: grid;
+  align-content: start;
+  gap: 10px;
+}
+.operations-section .reservation-form .MuiCardContent-root,
+.operations-section .reservation-list .MuiCardContent-root {
+  padding: 14px;
+}
+.operations-section .daily-menu-card {
+  border-left: 4px solid #0d8277;
+}
+@media (max-width: 1100px) {
+  .order-workbench {
+    grid-template-columns: minmax(0, 1.5fr) minmax(280px, 1fr);
+  }
+}
+@media (max-width: 699px) {
+  .order-workbench,
+  .operations-section .reservation-workbench {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .current-order {
+    position: static;
+    max-height: none;
+  }
+  .reservation-list,
+  .reservation-form {
+    grid-column: 1;
+    grid-row: auto;
+  }
+  .reservation-list {
+    order: 1;
+  }
+  .reservation-form {
+    order: 2;
+  }
+  .reservation-arrival {
+    order: 3;
+  }
+  .service-product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .operations-section .account-tile {
+    flex-basis: calc(50% - 4px);
+  }
+}
+.attention-service > .account-cards {
+  max-height: 150px;
+  overflow: auto;
+  padding: 2px;
+}
+.current-order,
+.order-catalog {
+  scroll-margin-top: 85px;
+}
+.service-details > .MuiTypography-root {
+  margin-top: 8px;
+}
+.open-attention-map > .account-cards {
+  max-height: 150px;
+  overflow: auto;
+  padding: 2px;
+}
+@media (min-width: 700px) {
+  .current-order {
+    display: flex;
+    flex-direction: column;
+    height: calc(100dvh - 330px);
+    min-height: 420px;
+    overflow: hidden;
+  }
+  .current-order-card {
+    flex: 1;
+    min-height: 160px;
+    overflow: auto;
+  }
+  .current-order > .fulfillment-card {
+    flex-shrink: 0;
+    max-height: 240px;
+    overflow: auto;
+  }
+}

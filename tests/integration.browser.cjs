@@ -285,6 +285,9 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
     await page
       .getByRole('tab', { name: 'Menú compuesto', exact: true })
       .click();
+    await page
+      .getByRole('button', { name: 'Nuevo menú compuesto', exact: true })
+      .click();
     await page.getByLabel('Nombre del menú').fill('Menú integración');
     await page.getByLabel('Precio conjunto (S/)').fill('25');
     await page
@@ -301,11 +304,13 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
     await response('/daily-menus', 'POST', () =>
       page.getByRole('button', { name: 'Guardar menú compuesto' }).click()
     );
+    await page.getByRole('dialog').waitFor({ state: 'hidden' });
     await page
       .getByRole('tab', { name: 'Carta y disponibilidad', exact: true })
       .click();
-    await page.getByLabel('Producto de carta', { exact: true }).click();
-    await page.getByRole('option', { name: /Producto UI/ }).click();
+    await page
+      .getByRole('button', { name: 'Gestionar Producto UI', exact: true })
+      .click();
     await page.getByLabel('Controlar cantidad de porciones').check();
     await page.getByLabel('Porciones disponibles', { exact: true }).fill('12');
     await page
@@ -316,6 +321,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
     await response('/products/' + product.id, 'PATCH', () =>
       page.getByRole('button', { name: 'Guardar carta/disponibilidad' }).click()
     );
+    await page.getByRole('dialog').waitFor({ state: 'hidden' });
     await page.getByRole('tab', { name: 'Reservas', exact: true }).click();
     await page.getByLabel('Nombre de la reserva').fill('Reserva UI');
     await page.getByLabel('Teléfono de la reserva').fill('0991234567');
@@ -366,6 +372,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
       ]) {
         await page.goto(front + route);
         await page.waitForLoadState('networkidle');
+        await page.locator('[data-testid=app-content]').waitFor({ state: 'visible' });
         assert.ok(
           await page.locator('body').innerText(),
           route + ' ' + JSON.stringify(errors)

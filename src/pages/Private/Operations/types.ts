@@ -11,6 +11,8 @@ export interface Configuration {
   courtesy: boolean;
 }
 export interface Product {
+  images?: string | null;
+  category?: { id: string; name: string };
   id: string;
   name: string;
   price: number;
@@ -84,6 +86,9 @@ export interface Line {
   productSnapshot: { name: string; stockRequirements: unknown[] };
 }
 export interface Account {
+  createdAt?: string;
+  grossTotal?: string;
+  discountTotal?: string;
   notes?: string;
   id: string;
   modality: 'TABLE' | 'TAKE_AWAY' | 'OWN_DELIVERY' | 'EXTERNAL_COURIER';

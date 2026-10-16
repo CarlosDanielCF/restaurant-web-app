@@ -55,7 +55,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
       email: `p10_${Date.now()}@example.test`,
       rol: 'MOZO',
       typeIdentification: 'CEDULA',
-      numberIdentification: '0912345678'
+      numberIdentification: crypto.randomUUID().slice(0, 10)
     });
     owned.users.push(worker.id);
     const table = await req('/tables', 'POST', { name: 'F10 01', chairs: 4 });
@@ -82,6 +82,9 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
       .click();
     await page.waitForURL('**/attention');
     await req('/tables', 'POST', { name: 'F10 libre', chairs: 4 });
+    for (let number = 3; number <= 18; number++) {
+      await req('/tables', 'POST', { name: `Mesa ${number}`, chairs: 4 });
+    }
     await page
       .getByRole('button', { name: 'Actualizar datos', exact: true })
       .click();
@@ -97,7 +100,9 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
         await page.getByLabel('F10 01 · Ocupada', { exact: true }).isDisabled(),
         true
       );
-      await page.getByText('Libre · Seleccionada', { exact: true }).waitFor();
+      await page
+        .getByText('Disponible · Seleccionada', { exact: true })
+        .waitFor();
       assert.equal(
         await page.evaluate(() => {
           const main = document.querySelector('[data-testid=app-content]');
@@ -117,8 +122,9 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
       await available.uncheck();
     }
 
-    await page.getByLabel('Cuenta de atención', { exact: true }).click();
-    await page.getByRole('option', { name: /F10 01/ }).click();
+    await page
+      .getByRole('button', { name: 'Ver cuenta F10 01', exact: true })
+      .click();
     const mutation = async (suffix, action) => {
       const response = page.waitForResponse(
         (r) => r.request().method() === 'POST' && r.url().endsWith(suffix)
@@ -131,9 +137,10 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
         .waitFor();
     };
     for (const [index, note] of ['Sin cebolla', 'Con cebolla'].entries()) {
-      await page.getByLabel('Buscar producto o menú').fill('Arroz');
-      await page.getByLabel('Producto o menú', { exact: true }).click();
-      await page.getByRole('option', { name: /Arroz F10/ }).click();
+      await page.getByLabel('Buscar producto', { exact: true }).fill('Arroz');
+      await page
+        .getByRole('button', { name: 'Agregar Arroz F10', exact: true })
+        .click();
       await page.getByLabel('Observaciones por plato').fill(note);
       await mutation(`/attention-accounts/${account.id}/lines`, () =>
         page
@@ -187,6 +194,18 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
         fullPage: true
       });
     }
+    await page.getByRole('button', { name: 'Cancelar', exact: true }).first().click();
+    const cancel = page.getByRole('button', { name: 'Confirmar cancelación', exact: true });
+    assert.equal(await cancel.isDisabled(), true);
+    await page.getByLabel('Motivo de cancelación', { exact: true }).fill('Cliente solicita cancelar');
+    const cancelled = page.waitForResponse(r => r.request().method() === 'POST' && r.url().endsWith('/cancel'));
+    await cancel.click();
+    assert.ok((await cancelled).ok());
+    await page.getByRole('dialog').waitFor({ state: 'hidden' });
+    const after = (await req('/attention-accounts')).find(a => a.id === account.id);
+    assert.equal(after.lines.length, 2, 'Cancellation preserves historical lines');
+    assert.equal(after.attentionStatus, 'OPEN');
+    assert.equal(Number(after.total), 20);
     assert.deepEqual(errors, []);
     console.log(
       'F10 account flow passed: real table account, product search, independent notes, first dispatch and additional dispatch without duplicates, totals/states intact, responsive 390/900/1440.'
