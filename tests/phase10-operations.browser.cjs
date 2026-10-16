@@ -81,6 +81,42 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
       .getByRole('button', { name: 'Iniciar sesión', exact: true })
       .click();
     await page.waitForURL('**/attention');
+    await req('/tables', 'POST', { name: 'F10 libre', chairs: 4 });
+    await page
+      .getByRole('button', { name: 'Actualizar datos', exact: true })
+      .click();
+    for (const [width, height] of [
+      [390, 844],
+      [900, 1100],
+      [1440, 900]
+    ]) {
+      await page.setViewportSize({ width, height });
+      const available = page.getByLabel('F10 libre · Libre', { exact: true });
+      await available.check();
+      assert.equal(
+        await page.getByLabel('F10 01 · Ocupada', { exact: true }).isDisabled(),
+        true
+      );
+      await page.getByText('Libre · Seleccionada', { exact: true }).waitFor();
+      assert.equal(
+        await page.evaluate(() => {
+          const main = document.querySelector('[data-testid=app-content]');
+          return (
+            main.scrollWidth > main.clientWidth + 2 ||
+            document.documentElement.scrollWidth > innerWidth + 2
+          );
+        }),
+        false
+      );
+      await page
+        .locator('[data-testid=app-content]')
+        .evaluate((el) => el.scrollTo(0, 0));
+      await page.screenshot({
+        path: `/workspace/cloud-setup/f10-cycle1-open-${width}.png`
+      });
+      await available.uncheck();
+    }
+
     await page.getByLabel('Cuenta de atención', { exact: true }).click();
     await page.getByRole('option', { name: /F10 01/ }).click();
     const mutation = async (suffix, action) => {

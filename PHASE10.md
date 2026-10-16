@@ -39,3 +39,9 @@ No prueba en Windows nativo ni dispositivos físicos; confirmar en el equipo del
 ## Resultados
 
 Typecheck y build finales aprobados; lint focalizado de archivos modificados y scripts nuevos sin errores (permanece el aviso de configuración de versión React). Pruebas de arranque y flujo de cuenta F10 aprobadas; 6 unitarias de idempotencia aprobadas. Integración F0–F3, responsive 390/900/1440 y cocina 1920 aprobados. Regresiones de navegador F6–7, F8 y F9 aprobadas, incluidos impresión A4/80mm, documentos y reportes. Sin excepciones JavaScript nuevas. Los avisos heredados se registran por separado. No se modificaron pruebas existentes para ocultar fallos; los ensayos F10 nuevos usan el contrato real de trabajadores/mesas.
+
+## Revisión visual — Ciclo 1
+
+Windows validado por el Product Owner: backend/frontend arrancan e ingreso correcto. Corrección limitada a Atención: indicadores de baja altura, pestaña activa reforzada, márgenes compactos, selector de cuentas acotado y apertura con mesas a la izquierda/formulario corto a la derecha (apilados en móvil). Mesas con icono, nombre, texto libre/ocupada/no disponible, checkbox y texto de selección; no se inventa estado reservada porque las reservas vigentes no preasignan mesas. Empty states existentes conservados, sin datos ficticios en la interfaz.
+
+Prueba de navegador con datos propios de test: selección de mesa libre, mesa ocupada deshabilitada, selección explícita, sin overflow a 390×844/900×1100/1440×900; continúa pasando la creación de consumos, confirmación y adicionales sin duplicados. Capturas revisadas. Sin cambios de contratos/backend, finanzas, cocina ni otras pantallas. No avance al Ciclo 2.

@@ -1,3 +1,4 @@
+import TableRestaurantOutlined from '@mui/icons-material/TableRestaurantOutlined';
 import { OffsitePanel, modalityLabel } from './OffsitePanel';
 import { restauranteApi } from '@/api';
 import { FulfillmentPanel } from './FulfillmentPanel';
@@ -51,13 +52,17 @@ export function TableChoices({
               key={t.id}
               label={
                 <Stack spacing={0.25}>
-                  <Typography fontWeight={700}>{t.name}</Typography>
+                  <Stack direction='row' spacing={0.75} alignItems='center'>
+                    <TableRestaurantOutlined fontSize='small' />
+                    <Typography fontWeight={700}>{t.name}</Typography>
+                  </Stack>
                   <Typography variant='caption'>
                     {!t.isAvailable
                       ? 'No disponible'
                       : occupied
                         ? 'Ocupada'
                         : 'Libre'}
+                    {selected.includes(t.id) ? ' · Seleccionada' : ''}
                   </Typography>
                 </Stack>
               }
@@ -265,7 +270,7 @@ export function AttentionWorkspace({
     }
   }
   return (
-    <Stack spacing={2}>
+    <Stack spacing={1.5} className='attention-service'>
       <Typography variant='h5' component='h2'>
         Cuentas y mesas
       </Typography>
@@ -274,6 +279,8 @@ export function AttentionWorkspace({
       </Typography>
       <TextField
         select
+        sx={{ maxWidth: 560 }}
+        size='small'
         label='Cuenta de atención'
         fullWidth
         value={selected}
@@ -290,107 +297,160 @@ export function AttentionWorkspace({
         ))}
       </TextField>
       {!account ? (
-        <Card>
+        <Card
+          className={modality === 'TABLE' ? 'open-attention-card' : undefined}
+        >
           <CardContent>
-            <Stack spacing={2} className='operation-form-grid'>
-              <Typography variant='h6' component='h2'>
-                Abrir atención
-              </Typography>
-              <TextField
-                select
-                label='Modalidad'
-                value={modality}
-                onChange={(e) => {
-                  setModality(e.target.value as typeof modality);
-                  setTableIds([]);
-                }}
-              >
-                <MenuItem value='TABLE'>En mesa</MenuItem>
-                <MenuItem value='TAKE_AWAY'>Para llevar</MenuItem>
-                <MenuItem value='OWN_DELIVERY'>Delivery propio</MenuItem>
-                <MenuItem value='EXTERNAL_COURIER'>Courier externo</MenuItem>
-              </TextField>
-              <OperatorSelect
-                operators={operators}
-                value={responsible}
-                onChange={setResponsible}
-              />
-              {!operators.length && (
-                <Typography>
-                  Administración debe crear o activar un trabajador con rol Mozo
-                  antes de abrir atención.
-                </Typography>
-              )}
-              <TextField
-                select
-                label='Cliente (opcional)'
-                value={client}
-                onChange={(e) => setClient(e.target.value)}
-              >
-                <MenuItem value=''>Sin cliente</MenuItem>
-                {clients.map((c) => (
-                  <MenuItem key={c.id} value={c.id}>
-                    {c.person.firstName} {c.person.lastName}
-                  </MenuItem>
-                ))}
-              </TextField>
-              {modality !== 'TABLE' &&
-                (
-                  ['customerName', 'phone', 'address', 'reference'] as const
-                ).map((key) => (
-                  <TextField
-                    key={key}
-                    label={
-                      {
-                        customerName: 'Nombre de quien recibe',
-                        phone: 'Teléfono de contacto',
-                        address: 'Dirección de entrega',
-                        reference: 'Referencia de entrega'
-                      }[key]
-                    }
-                    value={offsite[key]}
-                    onChange={(e) =>
-                      setOffsite((f) => ({ ...f, [key]: e.target.value }))
-                    }
-                  />
-                ))}
-              <TextField
-                label='Observaciones de la atención'
-                value={accountNotes}
-                onChange={(e) => setAccountNotes(e.target.value)}
-              />
+            <Box
+              className={modality === 'TABLE' ? 'open-attention-layout' : ''}
+            >
               {modality === 'TABLE' && (
-                <TableChoices
-                  tables={tables}
-                  accounts={accounts}
-                  selected={tableIds}
-                  setSelected={setTableIds}
-                />
+                <Box className='open-attention-map'>
+                  <Stack
+                    direction='row'
+                    justifyContent='space-between'
+                    alignItems='center'
+                    mb={1}
+                  >
+                    <Typography variant='h6' component='h3'>
+                      Seleccionar mesas
+                    </Typography>
+                    <Chip
+                      size={modality === 'TABLE' ? 'small' : 'medium'}
+                      variant='outlined'
+                      label={`${tableIds.length} seleccionadas`}
+                    />
+                  </Stack>
+                  <Typography variant='body2' color='text.secondary' mb={1.5}>
+                    Libre: puedes seleccionarla. Ocupada: tiene una cuenta
+                    activa.
+                  </Typography>
+                  {!tables.some((t) => t.isActive) && (
+                    <Typography className='operation-empty'>
+                      No hay mesas activas. Configúralas desde Gestión de mesas.
+                    </Typography>
+                  )}
+                  <TableChoices
+                    tables={tables}
+                    accounts={accounts}
+                    selected={tableIds}
+                    setSelected={setTableIds}
+                  />
+                  <Typography
+                    variant='caption'
+                    color='text.secondary'
+                    display='block'
+                    mt={1.5}
+                  >
+                    Las reservas no bloquean mesas; se asignan cuando llega el
+                    cliente.
+                  </Typography>
+                </Box>
               )}
-              <Button
-                variant='contained'
-                disabled={
-                  !responsible || (modality === 'TABLE' && !tableIds.length)
+              <Stack
+                spacing={modality === 'TABLE' ? 1.5 : 2}
+                className={
+                  modality === 'TABLE'
+                    ? 'open-attention-form'
+                    : 'operation-form-grid'
                 }
-                onClick={async () => {
-                  if (
-                    await run('/attention-accounts', {
-                      modality,
-                      notes: accountNotes,
-                      ...(modality !== 'TABLE' ? { offsite } : {}),
-                      responsibleUserId: responsible,
-                      tableIds,
-                      ...(client ? { clientId: client } : {})
-                    })
-                  ) {
-                    setTableIds([]);
-                    setClient('');
-                  }
-                }}
               >
-                Abrir cuenta
-              </Button>
-            </Stack>
+                <Typography variant='h6' component='h2'>
+                  Abrir atención
+                </Typography>
+                <TextField
+                  size={modality === 'TABLE' ? 'small' : 'medium'}
+                  select
+                  label='Modalidad'
+                  value={modality}
+                  onChange={(e) => {
+                    setModality(e.target.value as typeof modality);
+                    setTableIds([]);
+                  }}
+                >
+                  <MenuItem value='TABLE'>En mesa</MenuItem>
+                  <MenuItem value='TAKE_AWAY'>Para llevar</MenuItem>
+                  <MenuItem value='OWN_DELIVERY'>Delivery propio</MenuItem>
+                  <MenuItem value='EXTERNAL_COURIER'>Courier externo</MenuItem>
+                </TextField>
+                <OperatorSelect
+                  operators={operators}
+                  value={responsible}
+                  onChange={setResponsible}
+                />
+                {!operators.length && (
+                  <Typography>
+                    Administración debe crear o activar un trabajador con rol
+                    Mozo antes de abrir atención.
+                  </Typography>
+                )}
+                <TextField
+                  size={modality === 'TABLE' ? 'small' : 'medium'}
+                  select
+                  label='Cliente (opcional)'
+                  value={client}
+                  onChange={(e) => setClient(e.target.value)}
+                >
+                  <MenuItem value=''>Sin cliente</MenuItem>
+                  {clients.map((c) => (
+                    <MenuItem key={c.id} value={c.id}>
+                      {c.person.firstName} {c.person.lastName}
+                    </MenuItem>
+                  ))}
+                </TextField>
+                {modality !== 'TABLE' &&
+                  (
+                    ['customerName', 'phone', 'address', 'reference'] as const
+                  ).map((key) => (
+                    <TextField
+                      size='medium'
+                      key={key}
+                      label={
+                        {
+                          customerName: 'Nombre de quien recibe',
+                          phone: 'Teléfono de contacto',
+                          address: 'Dirección de entrega',
+                          reference: 'Referencia de entrega'
+                        }[key]
+                      }
+                      value={offsite[key]}
+                      onChange={(e) =>
+                        setOffsite((f) => ({ ...f, [key]: e.target.value }))
+                      }
+                    />
+                  ))}
+                <TextField
+                  size={modality === 'TABLE' ? 'small' : 'medium'}
+                  label='Observaciones de la atención'
+                  value={accountNotes}
+                  onChange={(e) => setAccountNotes(e.target.value)}
+                />
+
+                <Button
+                  variant='contained'
+                  disabled={
+                    !responsible || (modality === 'TABLE' && !tableIds.length)
+                  }
+                  onClick={async () => {
+                    if (
+                      await run('/attention-accounts', {
+                        modality,
+                        notes: accountNotes,
+                        ...(modality !== 'TABLE' ? { offsite } : {}),
+                        responsibleUserId: responsible,
+                        tableIds,
+                        ...(client ? { clientId: client } : {})
+                      })
+                    ) {
+                      setTableIds([]);
+                      setClient('');
+                    }
+                  }}
+                >
+                  Abrir cuenta
+                </Button>
+              </Stack>
+            </Box>
           </CardContent>
         </Card>
       ) : (

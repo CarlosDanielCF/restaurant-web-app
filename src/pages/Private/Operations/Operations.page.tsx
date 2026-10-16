@@ -174,7 +174,7 @@ export function OperationsPage() {
   };
   return (
     <Container maxWidth='xl' className='operations-workspace'>
-      <Stack spacing={2} py={2}>
+      <Stack spacing={1.5} py={0.5}>
         <Box className='operations-heading'>
           <Box>
             <Typography variant='overline' color='primary'>
