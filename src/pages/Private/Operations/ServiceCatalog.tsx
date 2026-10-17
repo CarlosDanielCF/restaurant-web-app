@@ -1,3 +1,4 @@
+import { WorkspaceEmpty } from '@/components/operational/WorkspaceEmpty';
 import { useState } from 'react';
 import {
   Box,
@@ -21,7 +22,9 @@ function ProductTile({
   action: string;
 }) {
   const image = useRestaurantImage(product.images || undefined);
-  const available = product.status === 'AVAILABLE';
+  const available =
+    product.status === 'AVAILABLE' &&
+    (!product.trackStock || product.quantity > 0);
   return (
     <Card variant='outlined' className='service-product'>
       {image ? (
@@ -96,7 +99,7 @@ export function ServiceCatalog({
       p.name.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase())
   );
   return (
-    <Stack spacing={1.5}>
+    <Stack spacing={1.5} className='point-catalog'>
       <TextField
         size='small'
         fullWidth
@@ -105,42 +108,46 @@ export function ServiceCatalog({
         value={search}
         onChange={(e) => setSearch(e.target.value)}
       />
-      <Stack
-        direction='row'
-        gap={0.75}
-        flexWrap='wrap'
-        aria-label='Categorías de carta'
-      >
-        <Chip
-          label='Todos'
-          clickable
-          color={!category ? 'primary' : 'default'}
-          onClick={() => setCategory('')}
-        />
-        {categories.map(([id, name]) => (
+      <div className='point-catalog-layout'>
+        <Stack
+          className='point-category-rail'
+          direction='row'
+          gap={0.75}
+          flexWrap='wrap'
+          aria-label='Categorías de carta'
+        >
           <Chip
-            key={id}
-            label={name}
+            label='Todos'
             clickable
-            color={category === id ? 'primary' : 'default'}
-            onClick={() => setCategory(id)}
+            color={!category ? 'primary' : 'default'}
+            onClick={() => setCategory('')}
           />
-        ))}
-      </Stack>
-      <Box className='service-product-grid'>
-        {shown.map((p) => (
-          <ProductTile
-            key={p.id}
-            product={p}
-            onSelect={onSelect}
-            action={action}
-          />
-        ))}
-      </Box>
+          {categories.map(([id, name]) => (
+            <Chip
+              key={id}
+              label={name}
+              clickable
+              color={category === id ? 'primary' : 'default'}
+              onClick={() => setCategory(id)}
+            />
+          ))}
+        </Stack>
+        <Box className='service-product-grid'>
+          {shown.map((p) => (
+            <ProductTile
+              key={p.id}
+              product={p}
+              onSelect={onSelect}
+              action={action}
+            />
+          ))}
+        </Box>
+      </div>
       {!shown.length && (
-        <Typography className='operation-empty'>
-          No hay productos que coincidan con esta selección.
-        </Typography>
+        <WorkspaceEmpty
+          title='Sin productos en esta selección'
+          description='Prueba otra categoría o ajusta la búsqueda.'
+        />
       )}
     </Stack>
   );

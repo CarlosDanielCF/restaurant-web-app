@@ -58,6 +58,16 @@ export function TableChoices({
           return (
             <FormControlLabel
               key={t.id}
+              className='point-table-tile'
+              data-state={
+                selected.includes(t.id)
+                  ? 'selected'
+                  : !t.isAvailable
+                    ? 'unavailable'
+                    : occupied
+                      ? 'occupied'
+                      : 'available'
+              }
               label={
                 <Stack spacing={0.25}>
                   <Stack direction='row' spacing={0.75} alignItems='center'>

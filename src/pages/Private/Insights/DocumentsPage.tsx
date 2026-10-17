@@ -1,3 +1,4 @@
+import { WorkspaceEmpty } from '@/components/operational/WorkspaceEmpty';
 import { useSearchParams } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -162,7 +163,10 @@ export function DocumentsPage() {
         </Stack>
         <Typography variant='h6'>Documentos emitidos ({total})</Typography>
         {!rows.length && (
-          <Typography>No hay documentos para esta selección.</Typography>
+          <WorkspaceEmpty
+            title='Sin documentos emitidos'
+            description='Las cuentas y tickets internos emitidos aparecerán aquí para consultarlos y reimprimirlos.'
+          />
         )}
         {rows.map((r) => (
           <Button

@@ -1,3 +1,4 @@
+import { WorkspaceEmpty } from '@/components/operational/WorkspaceEmpty';
 import { useEffect, useState } from 'react';
 import { Alert, Button, Card, Chip, Stack, Typography } from '@mui/material';
 import { restauranteApi } from '@/api';
@@ -159,9 +160,10 @@ export function OffsiteCards({
         ))}
       </div>
       {!rows.length && (
-        <Typography color='text.secondary'>
-          No hay atenciones abiertas en esta modalidad.
-        </Typography>
+        <WorkspaceEmpty
+          title='Sin atenciones en esta modalidad'
+          description='Al abrir una atención para llevar o delivery aparecerán aquí su preparación, entrega y pago.'
+        />
       )}
       {rows.length > 6 && (
         <Stack direction='row'>

@@ -1,6 +1,7 @@
 import { OperationalHeaderMeta } from './Header/OperationalHeaderMeta';
 import '../../final.css';
 import '../../../../styles/clean-pos.css';
+import '../../../../styles/point-workspaces.css';
 import { FC, ReactNode, useContext, useEffect } from 'react';
 import {
   Box,

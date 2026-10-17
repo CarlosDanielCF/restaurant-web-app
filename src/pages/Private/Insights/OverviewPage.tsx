@@ -1,3 +1,9 @@
+import { operationalLabel } from './labels';
+import AccountBalanceWalletOutlined from '@mui/icons-material/AccountBalanceWalletOutlined';
+import TableRestaurantOutlined from '@mui/icons-material/TableRestaurantOutlined';
+import AccessTimeOutlined from '@mui/icons-material/AccessTimeOutlined';
+import FactCheckOutlined from '@mui/icons-material/FactCheckOutlined';
+import { WorkspaceEmpty } from '@/components/operational/WorkspaceEmpty';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Alert,
@@ -95,7 +101,11 @@ export function OverviewPage() {
         {data && (
           <>
             <div className='overview-grid'>
-              <Card>
+              <Card className='point-kpi point-kpi--green'>
+                <AccountBalanceWalletOutlined
+                  className='point-kpi-icon'
+                  aria-hidden='true'
+                />
                 <Typography>Ventas confirmadas hoy</Typography>
                 {data.sales.length ? (
                   data.sales.map((v, i) => (
@@ -110,7 +120,11 @@ export function OverviewPage() {
                   Ver reportes
                 </Button>
               </Card>
-              <Card>
+              <Card className='point-kpi point-kpi--blue'>
+                <TableRestaurantOutlined
+                  className='point-kpi-icon'
+                  aria-hidden='true'
+                />
                 <Typography>Cuentas abiertas</Typography>
                 <Typography variant='h4'>
                   {
@@ -122,14 +136,22 @@ export function OverviewPage() {
                   Atender
                 </Button>
               </Card>
-              <Card>
+              <Card className='point-kpi point-kpi--red'>
+                <AccessTimeOutlined
+                  className='point-kpi-icon'
+                  aria-hidden='true'
+                />
                 <Typography>Envíos pendientes con demora &gt;15 min</Typography>
                 <Typography variant='h4'>{data.slow}</Typography>
                 <Button component={Link} to='/kitchen'>
                   Ver cocina
                 </Button>
               </Card>
-              <Card>
+              <Card className='point-kpi point-kpi--amber'>
+                <FactCheckOutlined
+                  className='point-kpi-icon'
+                  aria-hidden='true'
+                />
                 <Typography>Rendiciones pendientes de revisión</Typography>
                 <Typography variant='h4'>{data.settlements}</Typography>
                 <Button component={Link} to='/finance'>
@@ -137,6 +159,49 @@ export function OverviewPage() {
                 </Button>
               </Card>
             </div>
+            <Card className='point-overview-attentions'>
+              <Typography variant='h5' component='h2'>
+                Atenciones recientes
+              </Typography>
+              <Typography color='text.secondary'>
+                Últimas cuentas dentro del alcance de la consulta actual.
+              </Typography>
+              {!data.accounts.length ? (
+                <WorkspaceEmpty
+                  title='Aún no hay atenciones'
+                  description='Las cuentas registradas aparecerán aquí. Las ventas y los cobros se consultan por separado.'
+                />
+              ) : (
+                [...data.accounts]
+                  .sort((a, b) =>
+                    (b.createdAt || '').localeCompare(a.createdAt || '')
+                  )
+                  .slice(0, 5)
+                  .map((a) => (
+                    <div className='point-recent-account' key={a.id}>
+                      <div>
+                        <strong>
+                          {a.tables.map((t) => t.name).join(' + ') ||
+                            operationalLabel(a.modality)}
+                        </strong>
+                        <small>
+                          {a.id.slice(0, 8)} ·{' '}
+                          {operationalLabel(a.attentionStatus)}
+                        </small>
+                      </div>
+                      <span>
+                        Consumo <strong>S/ {a.total}</strong>
+                      </span>
+                      <span>
+                        Saldo <strong>S/ {a.balance}</strong>
+                      </span>
+                    </div>
+                  ))
+              )}
+              <Button component={Link} to='/attention'>
+                Ver atenciones
+              </Button>
+            </Card>
             <Typography variant='caption'>
               Consultado:{' '}
               {new Date(data.captured).toLocaleString('es-PE', {

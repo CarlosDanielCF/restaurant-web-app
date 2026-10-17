@@ -1,3 +1,4 @@
+import { WorkspaceEmpty } from '@/components/operational/WorkspaceEmpty';
 import { operationalLabel } from './labels';
 import { useEffect, useState } from 'react';
 import {
@@ -431,7 +432,10 @@ export function ReportsPage() {
               </Typography>
             ))}
             {!result.rows.length ? (
-              <Typography>Sin resultados para estos filtros.</Typography>
+              <WorkspaceEmpty
+                title='Sin movimientos para estos filtros'
+                description='Ajusta las fechas o los filtros para consultar otro período.'
+              />
             ) : (
               <TableContainer component={Paper}>
                 <Table size='small'>

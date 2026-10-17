@@ -1,3 +1,4 @@
+import { WorkspaceEmpty } from '@/components/operational/WorkspaceEmpty';
 import { useEffect, useState } from 'react';
 import { Alert, Button, Card, Stack, Typography } from '@mui/material';
 import { restauranteApi } from '@/api';
@@ -53,11 +54,20 @@ function DebtCard({
     <Card variant='outlined'>
       <Typography fontWeight={700}>{name}</Typography>
       {debts.map((d) => (
-        <Stack key={d.id} spacing={0.5}>
-          <Typography>Deuda original S/ {d.principal}</Typography>
-          <Typography>Abonado S/ {d.installmentsTotal}</Typography>
-          <Typography fontWeight={700}>Saldo S/ {d.outstanding}</Typography>
-        </Stack>
+        <dl key={d.id} className='point-debt-totals'>
+          <div>
+            <dt>Deuda original</dt>
+            <dd>S/ {d.principal}</dd>
+          </div>
+          <div>
+            <dt>Abonado</dt>
+            <dd>S/ {d.installmentsTotal}</dd>
+          </div>
+          <div>
+            <dt>Saldo</dt>
+            <dd>S/ {d.outstanding}</dd>
+          </div>
+        </dl>
       ))}
       <Button onClick={() => onSelect(account.id)}>
         Ver historial / registrar abono
@@ -90,20 +100,25 @@ export function DebtCards({
         ))}
       </div>
       {!candidates.length && (
-        <Typography>No hay cuentas con cliente identificado.</Typography>
+        <WorkspaceEmpty
+          title='Sin cuentas con cliente identificado'
+          description='Las deudas registradas se consultan aquí; un abono no es una nueva venta.'
+        />
       )}
-      <Stack direction='row' gap={1}>
-        <Button disabled={!page} onClick={() => setPage((p) => p - 1)}>
-          Anteriores
-        </Button>
-        <Typography>Página {page + 1}</Typography>
-        <Button
-          disabled={start + 6 >= candidates.length}
-          onClick={() => setPage((p) => p + 1)}
-        >
-          Siguientes
-        </Button>
-      </Stack>
+      {!!candidates.length && (
+        <Stack direction='row' gap={1}>
+          <Button disabled={!page} onClick={() => setPage((p) => p - 1)}>
+            Anteriores
+          </Button>
+          <Typography>Página {page + 1}</Typography>
+          <Button
+            disabled={start + 6 >= candidates.length}
+            onClick={() => setPage((p) => p + 1)}
+          >
+            Siguientes
+          </Button>
+        </Stack>
+      )}
     </section>
   );
 }

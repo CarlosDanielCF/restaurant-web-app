@@ -1,3 +1,4 @@
+import { WorkspaceEmpty } from '@/components/operational/WorkspaceEmpty';
 import { operationalLabel } from '../Insights/labels';
 import { DebtCards } from './DebtCards';
 import '../Operations/cycle2.css';
@@ -783,10 +784,10 @@ export function FinancePage() {
           Abrir mi turno
         </Button>
         {ready && shifts.length === 0 && (
-          <Typography color='text.secondary'>
-            Sin turnos registrados. Al abrir un turno podrás consultar sus
-            cobros, movimientos y rendición.
-          </Typography>
+          <WorkspaceEmpty
+            title='Sin turnos registrados'
+            description='Al abrir un turno podrás consultar sus cobros, movimientos y rendición.'
+          />
         )}
         {shifts.map((s) => (
           <Paper key={s.shift.id} className='shift-card' sx={{ p: 2 }}>

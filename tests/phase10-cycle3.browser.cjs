@@ -79,7 +79,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
           await page
             .locator('[data-testid="app-content"]')
             .evaluate((e) => getComputedStyle(e).backgroundColor),
-          'rgb(248, 250, 252)'
+          'rgb(242, 246, 248)'
         );
         assert.equal(
           await page
@@ -140,6 +140,31 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
         }
       }
     }
+    // Exercise local selection/search with existing demo data, without opening accounts.
+    await page.goto('http://127.0.0.1:3030/attention');
+    const tables = page.locator(
+      '.table-choice-grid input[type="checkbox"]:enabled'
+    );
+    await tables.first().waitFor();
+    assert.ok((await tables.count()) >= 2, 'Demo needs two available tables');
+    await tables.nth(0).check();
+    await tables.nth(1).check();
+    assert.equal(
+      await page.locator('.point-table-tile[data-state="selected"]').count(),
+      2
+    );
+    await tables.nth(0).uncheck();
+    await tables.nth(1).uncheck();
+    await page.getByRole('tab', { name: /Carta y disponibilidad/i }).click();
+    const search = page.getByLabel('Buscar producto');
+    await search.fill('__no_matching_product__');
+    assert.equal(await page.locator('.service-product').count(), 0);
+    await page
+      .getByText('Sin productos en esta selección', { exact: true })
+      .waitFor();
+    await search.fill('');
+    assert.ok((await page.locator('.service-product').count()) > 0);
+    checks += 3;
     await page.setViewportSize({ width: 1920, height: 1080 });
     await page.goto('http://127.0.0.1:3030/kitchen');
     await page.getByText('Cocina · comandas', { exact: true }).waitFor();

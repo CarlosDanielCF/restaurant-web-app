@@ -266,11 +266,13 @@ export function KitchenPage() {
               >
                 <CardContent>
                   <Stack spacing={1}>
-                    <Typography variant='h5' className='ticket-location'>
-                      {d.tables.map((t) => t.name).join(' + ') ||
-                        modalityLabel[d.modality]}{' '}
-                      · #{d.sequenceNumber}
-                    </Typography>
+                    <div className='point-ticket-heading'>
+                      <Typography variant='h5' className='ticket-location'>
+                        {d.tables.map((t) => t.name).join(' + ') ||
+                          modalityLabel[d.modality]}{' '}
+                      </Typography>
+                      <Chip size='small' label={`Envío #${d.sequenceNumber}`} />
+                    </div>
                     <Typography>
                       Mozo: {d.firstName} {d.lastName}
                     </Typography>
