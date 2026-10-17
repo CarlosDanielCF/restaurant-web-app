@@ -13,6 +13,7 @@ export interface IRole {
 }
 
 export interface RestaurantRole {
+  deniedPermissions?: string[];
   version: number;
   isActive: boolean;
   id: number;
@@ -21,6 +22,7 @@ export interface RestaurantRole {
 }
 
 export interface IUser {
+  deniedPermissions?: string[];
   version?: number;
   id: string;
   username: string;

@@ -1,3 +1,4 @@
+import { WorkerAccessBoundary } from '@/pages/Private/components/WorkerAccessBoundary';
 import { OperationalHeaderMeta } from './Header/OperationalHeaderMeta';
 import '../../final.css';
 import '../../../../styles/clean-pos.css';
@@ -130,7 +131,9 @@ const SidebarLayout: FC<SidebarLayoutProps> = () => {
             </Box>
           </Box>
           <Box sx={{ p: { xs: 1.5, sm: 2, md: 2 }, flex: 1, minWidth: 0 }}>
-            <Outlet />
+            <WorkerAccessBoundary>
+              <Outlet />
+            </WorkerAccessBoundary>
           </Box>
         </Box>
       </Box>

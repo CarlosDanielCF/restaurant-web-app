@@ -1,4 +1,5 @@
 export interface CreateProductOptionDto {
+  productionRouting?: 'PRODUCTION' | 'DIRECT' | null;
   name: string;
   price?: number;
   cost?: number;

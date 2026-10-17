@@ -1,5 +1,6 @@
+import { useLiveRefresh } from '@/hooks/useLiveRefresh';
 import { WorkspaceEmpty } from '@/components/operational/WorkspaceEmpty';
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Alert, Button, Card, Chip, Stack, Typography } from '@mui/material';
 import { restauranteApi } from '@/api';
 import { Account, Operator } from './types';
@@ -32,34 +33,28 @@ function OffsiteCard({
   const [view, setView] = useState<{ delivery: Delivery | null }>(),
     [pending, setPending] = useState<boolean>(),
     [failed, setFailed] = useState(false);
-  useEffect(() => {
-    let active = true;
-    const load = () =>
-      Promise.all([
+  const load = useCallback(async () => {
+    try {
+      const [v, d] = await Promise.all([
         restauranteApi.get<{ delivery: Delivery | null }>(
           `/offsite/accounts/${account.id}`
         ),
         restauranteApi.get<Dispatch[]>(
           `/attention-accounts/${account.id}/dispatches`
         )
-      ])
-        .then(([v, d]) => {
-          if (active) {
-            setView(v.data);
-            setPending(d.data.some((x) => x.pending));
-            setFailed(false);
-          }
-        })
-        .catch(() => {
-          if (active) setFailed(true);
-        });
-    void load();
-    const timer = setInterval(() => void load(), 15000);
-    return () => {
-      active = false;
-      clearInterval(timer);
-    };
-  }, [account.id, account.version]);
+      ]);
+      setView(v.data);
+      setPending(d.data.some((x) => x.pending));
+      setFailed(false);
+    } catch {
+      setFailed(true);
+    }
+  }, [account.id]);
+  useLiveRefresh(
+    load,
+    ['attention.changed', 'finance.changed', 'kitchen.changed'],
+    String(account.version)
+  );
   return (
     <Card variant='outlined' className='pos-delivery-card'>
       <Typography fontWeight={700}>
@@ -82,8 +77,8 @@ function OffsiteCard({
             {pending === undefined
               ? 'Consultando…'
               : pending
-                ? 'Comida pendiente'
-                : 'Sin comida pendiente'}
+                ? 'Producción pendiente'
+                : 'Sin producción pendiente'}
           </Typography>
           {view?.delivery && (
             <DeliveryProgress

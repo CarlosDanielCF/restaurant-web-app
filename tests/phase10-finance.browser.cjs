@@ -1,3 +1,5 @@
+/* eslint-env node */
+/* eslint-disable @typescript-eslint/no-var-requires */
 const path = require('path');
 const backend =
   process.env.RESTAURANT_BACKEND_PATH ||
@@ -288,7 +290,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
       quantity: 1
     });
     await page
-      .getByRole('button', { name: 'Actualizar información', exact: true })
+      .getByRole('button', { name: 'Revalidar información', exact: true })
       .click();
     await page.getByLabel('Cuenta de atención', { exact: true }).click();
     await page
@@ -307,7 +309,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
       reason: 'Cliente se retira con deuda'
     });
     await page
-      .getByRole('button', { name: 'Actualizar información', exact: true })
+      .getByRole('button', { name: 'Revalidar información', exact: true })
       .click();
     await page
       .getByRole('button', { name: 'Registrar abono', exact: true })
@@ -328,7 +330,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
       .waitFor();
     await page
       .locator('.debt-browser')
-      .getByText('Saldo S/ 15.00', { exact: true })
+      .locator('dl > div').filter({ has: page.getByText('Saldo', { exact: true }) }).getByText('S/ 15.00', { exact: true })
       .waitFor();
     await page.getByRole('link', { name: 'Ver cuenta', exact: true }).click();
     await page.waitForURL(`**/internal-documents?accountId=${credit.id}`);

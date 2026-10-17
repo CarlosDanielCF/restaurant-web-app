@@ -1,14 +1,12 @@
 import { IFormLogin, LoginResponseDto } from '@/models';
 import { useRestaurantStore } from '@/pages/Private/Common/store/restaurantStore';
-import { onChecking, onLogin, onLogout } from '@/redux';
+import { onLogin, onLogout } from '@/redux';
 import { useMutation } from '@tanstack/react-query';
 import { enqueueSnackbar } from 'notistack';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { RegisterUserDto } from '../dto/register-user.dto';
 import { login, registerUser, renewToken } from '../services/auth.service';
-import { useNavigate } from 'react-router';
-import { Roles } from '@/models/roles';
 
 /**
  * Hook for user registration (signup)
@@ -45,7 +43,6 @@ export const useSignup = () => {
 export const useLogin = () => {
   const { setRestaurant } = useRestaurantStore((state) => state);
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   return useMutation<LoginResponseDto, unknown, IFormLogin>({
     mutationFn: (data: IFormLogin) => login(data),
     onSuccess: (data: LoginResponseDto) => {
@@ -73,36 +70,77 @@ export const useLogin = () => {
 export const useRenewToken = () => {
   const dispatch = useDispatch();
   const { setRestaurant } = useRestaurantStore((state) => state);
-  const navigate = useNavigate();
-
   useEffect(() => {
-    const renew = async () => {
-      try {
-        dispatch(onChecking());
-        const data = await renewToken(); // assuming this is an async call
-
-        setRestaurant(data.currentRestaurant);
-        const currentRole = data.user.restaurantRoles.find(
-          (resRole) => resRole.restaurant.id === data.currentRestaurant?.id
-        )!.role;
-
-        dispatch(
-          onLogin({
-            ...data.user,
-            role: currentRole
-          })
-        );
-        // if (data.user.role.name === Roles.COOK) {
-        //   navigate('/orders/actives');
-        // }
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('token-init-date', String(new Date().getTime()));
-      } catch (error) {
-        console.log('Error al renovar el token');
+    let running = false,
+      disposed = false;
+    const renew = async (force = false) => {
+      const previous = localStorage.getItem('token');
+      if (!previous) {
         dispatch(onLogout(''));
+        return;
+      }
+      if (running) return;
+      if (!force) {
+        try {
+          const { exp } = JSON.parse(
+            atob(previous.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))
+          );
+          if (exp * 1000 - Date.now() > 5 * 60000) return;
+        } catch {
+          /* Validate malformed tokens with the server. */
+        }
+      }
+      running = true;
+      try {
+        const data = await renewToken();
+        // A late renewal must never restore a user who logged out or switched identity.
+        if (disposed || localStorage.getItem('token') !== previous) return;
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('token-init-date', String(Date.now()));
+        setRestaurant(data.currentRestaurant);
+        const currentRole =
+          data.user.restaurantRoles.find(
+            (r) => r.restaurant.id === data.currentRestaurant?.id
+          )?.role || data.user.role;
+        dispatch(onLogin({ ...data.user, role: currentRole }));
+        if (data.token !== previous)
+          window.dispatchEvent(new Event('session-token-renewed'));
+      } catch (e) {
+        const status =
+          (e as { status?: number; response?: { status?: number } }).status ||
+          (e as { response?: { status?: number } }).response?.status;
+        if (
+          !disposed &&
+          localStorage.getItem('token') === previous &&
+          (status === 401 || status === 403)
+        ) {
+          localStorage.removeItem('token');
+          dispatch(
+            onLogout('La sesión ya no es válida. Inicia sesión nuevamente.')
+          );
+        }
+        // Network failure is not credential revocation. Keep the current screen and retry.
+      } finally {
+        running = false;
       }
     };
-
-    renew();
-  }, []);
+    const resume = () => {
+      if (document.visibilityState === 'visible') void renew(true);
+    };
+    const permissions = () => void renew(true);
+    void renew(true);
+    const timer = setInterval(() => void renew(), 60000);
+    window.addEventListener('online', resume);
+    window.addEventListener('focus', resume);
+    window.addEventListener('worker-access-changed', permissions);
+    document.addEventListener('visibilitychange', resume);
+    return () => {
+      disposed = true;
+      clearInterval(timer);
+      window.removeEventListener('online', resume);
+      window.removeEventListener('focus', resume);
+      window.removeEventListener('worker-access-changed', permissions);
+      document.removeEventListener('visibilitychange', resume);
+    };
+  }, [dispatch, setRestaurant]);
 };

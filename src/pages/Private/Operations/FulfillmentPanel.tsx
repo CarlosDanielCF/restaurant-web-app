@@ -1,6 +1,7 @@
+import { useLiveRefresh } from '@/hooks/useLiveRefresh';
 import './cycle2.css';
 import { useRestaurantStore } from '../Common/store/restaurantStore';
-import { useCallback, useContext, useEffect, useState } from 'react';
+import { useCallback, useContext, useState } from 'react';
 import {
   Alert,
   Button,
@@ -27,7 +28,7 @@ export function FulfillmentPanel({
 }) {
   const zone =
     useRestaurantStore((s) => s.restaurant?.timeZone) || 'America/Lima';
-  const { socket, online } = useContext(SocketContext);
+  const { online } = useContext(SocketContext);
   const [dispatches, setDispatches] = useState<Dispatch[]>([]),
     [screens, setScreens] = useState<number | null>(null),
     [error, setError] = useState(false);
@@ -53,19 +54,11 @@ export function FulfillmentPanel({
       setError(true);
     }
   }, [account.id]);
-  useEffect(() => {
-    void refresh();
-    const interval = setInterval(() => void refresh(), 10000);
-    socket?.on('kitchen.changed', refresh);
-    socket?.on('kitchen.presence', refresh);
-    socket?.on('connect', refresh);
-    return () => {
-      clearInterval(interval);
-      socket?.off('kitchen.changed', refresh);
-      socket?.off('kitchen.presence', refresh);
-      socket?.off('connect', refresh);
-    };
-  }, [refresh, socket, account.version]);
+  useLiveRefresh(
+    refresh,
+    ['kitchen.changed', 'kitchen.presence', 'attention.changed'],
+    String(account.version)
+  );
   const items = dispatches.flatMap((d) =>
     d.items.map((i) => ({ ...i, sequence: d.sequenceNumber }))
   );
@@ -118,11 +111,12 @@ export function FulfillmentPanel({
             }
             onClick={() => void action('confirm', {})}
           >
-            Confirmar consumos nuevos y enviar comida
+            Confirmar consumos y enviar a producción
           </Button>
           <Typography variant='caption'>
-            Solo confirma unidades nuevas. Las bebidas no aparecen en cocina.
-            Cada envío conserva su hora; no registra pago ni cierra la cuenta.
+            Solo confirma unidades nuevas. Se envían los productos configurados
+            para producción, incluidas las bebidas preparadas. Cada envío
+            conserva su hora; no registra pago ni cierra la cuenta.
           </Typography>
           <details className='service-details'>
             <summary>Envíos ({dispatches.length})</summary>
@@ -133,7 +127,7 @@ export function FulfillmentPanel({
                   {new Date(d.confirmedAt).toLocaleTimeString('es-PE', {
                     timeZone: zone
                   })}{' '}
-                  · {d.pending ? 'Pendiente' : 'Sin comida pendiente'}
+                  · {d.pending ? 'Pendiente' : 'Sin producción pendiente'}
                   {d.pending &&
                     ` · ${Math.max(0, Math.floor((Date.now() - new Date(d.confirmedAt).getTime()) / 60000))} min desde el envío`}
                 </Typography>

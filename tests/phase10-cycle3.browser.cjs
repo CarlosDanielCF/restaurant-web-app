@@ -142,19 +142,19 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
     }
     // Exercise local selection/search with existing demo data, without opening accounts.
     await page.goto('http://127.0.0.1:3030/attention');
-    const tables = page.locator(
-      '.table-choice-grid input[type="checkbox"]:enabled'
-    );
+    await page.getByRole('button', { name: 'Unir mesas', exact: true }).click();
+    const tables = page.locator('.quick-table:enabled');
     await tables.first().waitFor();
     assert.ok((await tables.count()) >= 2, 'Demo needs two available tables');
-    await tables.nth(0).check();
-    await tables.nth(1).check();
+    await tables.nth(0).click();
+    await tables.nth(1).click();
     assert.equal(
-      await page.locator('.point-table-tile[data-state="selected"]').count(),
+      await page.locator('.quick-table[aria-pressed="true"]').count(),
       2
     );
-    await tables.nth(0).uncheck();
-    await tables.nth(1).uncheck();
+    await page
+      .getByRole('button', { name: 'Cancelar selección', exact: true })
+      .click();
     await page.getByRole('tab', { name: /Carta y disponibilidad/i }).click();
     const search = page.getByLabel('Buscar producto');
     await search.fill('__no_matching_product__');

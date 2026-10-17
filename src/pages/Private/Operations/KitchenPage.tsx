@@ -1,3 +1,4 @@
+import { useLiveRefresh } from '@/hooks/useLiveRefresh';
 import RestaurantMenuOutlined from '@mui/icons-material/RestaurantMenuOutlined';
 import './cycle2.css';
 import { modalityLabel } from './OffsitePanel';
@@ -75,26 +76,23 @@ export function KitchenPage() {
       inFlight.current = false;
     }
   }, [sound]);
+  useLiveRefresh(refresh, ['kitchen.changed', 'attention.changed']);
   useEffect(() => {
     void refresh();
-    const timer = setInterval(() => void refresh(), 5000);
-    const changed = () => void refresh();
+
     const watch = () => {
       socket?.emit('kitchen.watch', true);
       void refresh();
     };
-    socket?.on('kitchen.changed', changed);
-    socket?.on('attention.changed', changed);
+
     socket?.on('connect', watch);
     if (socket?.connected) watch();
     const heartbeat = setInterval(() => {
       if (socket?.connected) socket.emit('kitchen.watch', true);
     }, 15000);
     return () => {
-      clearInterval(timer);
       clearInterval(heartbeat);
-      socket?.off('kitchen.changed', changed);
-      socket?.off('attention.changed', changed);
+
       socket?.off('connect', watch);
       socket?.emit('kitchen.watch', false);
     };
@@ -120,7 +118,7 @@ export function KitchenPage() {
   const total = board?.totalPending || 0,
     start = wide ? page * 3 : 0,
     visible = board?.dispatches.slice(start, wide ? start + 3 : limit) || [],
-    stale = !online || failed || !lastSync || tick - lastSync > 15000;
+    stale = !online || failed || !lastSync || tick - lastSync > 90000;
   async function enableSound() {
     if (!audio.current) audio.current = new AudioContext();
     await audio.current.resume();
@@ -197,7 +195,9 @@ export function KitchenPage() {
           <Button component={Link} to='/attention'>
             Menú y disponibilidad
           </Button>
-          <Button onClick={() => void refresh()}>Actualizar</Button>
+          {failed && (
+            <Button onClick={() => void refresh()}>Reintentar conexión</Button>
+          )}
           <Button disabled={sound} onClick={() => void enableSound()}>
             {sound ? 'Sonido activado' : 'Activar avisos sonoros'}
           </Button>
@@ -345,7 +345,7 @@ export function KitchenPage() {
               <RestaurantMenuOutlined />
               <Typography variant='h5'>Cocina al día</Typography>
               <Typography>
-                No hay comida pendiente. Las nuevas comandas aparecerán
+                No hay producción pendiente. Las nuevas comandas aparecerán
                 automáticamente.
               </Typography>
               <Typography variant='caption'>

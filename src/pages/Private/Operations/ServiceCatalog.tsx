@@ -9,7 +9,6 @@ import {
   TextField,
   Typography
 } from '@mui/material';
-import RestaurantMenuOutlined from '@mui/icons-material/RestaurantMenuOutlined';
 import { useRestaurantImage } from '@/hooks/useRestaurantImage';
 import { Product } from './types';
 function ProductTile({
@@ -31,7 +30,11 @@ function ProductTile({
         <img src={image} alt={product.name} loading='lazy' />
       ) : (
         <Box className='product-symbol'>
-          <RestaurantMenuOutlined />
+          <img
+            src='/branding/point-restaurant-logo.png'
+            alt='Point Restaurant · producto sin imagen'
+            style={{ width: 64, height: 56, objectFit: 'contain' }}
+          />
         </Box>
       )}
       <Box className='product-info'>

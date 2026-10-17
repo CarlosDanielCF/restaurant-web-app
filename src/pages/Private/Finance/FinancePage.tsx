@@ -1,3 +1,4 @@
+import { useLiveRefresh } from '@/hooks/useLiveRefresh';
 import { WorkspaceEmpty } from '@/components/operational/WorkspaceEmpty';
 import { operationalLabel } from '../Insights/labels';
 import { DebtCards } from './DebtCards';
@@ -111,7 +112,7 @@ export function FinancePage() {
   const user = useSelector(selectAuth).user;
   const restaurant = useRestaurantStore((s) => s.restaurant);
   const manager = ['DUENO', 'ADMINISTRADOR'].includes(user?.role.name || '');
-  const { socket, online } = useContext(SocketContext);
+  const { online } = useContext(SocketContext);
   const [accounts, setAccounts] = useState<Account[]>([]),
     [selected, setSelected] = useState(''),
     [data, setData] = useState<Financial>(),
@@ -230,24 +231,11 @@ export function FinancePage() {
   useEffect(() => {
     setReady(false);
     setData(undefined);
-    void refresh();
     return () => {
       generation.current++;
     };
   }, [refresh]);
-  useEffect(() => {
-    const update = () => {
-      void refresh();
-    };
-    for (const event of ['finance.changed', 'attention.changed', 'connect'])
-      socket?.on(event, update);
-    const interval = setInterval(update, 15000);
-    return () => {
-      clearInterval(interval);
-      for (const event of ['finance.changed', 'attention.changed', 'connect'])
-        socket?.off(event, update);
-    };
-  }, [socket, refresh]);
+  useLiveRefresh(refresh, ['finance.changed', 'attention.changed']);
   const run = async (path: string, body: Record<string, unknown>) => {
     if (lock.current || !ready) return;
     lock.current = true;
@@ -330,7 +318,7 @@ export function FinancePage() {
         >
           <Typography variant='h4'>Cobros y rendición</Typography>
           <Button onClick={() => void refresh()} disabled={busy}>
-            Actualizar información
+            Revalidar información
           </Button>
         </Stack>
         <Alert severity='info'>

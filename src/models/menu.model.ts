@@ -62,6 +62,7 @@ export enum ProductStatusSpanish {
  * @version 1.4 15/03/2025 Add iva to product
  */
 export interface IProduct {
+  productionRouting?: 'PRODUCTION' | 'DIRECT';
   id: string;
   name: string;
   price: number;
@@ -85,6 +86,7 @@ export interface IProduct {
  * @version 1.0 18/12/2023
  */
 export interface ProductOption {
+  productionRouting?: 'PRODUCTION' | 'DIRECT' | null;
   id: number;
   name: string;
   price: number;

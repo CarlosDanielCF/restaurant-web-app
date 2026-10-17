@@ -11,6 +11,7 @@ import {
   Grid,
   InputAdornment,
   InputLabel,
+  MenuItem,
   Switch,
   TextField
 } from '@mui/material';
@@ -78,6 +79,27 @@ export const ModalUpdateProductOption = NiceModal.create<Props>(
               }}
             >
               <Grid container spacing={2}>
+                <Grid item xs={12}>
+                  <Controller
+                    name='productionRouting'
+                    control={control}
+                    render={({ field }) => (
+                      <TextField
+                        select
+                        fullWidth
+                        label='Preparación de esta presentación'
+                        value={field.value || ''}
+                        onChange={(e) => field.onChange(e.target.value || null)}
+                      >
+                        <MenuItem value=''>Heredar del producto</MenuItem>
+                        <MenuItem value='PRODUCTION'>
+                          Requiere producción
+                        </MenuItem>
+                        <MenuItem value='DIRECT'>Entrega directa</MenuItem>
+                      </TextField>
+                    )}
+                  />
+                </Grid>
                 <Grid item xs={12}>
                   <InputLabel>Nombre de la variante</InputLabel>
                   <TextField

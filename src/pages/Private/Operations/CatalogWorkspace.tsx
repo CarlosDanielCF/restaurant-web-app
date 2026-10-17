@@ -54,6 +54,7 @@ export function CatalogWorkspace({
           name: product.name,
           price: Number(product.price),
           kind: product.kind,
+          productionRouting: product.productionRouting,
           configuration: config,
           status: product.status,
           quantity: Number(product.quantity),
@@ -131,6 +132,24 @@ export function CatalogWorkspace({
                       setProduct({ ...product, name: e.target.value })
                     }
                   />
+                  <TextField
+                    select
+                    label='Preparación / entrega'
+                    value={product.productionRouting || 'PRODUCTION'}
+                    onChange={(e) =>
+                      setProduct({
+                        ...product,
+                        productionRouting: e.target
+                          .value as Product['productionRouting']
+                      })
+                    }
+                    helperText='Independiente de comida o bebida. Los combos y menús usan el ruteo de sus componentes.'
+                  >
+                    <MenuItem value='PRODUCTION'>
+                      Requiere producción / cocina
+                    </MenuItem>
+                    <MenuItem value='DIRECT'>Entrega directa por mozo</MenuItem>
+                  </TextField>
                   <TextField
                     select
                     label='Clasificación'

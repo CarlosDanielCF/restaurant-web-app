@@ -1,3 +1,5 @@
+import { useSelector } from 'react-redux';
+import { selectAuth } from '@/redux';
 import { useState } from 'react';
 import {
   Box,
@@ -47,9 +49,11 @@ export function ReservationsWorkspace({
   run: Run;
   zone: string;
 }) {
+  const user = useSelector(selectAuth).user;
+  const waiter = user?.role.name === 'MOZO';
   const [draft, setDraft] = useState(blank());
   const [arrival, setArrival] = useState<Reservation | null>(null);
-  const [responsible, setResponsible] = useState('');
+  const [responsible, setResponsible] = useState(waiter ? user.id : '');
   const [tableIds, setTableIds] = useState<string[]>([]);
   const [reason, setReason] = useState('');
   return (
@@ -218,11 +222,13 @@ export function ReservationsWorkspace({
           <CardContent>
             <Stack spacing={2}>
               <Typography variant='h6'>Llegada de {arrival.name}</Typography>
-              <OperatorSelect
-                operators={operators}
-                value={responsible}
-                onChange={setResponsible}
-              />
+              {!waiter && (
+                <OperatorSelect
+                  operators={operators}
+                  value={responsible}
+                  onChange={setResponsible}
+                />
+              )}
               <TableChoices
                 tables={tables}
                 accounts={accounts}

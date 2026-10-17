@@ -1,3 +1,6 @@
+import { useWorkerAccess } from '@/hooks/useWorkerAccess';
+import { useSelector } from 'react-redux';
+import { selectAuth } from '@/redux';
 import { OffsiteCards } from './OffsiteCards';
 import CheckCircleOutline from '@mui/icons-material/CheckCircleOutline';
 import { ServiceCatalog } from './ServiceCatalog';
@@ -184,6 +187,10 @@ export function AttentionWorkspace({
   clients: { id: string; person: { firstName: string; lastName: string } }[];
   run: Run;
 }) {
+  const can = useWorkerAccess();
+  const user = useSelector(selectAuth).user;
+  const waiter = user?.role.name === 'MOZO';
+  const [joining, setJoining] = useState(false);
   const zone =
     useRestaurantStore((s) => s.restaurant?.timeZone) || 'America/Lima';
   const paymentLabels: Record<string, string> = {
@@ -208,7 +215,7 @@ export function AttentionWorkspace({
   const [cancelLine, setCancelLine] = useState('');
   const account = accounts.find((a) => a.id === selected);
   const [tableIds, setTableIds] = useState<string[]>([]);
-  const [responsible, setResponsible] = useState('');
+  const [responsible, setResponsible] = useState(waiter ? user.id : '');
   const [client, setClient] = useState('');
   const [reason, setReason] = useState('');
   const [sourceAccount, setSourceAccount] = useState('');
@@ -234,7 +241,7 @@ export function AttentionWorkspace({
     setReplaceLine('');
     const next = accounts.find((a) => a.id === id);
     setTableIds(next?.tables.map((t) => t.id) || []);
-    setResponsible(next?.responsibleUserId || '');
+    setResponsible(next?.responsibleUserId || (waiter ? user.id : ''));
     setReason('');
   }
   function selectSource(id: string) {
@@ -307,6 +314,49 @@ export function AttentionWorkspace({
       setReplaceLine('');
       setCustomizing(false);
     }
+  }
+  async function enterTables(ids: string[]) {
+    await run(
+      '/attention-accounts/enter',
+      {
+        tableIds: ids,
+        ...(!waiter && responsible ? { responsibleUserId: responsible } : {})
+      },
+      'post',
+      (data) => {
+        setSelected((data as Account).id);
+        setJoining(false);
+        setTableIds([]);
+      }
+    );
+  }
+  async function chooseProduct(id: string) {
+    const item = products.find((p) => p.id === id);
+    if (!account || !item) return;
+    setSourceType('PRODUCT');
+    selectSource(id);
+    setReplaceLine('');
+    // Any presentation/configuration keeps the explicit customization path.
+    const options = item.options.filter((o) => o.isActive);
+    if (
+      options.length > 1 ||
+      (options.length === 1 && !options[0].isDefault) ||
+      item.configuration?.modifiers.length ||
+      item.configuration?.combo.length ||
+      kind
+    ) {
+      setCustomizing(true);
+      return;
+    }
+    await run(`/attention-accounts/${account.id}/lines`, {
+      expectedVersion: account.version,
+      sourceType: 'PRODUCT',
+      sourceId: id,
+      quantity: 1,
+      notes: '',
+      modifierIds: [],
+      ...(options[0] ? { productOptionId: options[0].id } : {})
+    });
   }
   const accountCards = (
     <>
@@ -396,13 +446,38 @@ export function AttentionWorkspace({
           </Button>
         )}
       </Stack>
+      {!account && waiter && can('delivery') && (
+        <Stack
+          direction='row'
+          gap={1}
+          flexWrap='wrap'
+          aria-label='Modalidad de atención'
+        >
+          {Object.entries(modalityLabel).map(([value, label]) => (
+            <Button
+              key={value}
+              size='small'
+              variant={modality === value ? 'contained' : 'outlined'}
+              aria-pressed={modality === value}
+              onClick={() => {
+                setModality(value as Account['modality']);
+                setTableIds([]);
+              }}
+            >
+              {label}
+            </Button>
+          ))}
+        </Stack>
+      )}
       {!account ? (
         <Card
           className={modality === 'TABLE' ? 'open-attention-card' : undefined}
         >
           <CardContent>
             <Box
-              className={modality === 'TABLE' ? 'open-attention-layout' : ''}
+              className={
+                modality === 'TABLE' && !waiter ? 'open-attention-layout' : ''
+              }
             >
               {modality === 'TABLE' && (
                 <Box className='open-attention-map'>
@@ -413,30 +488,103 @@ export function AttentionWorkspace({
                     mb={1}
                   >
                     <Typography variant='h6' component='h3'>
-                      Seleccionar mesas
+                      {joining
+                        ? 'Seleccionar mesas'
+                        : 'Toca una mesa para atender'}
                     </Typography>
                     <Chip
                       size={modality === 'TABLE' ? 'small' : 'medium'}
                       variant='outlined'
-                      label={`${tableIds.length} seleccionadas`}
+                      label={
+                        joining
+                          ? `${tableIds.length} seleccionadas`
+                          : 'Atención rápida'
+                      }
                     />
                   </Stack>
                   <Typography variant='body2' color='text.secondary' mb={1.5}>
-                    Disponible: puedes seleccionarla. Ocupada: tiene una cuenta
-                    activa.
+                    Disponible: inicia la atención. Ocupada: abre su cuenta
+                    actual.
                   </Typography>
                   {!tables.some((t) => t.isActive) && (
                     <Typography className='operation-empty'>
                       No hay mesas activas. Configúralas desde Gestión de mesas.
                     </Typography>
                   )}
-                  <TableChoices
-                    operators={operators}
-                    tables={tables}
-                    accounts={accounts}
-                    selected={tableIds}
-                    setSelected={setTableIds}
-                  />
+                  <Stack direction='row' gap={1} mb={1}>
+                    <Button
+                      variant={joining ? 'contained' : 'outlined'}
+                      onClick={() => {
+                        setJoining(!joining);
+                        setTableIds([]);
+                      }}
+                    >
+                      {joining ? 'Cancelar selección' : 'Unir mesas'}
+                    </Button>
+                    {joining && (
+                      <Button
+                        variant='contained'
+                        disabled={
+                          tableIds.length < 2 || (!waiter && !responsible)
+                        }
+                        onClick={() => void enterTables(tableIds)}
+                      >
+                        Unir y atender
+                      </Button>
+                    )}
+                  </Stack>
+                  <Box className='quick-table-grid'>
+                    {tables
+                      .filter((t) => t.isActive)
+                      .map((t) => {
+                        const active = accounts.find(
+                          (a) =>
+                            a.attentionStatus === 'OPEN' &&
+                            a.tables.some((x) => x.id === t.id)
+                        );
+                        const chosen = tableIds.includes(t.id);
+                        return (
+                          <Button
+                            key={t.id}
+                            className='quick-table'
+                            variant='outlined'
+                            aria-pressed={joining ? chosen : undefined}
+                            disabled={!t.isAvailable || (joining && !!active)}
+                            onClick={() => {
+                              if (joining)
+                                setTableIds(
+                                  chosen
+                                    ? tableIds.filter((id) => id !== t.id)
+                                    : [...tableIds, t.id]
+                                );
+                              else if (active) selectAccount(active.id);
+                              else void enterTables([t.id]);
+                            }}
+                          >
+                            <TableRestaurantOutlined />
+                            <strong>{t.name}</strong>
+                            <span>
+                              {chosen
+                                ? '✓ Seleccionada'
+                                : active
+                                  ? 'Ocupada'
+                                  : !t.isAvailable
+                                    ? 'No disponible'
+                                    : 'Disponible'}
+                            </span>
+                            {active && (
+                              <small>
+                                {operators.find(
+                                  (o) => o.id === active.responsibleUserId
+                                )?.firstName || 'Responsable asignado'}{' '}
+                                · S/ {active.total}
+                                {active.tables.length > 1 ? ' · Unida' : ''}
+                              </small>
+                            )}
+                          </Button>
+                        );
+                      })}
+                  </Box>
                   <Typography variant='h6' mt={2} mb={1}>
                     Cuentas abiertas
                   </Typography>
@@ -453,6 +601,9 @@ export function AttentionWorkspace({
                 </Box>
               )}
               <Stack
+                sx={{
+                  display: waiter && modality === 'TABLE' ? 'none' : undefined
+                }}
                 spacing={modality === 'TABLE' ? 1.5 : 2}
                 className={
                   modality === 'TABLE'
@@ -474,15 +625,25 @@ export function AttentionWorkspace({
                   }}
                 >
                   <MenuItem value='TABLE'>En mesa</MenuItem>
-                  <MenuItem value='TAKE_AWAY'>Para llevar</MenuItem>
-                  <MenuItem value='OWN_DELIVERY'>Delivery propio</MenuItem>
-                  <MenuItem value='EXTERNAL_COURIER'>Courier externo</MenuItem>
+                  {can('delivery') && (
+                    <MenuItem value='TAKE_AWAY'>Para llevar</MenuItem>
+                  )}
+                  {can('delivery') && (
+                    <MenuItem value='OWN_DELIVERY'>Delivery propio</MenuItem>
+                  )}
+                  {can('delivery') && (
+                    <MenuItem value='EXTERNAL_COURIER'>
+                      Courier externo
+                    </MenuItem>
+                  )}
                 </TextField>
-                <OperatorSelect
-                  operators={operators}
-                  value={responsible}
-                  onChange={setResponsible}
-                />
+                {!waiter && (
+                  <OperatorSelect
+                    operators={operators}
+                    value={responsible}
+                    onChange={setResponsible}
+                  />
+                )}
                 {!operators.length && (
                   <Typography>
                     Administración debe crear o activar un trabajador con rol
@@ -579,12 +740,7 @@ export function AttentionWorkspace({
                   </Typography>
                   <ServiceCatalog
                     products={products}
-                    onSelect={(id) => {
-                      setSourceType('PRODUCT');
-                      selectSource(id);
-                      setReplaceLine('');
-                      setCustomizing(true);
-                    }}
+                    onSelect={(id) => void chooseProduct(id)}
                   />
                   <Typography variant='h6' mt={2} mb={1}>
                     Menú compuesto · precio conjunto
@@ -1010,13 +1166,34 @@ export function AttentionWorkspace({
                                 ))}
                             </TextField>
                           ))}
-                        <TextField
-                          label='Cantidad'
-                          type='number'
-                          inputProps={{ min: 0.001, step: 0.001 }}
-                          value={quantity}
-                          onChange={(e) => setQuantity(Number(e.target.value))}
-                        />
+                        <Stack direction='row' alignItems='center' gap={1}>
+                          <Button
+                            variant='outlined'
+                            aria-label='Reducir cantidad'
+                            disabled={quantity <= 1}
+                            onClick={() =>
+                              setQuantity((q) => Math.max(1, q - 1))
+                            }
+                          >
+                            −
+                          </Button>
+                          <TextField
+                            label='Cantidad'
+                            type='number'
+                            inputProps={{ min: 0.001, step: 0.001 }}
+                            value={quantity}
+                            onChange={(e) =>
+                              setQuantity(Number(e.target.value))
+                            }
+                          />
+                          <Button
+                            variant='outlined'
+                            aria-label='Aumentar cantidad'
+                            onClick={() => setQuantity((q) => q + 1)}
+                          >
+                            +
+                          </Button>
+                        </Stack>
                         <TextField
                           label='Observaciones por plato'
                           multiline
@@ -1213,7 +1390,7 @@ export function AttentionWorkspace({
           </Dialog>
         </>
       )}
-      {!account && (
+      {!account && can('delivery') && (
         <OffsiteCards
           accounts={accounts}
           operators={operators}

@@ -1,3 +1,4 @@
+import { routePermission, useWorkerAccess } from '@/hooks/useWorkerAccess';
 import { useLocation, Navigate, Outlet } from 'react-router-dom';
 import { FC } from 'react';
 
@@ -13,8 +14,13 @@ interface Props {
 const Auth: FC<Props> = ({ allowedRoles }) => {
   const { user } = useSelector(selectAuth);
   const location = useLocation();
+  const can = useWorkerAccess(),
+    permission = routePermission(location.pathname);
 
-  return !!user && (user.role.name === Roles.OWNER || allowedRoles.includes(user.role.name as Roles)) ? (
+  return !!user &&
+    (!permission || can(permission)) &&
+    (user.role.name === Roles.OWNER ||
+      allowedRoles.includes(user.role.name as Roles)) ? (
     <Outlet />
   ) : user?.username ? (
     <Navigate to='/unauthorized' state={{ from: location }} replace />

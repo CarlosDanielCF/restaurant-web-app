@@ -23,7 +23,13 @@ export const useSocket = (serverPath: string) => {
       }
     });
 
-    const socketTemp = manager.socket('/');
+    const socketTemp = manager.socket('/', {
+      auth: (cb) =>
+        cb({
+          token: localStorage.getItem('token') || '',
+          restaurantId: restaurant?.id || ''
+        })
+    });
 
     const emit = socketTemp.emit.bind(socketTemp);
     socketTemp.emit = ((event: string, ...args: unknown[]) => {
@@ -66,15 +72,27 @@ export const useSocket = (serverPath: string) => {
   }, [socket]);
 
   useEffect(() => {
-    socket?.on('connect', () => {
-      setOnline(true);
-    });
-  }, [socket]);
-
-  useEffect(() => {
-    socket?.on('disconnect', () => {
-      setOnline(false);
-    });
+    if (!socket) return;
+    const connected = () => setOnline(true);
+    const disconnected = () => setOnline(false);
+    const renewed = () => {
+      socket.disconnect();
+      socket.connect();
+    };
+    const access = () =>
+      window.dispatchEvent(new Event('worker-access-changed'));
+    socket.on('connect', connected);
+    socket.on('disconnect', disconnected);
+    socket.on('connect_error', disconnected);
+    socket.on('access.changed', access);
+    window.addEventListener('session-token-renewed', renewed);
+    return () => {
+      socket.off('connect', connected);
+      socket.off('disconnect', disconnected);
+      socket.off('connect_error', disconnected);
+      socket.off('access.changed', access);
+      window.removeEventListener('session-token-renewed', renewed);
+    };
   }, [socket]);
 
   return {

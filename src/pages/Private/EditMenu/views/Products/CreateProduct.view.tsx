@@ -44,6 +44,7 @@ import { ModalSelectDefaultVariant } from './components/ModalSelectDefaultVarian
 
 export interface ProductForm {
   kind: 'FOOD' | 'DRINK';
+  productionRouting: 'PRODUCTION' | 'DIRECT';
   name: string;
   price: number;
   categoryId: string;
@@ -66,6 +67,7 @@ export interface ProductForm {
 
 const initialForm: ProductForm = {
   kind: 'FOOD',
+  productionRouting: 'PRODUCTION',
   name: '',
   description: '',
   price: 0,
@@ -234,6 +236,21 @@ export const CreateProduct = () => {
                             />
                           </Grid>
                           <Grid item xs={12}>
+                            <TextField
+                              select
+                              fullWidth
+                              label='Preparación / entrega'
+                              {...register('productionRouting')}
+                              defaultValue='PRODUCTION'
+                              helperText='No depende de la categoría: configura también las bebidas preparadas.'
+                            >
+                              <MenuItem value='PRODUCTION'>
+                                Requiere producción
+                              </MenuItem>
+                              <MenuItem value='DIRECT'>
+                                Entrega directa
+                              </MenuItem>
+                            </TextField>
                             <TextField
                               select
                               fullWidth

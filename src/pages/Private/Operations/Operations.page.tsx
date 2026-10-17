@@ -1,5 +1,7 @@
+import { useWorkerAccess } from '@/hooks/useWorkerAccess';
+import { useLiveRefresh } from '@/hooks/useLiveRefresh';
 import './operations.css';
-import { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { useCallback, useContext, useRef, useState } from 'react';
 import {
   Alert,
   Box,
@@ -33,9 +35,13 @@ import {
 export type Run = (
   path: string,
   body: object,
-  method?: 'post' | 'patch'
+  method?: 'post' | 'patch',
+  onSuccess?: (data: unknown) => void
 ) => Promise<boolean>;
 export function OperationsPage() {
+  const can = useWorkerAccess();
+  const allowReservations = can('reservations'),
+    allowClients = can('clients');
   const user = useSelector(selectAuth).user;
   const role = user?.role.name;
   const cook = role === 'COCINERO',
@@ -57,7 +63,7 @@ export function OperationsPage() {
   const [loaded, setLoaded] = useState(false);
   const lock = useRef(false);
   const retry = useRef<{ signature: string; key: string }>();
-  const { socket, online } = useContext(SocketContext);
+  const { online } = useContext(SocketContext);
   const restaurant = useRestaurantStore((s) => s.restaurant);
   const refresh = useCallback(async () => {
     try {
@@ -74,8 +80,12 @@ export function OperationsPage() {
           restauranteApi.get<Account[]>('/attention-accounts'),
           restauranteApi.get<Table[]>('/tables'),
           restauranteApi.get<Operator[]>('/attention-accounts/operators'),
-          restauranteApi.get<Reservation[]>('/reservations'),
-          restauranteApi.get('/clients?limit=100')
+          allowReservations
+            ? restauranteApi.get<Reservation[]>('/reservations')
+            : Promise.resolve({ data: [] }),
+          allowClients
+            ? restauranteApi.get('/clients?limit=100')
+            : Promise.resolve({ data: { clients: [] } })
         ]);
         setAccounts(a.data);
         setTables(t.data);
@@ -84,41 +94,23 @@ export function OperationsPage() {
         setClients(c.data.clients);
       }
       setLoaded(true);
+      setError('');
     } catch {
       setLoaded(false);
       setError(
-        'No se pudieron actualizar los datos. Recargue antes de operar.'
+        'No se pudieron actualizar los datos. Se reintentará automáticamente antes de operar.'
       );
     }
-  }, [cook, restaurant?.id]);
-  useEffect(() => {
-    void refresh();
-  }, [refresh]);
-  useEffect(() => {
-    const changed = () => {
-      setMessage('Información actualizada por otro dispositivo');
-      void refresh();
-    };
-    for (const event of [
-      'catalog.changed',
-      'attention.changed',
-      'reservation.changed',
-      'kitchen.changed',
-      'connect'
-    ])
-      socket?.on(event, changed);
-    return () => {
-      for (const event of [
-        'catalog.changed',
-        'attention.changed',
-        'reservation.changed',
-        'kitchen.changed',
-        'connect'
-      ])
-        socket?.off(event, changed);
-    };
-  }, [socket, refresh]);
-  const run: Run = async (path, body, method = 'post') => {
+  }, [cook, restaurant?.id, allowReservations, allowClients]);
+  useLiveRefresh(refresh, [
+    'catalog.changed',
+    'attention.changed',
+    'reservation.changed',
+    'kitchen.changed',
+    'finance.changed',
+    'update-table'
+  ]);
+  const run: Run = async (path, body, method = 'post', onSuccess) => {
     if (lock.current) return false;
     lock.current = true;
     setBusy(true);
@@ -155,6 +147,7 @@ export function OperationsPage() {
       delete pending[signature];
       sessionStorage.setItem(storageKey, JSON.stringify(pending));
       await refresh();
+      onSuccess?.(result.data);
       setMessage(result.data?.warning || 'Operación guardada');
       return true;
     } catch (e) {
@@ -198,13 +191,15 @@ export function OperationsPage() {
               color={online && loaded ? 'success' : 'warning'}
               label={online && loaded ? 'Conectado' : 'Revisar conexión'}
             />
-            <Button
-              variant='outlined'
-              onClick={() => void refresh()}
-              disabled={busy}
-            >
-              Actualizar datos
-            </Button>
+            {!!error && (
+              <Button
+                variant='outlined'
+                onClick={() => void refresh()}
+                disabled={busy}
+              >
+                Reintentar conexión
+              </Button>
+            )}
           </Stack>
         </Box>
         {!cook && loaded && (
@@ -269,7 +264,11 @@ export function OperationsPage() {
           scrollButtons='auto'
         >
           <Tab label='Cuentas y mesas' disabled={cook} />
-          <Tab label='Reservas' disabled={cook} />
+          <Tab
+            label='Reservas'
+            disabled={cook}
+            sx={{ display: allowReservations ? undefined : 'none' }}
+          />
           <Tab label='Menú compuesto' />
           <Tab label='Carta y disponibilidad' />
         </Tabs>
@@ -301,7 +300,7 @@ export function OperationsPage() {
                 run={run}
               />
             )}
-            {tab === 1 && !cook && (
+            {tab === 1 && !cook && allowReservations && (
               <ReservationsWorkspace
                 reservations={reservations}
                 accounts={accounts}
@@ -315,7 +314,7 @@ export function OperationsPage() {
               <DailyMenuWorkspace
                 menus={menus}
                 products={products}
-                editable={manager || cook}
+                editable={(manager || cook) && can('catalog.manage')}
                 run={run}
               />
             )}
@@ -323,8 +322,8 @@ export function OperationsPage() {
               <CatalogWorkspace
                 products={products}
                 portions={portions}
-                manager={manager}
-                availability={manager || cook}
+                manager={manager && can('catalog.manage')}
+                availability={(manager || cook) && can('availability.manage')}
                 run={run}
               />
             )}

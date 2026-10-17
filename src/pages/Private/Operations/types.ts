@@ -17,6 +17,7 @@ export interface Product {
   name: string;
   price: number;
   kind: 'FOOD' | 'DRINK';
+  productionRouting: 'PRODUCTION' | 'DIRECT';
   status: string;
   quantity: number;
   trackStock: boolean;
@@ -32,6 +33,8 @@ export interface Product {
     version: number;
     quantity: number;
     manageStock: boolean;
+    isDefault?: boolean;
+    productionRouting?: 'PRODUCTION' | 'DIRECT' | null;
   }[];
 }
 export interface Component {

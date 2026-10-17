@@ -74,3 +74,7 @@ Contratos, operación, límites y handoff: [PHASE8.md](PHASE8.md). Backend requi
 Verificado: typecheck/build, lint focalizado de archivos modificados; smoke Chromium F8 escritorio/móvil y regresión financiera F6–7 (pago efectivo/vuelto, Yape manual, rendición y persistencia al recargar). Sin excepciones JavaScript nuevas. Diagnósticos heredados: auth-renew401 previo a login, cash-register/actives404, fuentes/imagen externas inaccesibles en Cloud. No se corrigió masivamente lint histórico.
 
 Pruebas HTTP y browser deben ejecutarse en secuencia, por la comprobación histórica global de usuarios en la suite de Pedidos. Pruebas reproducibles en tests/phase8.browser.cjs y tests/phase67.browser.cjs; no validan dispositivos/conexiones móviles físicos distintos.
+
+## Optimización operativa — revisión local
+
+Mesa → cuenta atómica → catálogo, responsable mozo automático, ruteo de producción, restricciones por trabajador y reconciliación/sesión. Ver [OPERATIONAL-UX.md](OPERATIONAL-UX.md) para inventario previo, contratos, pruebas y límites. Requiere backend `codex/operational-ux` y su migración aditiva (16 total). Sin push ni merge.

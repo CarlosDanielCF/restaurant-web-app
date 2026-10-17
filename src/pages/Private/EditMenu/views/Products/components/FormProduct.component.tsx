@@ -33,7 +33,6 @@ import { useProductionAreasStore } from '../../../../Common/store/production-are
 import NiceModal from '@ebay/nice-modal-react';
 import { ModalCreateProductOption } from './ModalCreateProductOption.component';
 import { ProductOptionItem } from './ProductOptionItem.component';
-import { getPriceWithIva } from '@/helpers/product.helper';
 import { useNavigate } from 'react-router';
 
 interface Props {
@@ -67,13 +66,6 @@ export const FormProduct: FC<Props> = ({ product }) => {
 
   const { productionAreas } = useProductionAreasStore();
 
-  const [priceWithoutIva, setPriceWithoutIva] = useState<number>(
-    getPriceWithIva(selectedProduct.price, selectedProduct.iva)
-  );
-  const [unitCostWithoutIva, setUnitCostWithoutIva] = useState<number>(
-    getPriceWithIva(selectedProduct.unitCost, selectedProduct.iva)
-  );
-
   const { sections } = useSelector(selectMenu);
 
   const { changeProductCategory } = useEditMenuStore();
@@ -91,6 +83,7 @@ export const FormProduct: FC<Props> = ({ product }) => {
       description: product.description,
       categoryId: product.category.id,
       productionAreaId: product.productionArea?.id,
+      productionRouting: product.productionRouting || 'PRODUCTION',
       unitCost: product.unitCost,
       quantity: product.quantity,
       isActive: product.isActive,
@@ -102,20 +95,10 @@ export const FormProduct: FC<Props> = ({ product }) => {
     return updateProductDto;
   };
 
-  const onPriceChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseFloat(event.target.value || '0');
-    setPriceWithoutIva(getPriceWithIva(value, selectedProduct.iva));
-  };
-
-  const onUnitCostChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseFloat(event.target.value || '0');
-    setUnitCostWithoutIva(getPriceWithIva(value, selectedProduct.iva));
-  };
-
   const {
     register,
     handleSubmit,
-    formState: { errors, isValid, isDirty },
+    formState: { errors, isValid },
     control,
     reset
   } = useForm<UpdateProductDto>({
@@ -129,7 +112,7 @@ export const FormProduct: FC<Props> = ({ product }) => {
         dispatch(updateProduct(updatedProduct));
         setSelectedProduct(updatedProduct);
 
-        const currentCategoryId = updatedProduct.id;
+        const currentCategoryId = updatedProduct.category.id;
         const oldCategoryId = selectedProduct.category.id;
 
         if (currentCategoryId !== oldCategoryId) {
@@ -143,23 +126,7 @@ export const FormProduct: FC<Props> = ({ product }) => {
 
   useEffect(() => {
     reset(getUpdateProductDto(selectedProduct));
-    setPriceWithoutIva(
-      getPriceWithIva(selectedProduct.price, selectedProduct.iva)
-    );
-    setUnitCostWithoutIva(
-      getPriceWithIva(selectedProduct.unitCost, selectedProduct.iva)
-    );
   }, [selectedProduct, sections]);
-
-  useEffect(() => {
-    reset(getUpdateProductDto(selectedProduct));
-    setPriceWithoutIva(
-      getPriceWithIva(selectedProduct.price, selectedProduct.iva)
-    );
-    setUnitCostWithoutIva(
-      getPriceWithIva(selectedProduct.unitCost, selectedProduct.iva)
-    );
-  }, []);
 
   function showModalCreateOption(): void {
     NiceModal.show(ModalCreateProductOption, { product });
@@ -168,6 +135,22 @@ export const FormProduct: FC<Props> = ({ product }) => {
   return (
     <>
       <form onSubmit={handleSubmit(onSubmit)}>
+        <Controller
+          name='productionRouting'
+          control={control}
+          render={({ field }) => (
+            <TextField
+              {...field}
+              value={field.value || 'PRODUCTION'}
+              select
+              label='Preparación / entrega'
+              fullWidth
+            >
+              <MenuItem value='PRODUCTION'>Requiere producción</MenuItem>
+              <MenuItem value='DIRECT'>Entrega directa por mozo</MenuItem>
+            </TextField>
+          )}
+        />
         <Grid container spacing={2}>
           <Grid item xs={12} md={6}>
             <Card>

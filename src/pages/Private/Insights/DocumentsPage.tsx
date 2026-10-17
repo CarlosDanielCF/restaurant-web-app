@@ -32,7 +32,7 @@ export function DocumentsPage() {
   const user = useSelector(selectAuth).user,
     restaurant = useRestaurantStore((s) => s.restaurant);
   const [accounts, setAccounts] = useState<Account[]>([]),
-    [selected, setSelected] = useState(searchParams.get('accountId') || ''),
+    [selected, setSelected] = useState(''),
     [doc, setDoc] = useState<InternalDocument>(),
     [rows, setRows] = useState<
       { id: string; kind: string; createdAt: string }[]
@@ -43,19 +43,29 @@ export function DocumentsPage() {
     [error, setError] = useState(''),
     [thermal, setThermal] = useState(false);
   const retry = useRef<{ signature: string; key: string }>();
-  async function load() {
-    const r = await restauranteApi.get<Account[]>('/attention-accounts');
-    setAccounts(
-      r.data.filter(
-        (a) => user?.role.name !== 'MOZO' || a.responsibleUserId === user.id
-      )
-    );
-  }
   useEffect(() => {
+    let active = true;
     setSelected('');
     setDoc(undefined);
-    load().catch(() => setError('No se pudieron cargar las atenciones'));
-  }, [restaurant?.id, user?.id]);
+    setAccounts([]);
+    restauranteApi
+      .get<Account[]>('/attention-accounts')
+      .then((r) => {
+        if (!active) return;
+        const allowed = r.data.filter(
+          (a) => user?.role.name !== 'MOZO' || a.responsibleUserId === user.id
+        );
+        setAccounts(allowed);
+        const linked = searchParams.get('accountId');
+        if (linked && allowed.some((a) => a.id === linked)) setSelected(linked);
+      })
+      .catch(() => {
+        if (active) setError('No se pudieron cargar las atenciones');
+      });
+    return () => {
+      active = false;
+    };
+  }, [restaurant?.id, user?.id, searchParams]);
   useEffect(() => {
     let active = true;
     setBusy(true);
@@ -97,7 +107,14 @@ export function DocumentsPage() {
       });
       setDoc(r.data);
       retry.current = undefined;
-      await load();
+      const refreshed = await restauranteApi.get<Account[]>(
+        '/attention-accounts'
+      );
+      setAccounts(
+        refreshed.data.filter(
+          (a) => user?.role.name !== 'MOZO' || a.responsibleUserId === user.id
+        )
+      );
       return true;
     } catch (e) {
       const err = e as {

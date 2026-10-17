@@ -1,5 +1,6 @@
+import { useLiveRefresh } from '@/hooks/useLiveRefresh';
 import './cycle2.css';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Alert,
   Chip,
@@ -76,10 +77,10 @@ export function OffsitePanel({ account, run }: { account: Account; run: Run }) {
     [amount, setAmount] = useState(''),
     [custody, setCustody] = useState('');
   const [refresh, setRefresh] = useState(0);
-  useEffect(() => {
-    const timer = setInterval(() => setRefresh((v) => v + 1), 15000);
-    return () => clearInterval(timer);
+  const reconcile = useCallback(() => {
+    setRefresh((v) => v + 1);
   }, []);
+  useLiveRefresh(reconcile, ['attention.changed', 'finance.changed']);
   const initialized = useRef('');
   useEffect(() => {
     let active = true;

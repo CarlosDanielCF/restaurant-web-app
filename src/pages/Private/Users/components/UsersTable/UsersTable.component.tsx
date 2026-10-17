@@ -1,3 +1,4 @@
+import { WorkerPermissions } from '../WorkerPermissions';
 import { FC, useEffect } from 'react';
 
 import {
@@ -117,6 +118,7 @@ export const TableRowUser: FC<{ user: IUser }> = ({ user }) => {
                 <EditTwoToneIcon fontSize='small' />
               </IconButton>
             </Tooltip>
+            <WorkerPermissions user={user} />
             <Tooltip title='Remover del restaurante' arrow>
               <IconButton
                 aria-label='Remover usuario del restaurante'
@@ -213,6 +215,7 @@ export const UserMobileCard: FC<{ user: IUser }> = ({ user }) => {
                   <EditTwoToneIcon fontSize='small' />
                 </IconButton>
               </Tooltip>
+              <WorkerPermissions user={user} />
               <Tooltip title='Remover del restaurante'>
                 <IconButton
                   aria-label='Remover del restaurante'
