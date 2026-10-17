@@ -13,16 +13,14 @@ import {
   IconButton
 } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
-import { Visibility, VisibilityOff, RestaurantMenu } from '@mui/icons-material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 
 import { useAppSelector } from '../../../../hooks';
 import { IFormLogin, PublicRoutes } from '../../../../models';
 import { onChecking, selectAuth } from '../../../../redux';
 import { useLogin } from '../hooks/useAuth';
 import { useDispatch } from 'react-redux';
-import { getEnvVariables } from '@/helpers';
-
-const { VITE_APP_NAME } = getEnvVariables();
+import { SoftwareBrand } from '@/components/branding/SoftwareBrand';
 
 const initialForm: IFormLogin = {
   username: '',
@@ -61,23 +59,14 @@ export const LoginPage = () => {
         <Box>
           {/* Header / Brand */}
           <Box mb={3}>
-            <Box display='flex' alignItems='center' gap={1} mb={1}>
-              <RestaurantMenu color='primary' sx={{ fontSize: 28 }} />
-              <Typography variant='h5' fontWeight={700} color='primary.main'>
-                {VITE_APP_NAME || 'Restaurante'}
-              </Typography>
-            </Box>
+            <SoftwareBrand login />
             <Typography
-              component='h1'
-              variant='h4'
-              fontWeight={700}
-              color='text.primary'
-              gutterBottom
+              variant='body2'
+              color='text.secondary'
+              textAlign='center'
+              mt={1}
             >
-              Bienvenido
-            </Typography>
-            <Typography variant='body2' color='text.secondary'>
-              Ingrese sus credenciales para acceder al sistema.
+              Sistema de gestión para restaurantes
             </Typography>
           </Box>
 

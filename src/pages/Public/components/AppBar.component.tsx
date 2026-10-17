@@ -19,7 +19,7 @@ import {
 
 import MenuIcon from '@mui/icons-material/Menu';
 import { useRestaurantStore } from '../../Private/Common/store/restaurantStore';
-import { getEnvVariables } from '@/helpers';
+import { SOFTWARE_NAME } from '@/components/branding/SoftwareBrand';
 
 const pages = [
   {
@@ -36,8 +36,6 @@ const pages = [
     path: '/contact'
   }
 ];
-
-const { VITE_APP_NAME } = getEnvVariables();
 
 export const AppBar = () => {
   const navigate = useNavigate();
@@ -176,7 +174,7 @@ export const AppBar = () => {
                     textDecoration: 'none'
                   }}
                 >
-                  {VITE_APP_NAME}
+                  {SOFTWARE_NAME}
                 </Typography>
               </Stack>
               <Stack

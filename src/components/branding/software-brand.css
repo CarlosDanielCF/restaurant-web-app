@@ -1,0 +1,50 @@
+.software-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  color: #002443;
+  background: #fff;
+}
+.software-brand img {
+  width: 44px;
+  height: auto;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.software-brand span {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.software-brand--compact {
+  justify-content: center;
+}
+.software-brand--login {
+  flex-direction: column;
+  gap: 8px;
+  text-align: center;
+}
+.software-brand--login img {
+  width: 156px;
+  max-width: 100%;
+}
+.software-brand--login span {
+  font-size: 24px;
+}
+.sidebar-software-brand {
+  padding: 8px 16px;
+  border-bottom: 1px solid #e2e8f0;
+  background: white;
+}
+.sidebar-software-brand--compact {
+  padding: 8px;
+}
+@media (max-width: 599px) {
+  .software-brand--login img {
+    width: 116px;
+  }
+  .software-brand--login span {
+    font-size: 22px;
+  }
+}

@@ -15,9 +15,7 @@ import { RegisterUserDto } from '../dto/register-user.dto';
 import { useSignup } from '../hooks/useAuth';
 import { LoadingButton } from '@mui/lab';
 
-import { getEnvVariables } from '@/helpers';
-
-const { VITE_APP_NAME } = getEnvVariables();
+import { SOFTWARE_NAME } from '@/components/branding/SoftwareBrand';
 
 const initialForm: RegisterUserDto = {
   firstName: '',
@@ -62,7 +60,7 @@ export const Signup = () => {
         }}
       >
         <Typography component='h5' variant='h4' sx={{}}>
-          Bienvenido a {VITE_APP_NAME}
+          Bienvenido a {SOFTWARE_NAME}
         </Typography>
         <Typography component='h1' variant='h6' sx={{ my: 1 }}>
           Crea tu cuenta y empieza tu prueba gratuita de 15 días

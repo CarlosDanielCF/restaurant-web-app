@@ -1,3 +1,4 @@
+import { SoftwareBrand } from '@/components/branding/SoftwareBrand';
 import { useRestaurantImage } from '@/hooks/useRestaurantImage';
 import { Roles } from '@/models/roles';
 import { useContext, useRef, useState } from 'react';
@@ -230,7 +231,7 @@ const Title = ({ isCollapsed = false }: TitleProps) => {
             noWrap
             display='block'
           >
-            Gestión Integral
+            Restaurante seleccionado
           </Typography>
         </Box>
 
@@ -297,6 +298,11 @@ function Sidebar() {
           display: { xs: 'none', lg: 'block' }
         }}
       >
+        <div
+          className={`sidebar-software-brand${isCollapsed ? ' sidebar-software-brand--compact' : ''}`}
+        >
+          <SoftwareBrand compact={isCollapsed} />
+        </div>
         {/* Top Header */}
         <Box
           sx={{
@@ -451,6 +457,9 @@ function Sidebar() {
             flexDirection: 'column'
           }}
         >
+          <div className='sidebar-software-brand'>
+            <SoftwareBrand />
+          </div>
           <Box
             p={2}
             display='flex'

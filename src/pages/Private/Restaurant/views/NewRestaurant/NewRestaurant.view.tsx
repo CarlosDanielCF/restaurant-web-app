@@ -79,7 +79,7 @@ export const NewRestaurant = () => {
     <Container maxWidth='md'>
       <Box mb={4}>
         <Typography variant='h4' gutterBottom sx={{ mt: 4 }}>
-          Bienvenido a Teikio
+          Bienvenido a Point Restaurant
         </Typography>
         <Typography variant='h6' gutterBottom>
           Elige cómo quieres empezar
