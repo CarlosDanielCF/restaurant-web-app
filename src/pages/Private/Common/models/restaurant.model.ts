@@ -4,6 +4,7 @@ export interface Restaurant {
   currency: string;
   yapeQr: string;
   id: string;
+  tradeName?: string;
   name: string;
   logo: string;
   address: string;

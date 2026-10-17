@@ -1,4 +1,5 @@
 export interface CreateRestaurantDto {
+  tradeName?: string;
   name: string;
   address: string;
   capacity: number;

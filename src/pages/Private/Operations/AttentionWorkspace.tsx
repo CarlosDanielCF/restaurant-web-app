@@ -234,6 +234,9 @@ export function AttentionWorkspace({
   const [portion, setPortion] = useState('');
   const [specialPrice, setSpecialPrice] = useState('');
   const [priceReason, setPriceReason] = useState('');
+  const [presentationId, setPresentationId] = useState('');
+  const [presentationBusy, setPresentationBusy] = useState(false);
+  const presentationProduct = products.find((p) => p.id === presentationId);
   const product = products.find((p) => p.id === sourceId);
   const menu = menus.find((m) => m.id === sourceId);
   function selectAccount(id: string) {
@@ -339,6 +342,15 @@ export function AttentionWorkspace({
     // Any presentation/configuration keeps the explicit customization path.
     const options = item.options.filter((o) => o.isActive);
     if (
+      options.length > 1 &&
+      !item.configuration?.modifiers.length &&
+      !item.configuration?.combo.length &&
+      !kind
+    ) {
+      setPresentationId(id);
+      return;
+    }
+    if (
       options.length > 1 ||
       (options.length === 1 && !options[0].isDefault) ||
       item.configuration?.modifiers.length ||
@@ -436,6 +448,67 @@ export function AttentionWorkspace({
   );
   return (
     <Stack spacing={1.5} className='attention-service'>
+      <Dialog
+        open={!!presentationProduct && !!account}
+        onClose={() => !presentationBusy && setPresentationId('')}
+        fullWidth
+        maxWidth='xs'
+      >
+        <DialogTitle>{presentationProduct?.name}</DialogTitle>
+        <DialogContent>
+          <Typography color='text.secondary' sx={{ mb: 2 }}>
+            Elige una presentación
+          </Typography>
+          <Stack spacing={1}>
+            {presentationProduct?.options
+              .filter((o) => o.isActive)
+              .map((o) => (
+                <Button
+                  key={o.id}
+                  variant='outlined'
+                  disabled={presentationBusy || !o.isAvailable}
+                  onClick={async () => {
+                    if (!account || presentationBusy) return;
+                    setPresentationBusy(true);
+                    try {
+                      if (
+                        await run(`/attention-accounts/${account.id}/lines`, {
+                          expectedVersion: account.version,
+                          sourceType: 'PRODUCT',
+                          sourceId: presentationProduct.id,
+                          productOptionId: o.id,
+                          quantity: 1,
+                          notes: '',
+                          modifierIds: []
+                        })
+                      )
+                        setPresentationId('');
+                    } finally {
+                      setPresentationBusy(false);
+                    }
+                  }}
+                >
+                  {o.name} · S/ {o.price}
+                </Button>
+              ))}
+            <Button
+              disabled={presentationBusy}
+              onClick={() => {
+                setPresentationId('');
+                setCustomizing(true);
+              }}
+            >
+              Personalizar cantidad y observaciones
+            </Button>
+            <Button
+              disabled={presentationBusy}
+              onClick={() => setPresentationId('')}
+            >
+              Volver a la carta
+            </Button>
+          </Stack>
+        </DialogContent>
+      </Dialog>
       <Stack direction='row' justifyContent='space-between' alignItems='center'>
         <Typography variant='h5' component='h2'>
           {account ? 'Tomar pedido' : 'Mesas y cuentas'}

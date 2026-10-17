@@ -9,6 +9,7 @@ import {
   TextField,
   Typography
 } from '@mui/material';
+import { useRestaurantStore } from '../Common/store/restaurantStore';
 import { useRestaurantImage } from '@/hooks/useRestaurantImage';
 import { Product } from './types';
 function ProductTile({
@@ -44,7 +45,11 @@ function ProductTile({
             {product.category.name}
           </Typography>
         )}
-        <Typography fontWeight={700}>S/ {product.price}</Typography>
+        <Typography fontWeight={700}>
+          {product.configuration?.courtesy
+            ? 'Cortesía'
+            : `${product.options.filter((o) => o.isActive).length > 1 ? 'Desde ' : ''}S/ ${product.price}`}
+        </Typography>
         <Chip
           size='small'
           color={available ? 'success' : 'warning'}
@@ -86,6 +91,7 @@ export function ServiceCatalog({
   onSelect: (id: string) => void;
   action?: string;
 }) {
+  const restaurantName = useRestaurantStore((s) => s.restaurant?.name);
   const [search, setSearch] = useState(''),
     [category, setCategory] = useState('');
   const active = products.filter((p) => p.isActive);
@@ -103,6 +109,9 @@ export function ServiceCatalog({
   );
   return (
     <Stack spacing={1.5} className='point-catalog'>
+      <Typography variant='h5' component='h3'>
+        Carta{restaurantName ? ` · ${restaurantName}` : ''}
+      </Typography>
       <TextField
         size='small'
         fullWidth

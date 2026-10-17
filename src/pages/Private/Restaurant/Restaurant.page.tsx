@@ -36,6 +36,7 @@ const Restaurant = () => {
   } = useForm<UpdateRestaurantDto>({
     defaultValues: {
       name: restaurant?.name,
+      tradeName: restaurant?.tradeName || '',
       capacity: restaurant?.capacity,
       address: restaurant?.address,
       identification: restaurant?.identification,
@@ -94,10 +95,17 @@ const Restaurant = () => {
                           required: 'El nombre es obligatorio'
                         })}
                         helperText={
-                          errors.name?.message ||
-                          'Nombre comercial del establecimiento'
+                          errors.name?.message || 'Nombre breve del restaurante'
                         }
                         error={!!errors.name}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label='Nombre comercial'
+                        fullWidth
+                        {...register('tradeName', { maxLength: 160 })}
+                        helperText='Identidad comercial del restaurante, independiente de Point Restaurant'
                       />
                     </Grid>
                     <Grid item xs={12} sm={6}>

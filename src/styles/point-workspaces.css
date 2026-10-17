@@ -438,10 +438,15 @@
     .point-category-rail {
       position: static;
       flex-direction: row !important;
-      flex-wrap: wrap !important;
+      flex-wrap: nowrap !important;
+      overflow-x: auto;
+      max-width: 100%;
+      padding-bottom: 6px;
+      overscroll-behavior-x: contain;
     }
     body [data-testid='app-content'] .point-category-rail .MuiChip-root {
       width: auto;
+      flex-shrink: 0;
     }
   }
   @media (max-width: 599px) {

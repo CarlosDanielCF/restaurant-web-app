@@ -78,3 +78,7 @@ Pruebas HTTP y browser deben ejecutarse en secuencia, por la comprobación hist�
 ## Optimización operativa — revisión local
 
 Mesa → cuenta atómica → catálogo, responsable mozo automático, ruteo de producción, restricciones por trabajador y reconciliación/sesión. Ver [OPERATIONAL-UX.md](OPERATIONAL-UX.md) para inventario previo, contratos, pruebas y límites. Requiere backend `codex/operational-ux` y su migración aditiva (16 total). Sin push ni merge.
+
+## Punto Mar — presentación local
+
+Cliente independiente de Point Restaurant, catálogo real y selección rápida de presentaciones. Ver [PUNTO-MAR.md](PUNTO-MAR.md). Backend añade tradeName y seed aislado/idempotente; requiere 17 migraciones. Fotografías pendientes por bloqueo de acceso/licencias, sin imágenes inventadas. Sin push/merge.

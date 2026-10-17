@@ -118,10 +118,10 @@ const Title = ({ isCollapsed = false }: TitleProps) => {
             {restaurant?.logo ? (
               <img
                 src={logo}
-                alt='logo'
+                alt={restaurant.name}
                 width='32px'
                 height='32px'
-                style={{ borderRadius: 8, objectFit: 'cover' }}
+                style={{ borderRadius: 8, objectFit: 'contain' }}
               />
             ) : (
               <Box
@@ -193,10 +193,10 @@ const Title = ({ isCollapsed = false }: TitleProps) => {
         {restaurant?.logo ? (
           <img
             src={logo}
-            alt='logo'
+            alt={restaurant.name}
             width='36px'
             height='36px'
-            style={{ borderRadius: 8, objectFit: 'cover', flexShrink: 0 }}
+            style={{ borderRadius: 8, objectFit: 'contain', flexShrink: 0 }}
           />
         ) : (
           <Box
