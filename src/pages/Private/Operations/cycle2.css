@@ -295,3 +295,7 @@
     font-size: 1.2rem;
   }
 }
+
+.payment-part .MuiChip-clickable {
+  min-height: 44px;
+}

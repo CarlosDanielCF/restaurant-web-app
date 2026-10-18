@@ -211,7 +211,7 @@ export function OperationsPage() {
               </Typography>
             </Box>
             <Box>
-              <Typography color='text.secondary'>Mesas ocupadas</Typography>
+              <Typography color='text.secondary'>Mesas en atención</Typography>
               <Typography variant='h4'>
                 {
                   tables.filter(

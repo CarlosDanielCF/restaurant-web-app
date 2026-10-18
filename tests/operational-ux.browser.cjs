@@ -144,19 +144,24 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
     let accounts = await call(waiter.session, '/attention-accounts');
     let account = accounts.find((x) => x.tables.some((t) => t.id === table.id));
     assert.equal(account.responsibleUserId, waiter.session.user.id);
-    await b.p.getByRole('button', { name: /UX mesa 01 Ocupada/ }).waitFor();
-    await b.p.getByRole('button', { name: /UX mesa 01 Ocupada/ }).click();
+    await b.p
+      .getByRole('button', { name: /UX mesa 01 Atención abierta/ })
+      .waitFor();
+    await b.p
+      .getByRole('button', { name: /UX mesa 01 Atención abierta/ })
+      .click();
     await a.p
       .getByRole('button', { name: 'Agregar Café preparado UX', exact: true })
       .click();
     await b.p
       .locator('.current-order-card')
-      .getByText(/Café preparado UX/).first()
+      .getByText(/Café preparado UX/)
+      .first()
       .waitFor();
     await a.p
       .getByRole('button', { name: 'Agregar Agua directa UX', exact: true })
       .click();
-    await a.p.getByRole('button', {name:/^Pedido actual ·/}).click();
+    await a.p.getByRole('button', { name: /^Pedido actual ·/ }).click();
     await a.p
       .getByRole('button', {
         name: 'Confirmar consumos y enviar a producción',
@@ -165,11 +170,13 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
       .click();
     await tv.p
       .locator('.kitchen-ticket')
-      .getByText(/Café preparado UX/).first()
+      .getByText(/Café preparado UX/)
+      .first()
       .waitFor();
     await mobile.p
       .locator('.kitchen-ticket')
-      .getByText(/Café preparado UX/).first()
+      .getByText(/Café preparado UX/)
+      .first()
       .waitFor();
     assert.equal(
       await tv.p

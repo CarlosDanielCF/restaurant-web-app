@@ -1,3 +1,4 @@
+import { difference, sumMoney } from '../Finance/displayMoney';
 import { Link } from 'react-router-dom';
 import { DraftLineEditor } from './DraftLineEditor';
 import { useWorkerAccess } from '@/hooks/useWorkerAccess';
@@ -70,7 +71,9 @@ export function TableChoices({
                   : !t.isAvailable
                     ? 'unavailable'
                     : occupied
-                      ? 'occupied'
+                      ? occupied.hasConfirmedConsumption
+                        ? 'occupied'
+                        : 'available'
                       : 'available'
               }
               label={
@@ -82,7 +85,9 @@ export function TableChoices({
                     {!t.isAvailable
                       ? 'No disponible'
                       : occupied
-                        ? 'Ocupada'
+                        ? occupied.hasConfirmedConsumption
+                          ? 'Ocupada'
+                          : 'Atención abierta'
                         : 'Disponible'}
                     {selected.includes(t.id) ? ' · Seleccionada' : ''}
                     {occupied &&
@@ -124,7 +129,7 @@ export function TableChoices({
                   icon={<TableRestaurantOutlined />}
                   checkedIcon={<CheckCircleOutline />}
                   inputProps={{
-                    'aria-label': `${t.name} · ${occupied ? 'Ocupada' : 'Libre'}`
+                    'aria-label': `${t.name} · ${occupied ? (occupied.hasConfirmedConsumption ? 'Ocupada' : 'Atención abierta') : 'Libre'}`
                   }}
                   checked={selected.includes(t.id)}
                   disabled={
@@ -211,12 +216,16 @@ export function AttentionWorkspace({
     'attention.close': 'Cierre de atención',
     'attention.draft.update': 'Edición de borrador',
     'attention.draft.remove': 'Retiro de borrador',
-    'attention.cancel-draft': 'Cancelación de borrador'
+    'attention.cancel-draft': 'Cancelación de borrador',
+    'attention.pending-split': 'Separación auditada de unidades pendientes',
+    'attention.return-consumption': 'Devolución excepcional de consumo',
+    'attention.draft.configure': 'Personalización de borrador'
   };
   const [modality, setModality] = useState<Account['modality']>('TABLE');
   const [selected, setSelected] = useState('');
   const [customizing, setCustomizing] = useState(false);
   const [cancelLine, setCancelLine] = useState('');
+  const [returnConsumption, setReturnConsumption] = useState(false);
   const account = accounts.find((a) => a.id === selected);
   const [tableIds, setTableIds] = useState<string[]>([]);
   const [responsible, setResponsible] = useState(waiter ? user.id : '');
@@ -224,6 +233,10 @@ export function AttentionWorkspace({
   const [reason, setReason] = useState('');
   const [sourceAccount, setSourceAccount] = useState('');
   const [replaceLine, setReplaceLine] = useState('');
+  const [editDraft, setEditDraft] = useState<{
+    id: string;
+    version: number;
+  } | null>(null);
   const [sourceType, setSourceType] = useState<'PRODUCT' | 'DAILY_MENU'>(
     'PRODUCT'
   );
@@ -290,7 +303,7 @@ export function AttentionWorkspace({
   async function add() {
     if (!account) return;
     const body = {
-      expectedVersion: account.version,
+      expectedVersion: editDraft?.version ?? account.version,
       ...(kind ? { kind } : {}),
       ...(kind === 'STAFF' ? { beneficiaryUserId: beneficiary } : {}),
       ...(replaceLine ? { reason } : {}),
@@ -319,7 +332,7 @@ export function AttentionWorkspace({
     };
     if (
       await run(
-        `/attention-accounts/${account.id}/lines${replaceLine ? `/${replaceLine}/replace` : ''}`,
+        `/attention-accounts/${account.id}/lines${editDraft ? `/${editDraft.id}/draft-configuration` : replaceLine ? `/${replaceLine}/replace` : ''}`,
         body
       )
     ) {
@@ -327,6 +340,7 @@ export function AttentionWorkspace({
       setQuantity(1);
       setReplaceLine('');
       setCustomizing(false);
+      setEditDraft(null);
     }
   }
   async function enterTables(ids: string[]) {
@@ -568,20 +582,34 @@ export function AttentionWorkspace({
           flexWrap='wrap'
           aria-label='Modalidad de atención'
         >
-          {Object.entries(modalityLabel).map(([value, label]) => (
-            <Button
-              key={value}
-              size='small'
-              variant={modality === value ? 'contained' : 'outlined'}
-              aria-pressed={modality === value}
-              onClick={() => {
-                setModality(value as Account['modality']);
-                setTableIds([]);
-              }}
-            >
-              {label}
-            </Button>
-          ))}
+          {Object.entries({ TABLE: 'Mesa', OWN_DELIVERY: 'Delivery' }).map(
+            ([value, label]) => (
+              <Button
+                key={value}
+                size='small'
+                variant={
+                  (
+                    value === 'TABLE'
+                      ? modality === 'TABLE'
+                      : modality !== 'TABLE'
+                  )
+                    ? 'contained'
+                    : 'outlined'
+                }
+                aria-pressed={
+                  value === 'TABLE'
+                    ? modality === 'TABLE'
+                    : modality !== 'TABLE'
+                }
+                onClick={() => {
+                  setModality(value as Account['modality']);
+                  setTableIds([]);
+                }}
+              >
+                {label}
+              </Button>
+            )
+          )}
         </Stack>
       )}
       {!account ? (
@@ -657,12 +685,12 @@ export function AttentionWorkspace({
                             a.attentionStatus === 'OPEN' &&
                             a.tables.some((x) => x.id === t.id)
                         );
-                        const chosen = tableIds.includes(t.id);
+                        const chosen = joining && tableIds.includes(t.id);
                         return (
                           <Button
                             key={t.id}
                             className='quick-table'
-                            data-occupied={!!active}
+                            data-occupied={!!active?.hasConfirmedConsumption}
                             variant='outlined'
                             aria-pressed={joining ? chosen : undefined}
                             disabled={
@@ -686,16 +714,23 @@ export function AttentionWorkspace({
                               {chosen
                                 ? '✓ Seleccionada'
                                 : active
-                                  ? 'Ocupada'
+                                  ? active.hasConfirmedConsumption
+                                    ? 'Ocupada'
+                                    : 'Atención abierta'
                                   : !t.isAvailable
                                     ? 'No disponible'
                                     : 'Disponible'}
                             </span>
                             {active && (
                               <small>
-                                {operators.find(
-                                  (o) => o.id === active.responsibleUserId
-                                )?.firstName || 'Responsable asignado'}{' '}
+                                {(() => {
+                                  const person = operators.find(
+                                    (o) => o.id === active.responsibleUserId
+                                  );
+                                  return person
+                                    ? `${person.firstName} ${person.lastName}`
+                                    : 'Responsable asignado';
+                                })()}{' '}
                                 · S/ {active.total}
                                 {active.tables.length > 1
                                   ? ` · ${active.tables.map((t) => t.name).join(' + ')}`
@@ -736,28 +771,47 @@ export function AttentionWorkspace({
                   Abrir atención
                 </Typography>
                 <TextField
-                  size={modality === 'TABLE' ? 'small' : 'medium'}
                   select
+                  size='small'
                   label='Modalidad'
-                  value={modality}
+                  value={modality === 'TABLE' ? 'TABLE' : 'OWN_DELIVERY'}
                   onChange={(e) => {
-                    setModality(e.target.value as typeof modality);
+                    setModality(e.target.value as Account['modality']);
                     setTableIds([]);
                   }}
                 >
-                  <MenuItem value='TABLE'>En mesa</MenuItem>
+                  <MenuItem value='TABLE'>Mesa</MenuItem>
                   {can('delivery') && (
-                    <MenuItem value='TAKE_AWAY'>Para llevar</MenuItem>
-                  )}
-                  {can('delivery') && (
-                    <MenuItem value='OWN_DELIVERY'>Delivery propio</MenuItem>
-                  )}
-                  {can('delivery') && (
-                    <MenuItem value='EXTERNAL_COURIER'>
-                      Courier externo
-                    </MenuItem>
+                    <MenuItem value='OWN_DELIVERY'>Delivery</MenuItem>
                   )}
                 </TextField>
+                {modality !== 'TABLE' && (
+                  <details className='service-details'>
+                    <summary>Opciones de reparto</summary>
+                    <TextField
+                      select
+                      size='small'
+                      label='Tipo de reparto'
+                      value={modality}
+                      onChange={(e) =>
+                        setModality(e.target.value as Account['modality'])
+                      }
+                      fullWidth
+                    >
+                      <MenuItem value='OWN_DELIVERY'>Reparto propio</MenuItem>
+                      <MenuItem value='EXTERNAL_COURIER'>
+                        Courier externo
+                      </MenuItem>
+                      <MenuItem value='TAKE_AWAY'>
+                        Recogida sin mesa (atención independiente)
+                      </MenuItem>
+                    </TextField>
+                    <Typography variant='caption'>
+                      El envío es gratuito. Entrega y pago se registran por
+                      separado.
+                    </Typography>
+                  </details>
+                )}
                 {!waiter && (
                   <OperatorSelect
                     operators={operators}
@@ -956,14 +1010,23 @@ export function AttentionWorkspace({
                             ·{' '}
                             {line.status === 'CANCELLED'
                               ? 'Cancelado'
-                              : 'Activo'}
+                              : !Number(line.confirmedQuantity)
+                                ? 'Borrador'
+                                : line.hasDeliveredUnits &&
+                                    Number(line.changeableQuantity) === 0
+                                  ? 'Entregado'
+                                  : line.hasDeliveredUnits
+                                    ? 'Salida parcial'
+                                    : 'Confirmado'}
                           </Typography>
                           <Stack direction='row' gap={1} flexWrap='wrap' mt={1}>
-                            <Chip
-                              size='small'
-                              variant='outlined'
-                              label={`Confirmado: ${line.confirmedQuantity}`}
-                            />
+                            {Number(line.confirmedQuantity) > 0 && (
+                              <Chip
+                                size='small'
+                                variant='outlined'
+                                label={`Confirmado: ${Number(line.confirmedQuantity)}`}
+                              />
+                            )}
                             {line.status === 'CANCELLED' && (
                               <Chip
                                 size='small'
@@ -975,6 +1038,50 @@ export function AttentionWorkspace({
                           <Typography color='text.secondary' mt={1}>
                             {line.notes}
                           </Typography>
+                          {Number(line.takeawayQuantity) > 0 && (
+                            <Chip
+                              size='small'
+                              color='warning'
+                              label={`Para llevar: ${line.takeawayQuantity}`}
+                            />
+                          )}
+                          {line.hasDeliveredUnits && (
+                            <Typography variant='caption'>
+                              Unidades entregadas protegidas · corrección con
+                              motivo en Más opciones de salidas.
+                            </Typography>
+                          )}
+                          {line.hasDeliveredUnits &&
+                            line.status === 'ACTIVE' &&
+                            account.attentionStatus === 'OPEN' && (
+                              <details className='service-details'>
+                                <summary>
+                                  Más opciones de unidades entregadas
+                                </summary>
+                                <Typography variant='caption'>
+                                  Para una salida marcada por error, use
+                                  Corregir entrega en las salidas.
+                                </Typography>
+                                <Button
+                                  color='error'
+                                  onClick={() => {
+                                    setReturnConsumption(true);
+                                    setCancelLine(line.id);
+                                    setReason('');
+                                  }}
+                                >
+                                  Registrar devolución de consumo
+                                </Button>
+                                {can('finance') && (
+                                  <Button
+                                    component={Link}
+                                    to={`/finance?accountId=${account.id}`}
+                                  >
+                                    Reembolsos de pagos
+                                  </Button>
+                                )}
+                              </details>
+                            )}
                           {line.kind === 'STAFF' && (
                             <Typography>
                               Consumo de personal ·{' '}
@@ -990,20 +1097,92 @@ export function AttentionWorkspace({
                           {account.attentionStatus === 'OPEN' &&
                             line.status === 'ACTIVE' &&
                             !Number(line.confirmedQuantity) && (
-                              <DraftLineEditor
-                                account={account}
-                                line={line}
-                                run={run}
-                              />
+                              <>
+                                <DraftLineEditor
+                                  account={account}
+                                  line={line}
+                                  run={run}
+                                />
+                                <Button
+                                  size='small'
+                                  onClick={() => {
+                                    setEditDraft({
+                                      id: line.id,
+                                      version: account.version
+                                    });
+                                    setReplaceLine('');
+                                    setSourceType(line.sourceType);
+                                    selectSource(line.sourceId);
+                                    setQuantity(Number(line.quantity));
+                                    setNotes(line.notes);
+                                    setKind(
+                                      line.kind === 'SALE'
+                                        ? ''
+                                        : line.kind || ''
+                                    );
+                                    setBeneficiary(
+                                      line.beneficiaryUserId || ''
+                                    );
+                                    setOption(
+                                      line.productSnapshot.option
+                                        ? String(line.productSnapshot.option.id)
+                                        : ''
+                                    );
+                                    setModifiers(
+                                      (
+                                        line.productSnapshot.modifiers || []
+                                      ).map((m) => m.id)
+                                    );
+                                    setSelections(
+                                      Object.fromEntries(
+                                        (
+                                          line.productSnapshot.components || []
+                                        ).map((c) => [
+                                          c.componentId,
+                                          c.optionId
+                                        ])
+                                      )
+                                    );
+                                    setPortion(
+                                      line.productSnapshot.portionPolicyId || ''
+                                    );
+                                    setSpecialPrice(
+                                      difference(
+                                        line.appliedUnitPrice,
+                                        sumMoney(
+                                          (
+                                            line.productSnapshot.modifiers || []
+                                          ).map((m) =>
+                                            Number(m.price).toFixed(2)
+                                          )
+                                        )
+                                      )
+                                    );
+                                    setPriceReason(
+                                      line.productSnapshot.priceReason || ''
+                                    );
+                                    setCustomizing(true);
+                                  }}
+                                >
+                                  Personalizar borrador
+                                </Button>
+                              </>
                             )}
                           {account.attentionStatus === 'OPEN' &&
                             line.status === 'ACTIVE' &&
-                            Number(line.confirmedQuantity) > 0 && (
+                            Number(line.confirmedQuantity) > 0 &&
+                            Number(line.changeableQuantity ?? line.quantity) >
+                              0 && (
                               <Stack direction='row' gap={1}>
                                 <Button
                                   size='small'
                                   onClick={() => {
                                     setReplaceLine(line.id);
+                                    setQuantity(
+                                      Number(
+                                        line.changeableQuantity ?? line.quantity
+                                      )
+                                    );
                                     selectSource('');
                                     setReason('');
                                     setCustomizing(true);
@@ -1015,11 +1194,16 @@ export function AttentionWorkspace({
                                   size='small'
                                   color='error'
                                   onClick={() => {
+                                    setReturnConsumption(false);
                                     setCancelLine(line.id);
                                     setReason('');
                                   }}
                                 >
-                                  Cancelar
+                                  Cancelar pendientes (
+                                  {Number(
+                                    line.changeableQuantity ?? line.quantity
+                                  )}
+                                  )
                                 </Button>
                               </Stack>
                             )}
@@ -1099,7 +1283,10 @@ export function AttentionWorkspace({
             <>
               <Dialog
                 open={customizing}
-                onClose={() => setCustomizing(false)}
+                onClose={() => {
+                  setCustomizing(false);
+                  setEditDraft(null);
+                }}
                 fullWidth
                 maxWidth='sm'
               >
@@ -1146,13 +1333,27 @@ export function AttentionWorkspace({
                         )}
                         <TextField
                           select
-                          label='Operación del consumo'
+                          label={
+                            editDraft
+                              ? 'Personalización del borrador'
+                              : 'Operación del consumo'
+                          }
+                          disabled={!!editDraft}
                           value={replaceLine}
                           onChange={(e) => setReplaceLine(e.target.value)}
                         >
-                          <MenuItem value=''>Agregar nuevo consumo</MenuItem>
+                          <MenuItem value=''>
+                            {editDraft
+                              ? 'Guardar sobre el mismo borrador'
+                              : 'Agregar nuevo consumo'}
+                          </MenuItem>
                           {account.lines
-                            .filter((l) => l.status === 'ACTIVE')
+                            .filter(
+                              (l) =>
+                                l.status === 'ACTIVE' &&
+                                Number(l.confirmedQuantity) > 0 &&
+                                Number(l.changeableQuantity ?? l.quantity) > 0
+                            )
                             .map((l) => (
                               <MenuItem key={l.id} value={l.id}>
                                 Sustituir {l.productSnapshot.name} ({l.quantity}
@@ -1162,11 +1363,11 @@ export function AttentionWorkspace({
                         </TextField>
                         {replaceLine && (
                           <Typography>
-                            La sustitución cancela toda la línea anterior y
-                            solicita las nuevas unidades indicadas, incluso si
-                            hubo salidas previas. Requiere el motivo indicado
-                            abajo; no recupera porciones automáticamente. Para
-                            cambiar solo instrucciones use Observaciones.
+                            La sustitución afecta únicamente las unidades
+                            pendientes. Las entregadas y su historial se
+                            conservan. Requiere motivo; no recupera porciones
+                            automáticamente. Para cambiar solo instrucciones use
+                            Observaciones.
                           </Typography>
                         )}
                         <Typography>
@@ -1376,9 +1577,11 @@ export function AttentionWorkspace({
                           }
                           onClick={() => void add()}
                         >
-                          {replaceLine
-                            ? 'Sustituir consumo con motivo'
-                            : 'Agregar consumo'}
+                          {editDraft
+                            ? 'Guardar personalización del borrador'
+                            : replaceLine
+                              ? 'Sustituir consumo con motivo'
+                              : 'Agregar consumo'}
                         </Button>
                       </Stack>
                     </CardContent>
@@ -1416,7 +1619,24 @@ export function AttentionWorkspace({
                           })
                         }
                       >
-                        Trasladar / asociar mesas seleccionadas
+                        Trasladar atención a las mesas seleccionadas
+                      </Button>
+                      <Button
+                        disabled={!tableIds.length || reason.trim().length < 2}
+                        onClick={() =>
+                          void run(`/attention-accounts/${account.id}/tables`, {
+                            expectedVersion: account.version,
+                            tableIds: Array.from(
+                              new Set([
+                                ...account.tables.map((t) => t.id),
+                                ...tableIds
+                              ])
+                            ),
+                            reason
+                          })
+                        }
+                      >
+                        Unir/agregar mesas seleccionadas
                       </Button>
                       <OperatorSelect
                         operators={operators}
@@ -1436,7 +1656,7 @@ export function AttentionWorkspace({
                           )
                         }
                       >
-                        Transferir responsable
+                        Cambiar responsable
                       </Button>
                       <TextField
                         select
@@ -1528,11 +1748,27 @@ export function AttentionWorkspace({
             fullWidth
             maxWidth='xs'
           >
-            <DialogTitle>Cancelar consumo</DialogTitle>
+            <DialogTitle>
+              {returnConsumption
+                ? 'Devolución excepcional de consumo'
+                : 'Cancelar unidades pendientes'}
+            </DialogTitle>
             <DialogContent>
               <Stack spacing={2} pt={1}>
+                {returnConsumption && (
+                  <Alert severity='warning'>
+                    Anula el consumo completo de esta línea y conserva las
+                    salidas originales. No devuelve dinero automáticamente:
+                    registre el reembolso por separado en Cobros si corresponde.
+                    No recupera porciones.
+                  </Alert>
+                )}
                 <TextField
-                  label='Motivo de cancelación'
+                  label={
+                    returnConsumption
+                      ? 'Motivo de devolución'
+                      : 'Motivo de cancelación'
+                  }
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
                 />
@@ -1543,14 +1779,16 @@ export function AttentionWorkspace({
                   onClick={async () => {
                     if (
                       await run(
-                        `/attention-accounts/${account.id}/lines/${cancelLine}/cancel`,
+                        `/attention-accounts/${account.id}/lines/${cancelLine}/${returnConsumption ? 'return' : 'cancel'}`,
                         { expectedVersion: account.version, reason }
                       )
                     )
                       setCancelLine('');
                   }}
                 >
-                  Confirmar cancelación
+                  {returnConsumption
+                    ? 'Confirmar devolución de consumo'
+                    : 'Confirmar cancelación'}
                 </Button>
                 <Button onClick={() => setCancelLine('')}>Volver</Button>
               </Stack>

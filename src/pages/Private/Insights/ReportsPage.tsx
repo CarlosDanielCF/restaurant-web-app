@@ -207,7 +207,8 @@ export function ReportsPage() {
     cancellations: [
       'attention.cancel',
       'attention.cancel-draft',
-      'attention.replace'
+      'attention.replace',
+      'attention.return-consumption'
     ]
   };
   const update = (key: keyof typeof filters, value: string) =>

@@ -75,6 +75,11 @@ export interface Operator {
   lastName: string;
 }
 export interface Line {
+  sourceType: 'PRODUCT' | 'DAILY_MENU';
+  sourceId: string;
+  hasDeliveredUnits?: boolean;
+  changeableQuantity?: string;
+  takeawayQuantity?: string;
   kind?: string;
   beneficiaryUserId?: string;
   originalUnitPrice?: string;
@@ -86,9 +91,18 @@ export interface Line {
   subtotal: string;
   notes: string;
   status: string;
-  productSnapshot: { name: string; stockRequirements: unknown[] };
+  productSnapshot: {
+    name: string;
+    stockRequirements: unknown[];
+    option?: { id: number };
+    modifiers?: { id: string; price: number }[];
+    components?: { componentId: string; optionId: string }[];
+    portionPolicyId?: string;
+    priceReason?: string;
+  };
 }
 export interface Account {
+  hasConfirmedConsumption?: boolean;
   createdAt?: string;
   grossTotal?: string;
   discountTotal?: string;

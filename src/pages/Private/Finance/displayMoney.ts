@@ -23,3 +23,39 @@ export function sumMoney(values: string[]): string {
     values.reduce((sum, v) => sum + (cents(v) ?? BigInt(0)), BigInt(0))
   );
 }
+
+/** Exact presentation validation; never treats an overpayment as a valid negative balance. */
+export function paymentDistribution(
+  balance: string,
+  parts: { amount: string; receivedAmount: string; method: string }[]
+) {
+  const due = cents(balance);
+  const amounts = parts.map((p) => cents(p.amount));
+  const total = amounts.reduce<bigint>(
+    (sum, amount) => sum + (amount ?? BigInt(0)),
+    BigInt(0)
+  );
+  const invalid =
+    due === null ||
+    due <= BigInt(0) ||
+    !parts.length ||
+    parts.some((p, i) => {
+      const received = cents(p.receivedAmount),
+        applied = amounts[i];
+      return (
+        applied === null ||
+        applied <= BigInt(0) ||
+        received === null ||
+        received < applied ||
+        (p.method !== 'CASH' && received !== applied)
+      );
+    });
+  const exceeds = due !== null && total > due;
+  return {
+    valid: !invalid && !exceeds,
+    exceeds,
+    distributed: displayCents(total),
+    remaining:
+      due === null ? '—' : displayCents(total > due ? BigInt(0) : due - total)
+  };
+}

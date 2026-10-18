@@ -617,3 +617,21 @@
 .attention-service .order-production:has(.MuiAlert-root) {
   grid-column: 1/-1;
 }
+
+/* Operational desktop: preserve readable order details alongside catalogue. */
+@media (min-width: 1000px) {
+  .attention-service .order-workbench {
+    grid-template-columns: minmax(0, 1.6fr) minmax(340px, 1fr);
+  }
+}
+
+.attention-service .order-production {
+  grid-column: 1 / -1;
+}
+.attention-service
+  .order-production
+  > .MuiStack-root
+  > .MuiStack-root
+  > .MuiButton-root {
+  flex: 1;
+}

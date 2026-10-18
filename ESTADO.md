@@ -86,3 +86,9 @@ Cliente independiente de Point Restaurant, catálogo real y selección rápida d
 ## F10 — revisión operativa posterior a Punto Mar (2026-10-18)
 
 Mesas semánticas, borradores agrupables/editables, catálogo con cantidad/nota, salidas directas, sonido de cocina desbloqueado/deduplicado y cobro contextual simplificado. Requiere backend coordinado y migración 18. Evidencia, flujos, límites y archivos conservados: [F10-OPERATIVE-REVIEW.md](F10-OPERATIVE-REVIEW.md). Solo ramas de revisión; sin push/merge.
+
+## Ronda operativa — revisión local (18 octubre 2026)
+
+Nueva semántica de mesas verde/rojo por confirmación, edición contextual de borradores, protección de unidades entregadas, cancelación/sustitución parcial, devolución excepcional separada del reembolso y descuentos proporcionales con redondeo seguro. Para llevar por cantidades, cobro mixto validado, QR responsive, voz de cocina con respaldo y navegación específica de cocina. Requiere backend coordinado y migraciones 19–20. Ver `F10-OPERATIVE-REVIEW.md` para contratos, pruebas, decisión definitiva y limitaciones. Sin push/merge; marca del software Point Restaurant separada del restaurante configurado.
+
+Validación de cierre de la ronda: backend 105 unitarias + 156 HTTP/MySQL, frontend 15 pruebas; build/typecheck/lint correspondientes y tres recorridos browser aprobados con backend real. 20 migraciones aplicadas / 0 pendientes. Ver F10-OPERATIVE-REVIEW para cobertura, limitaciones y archivos. Sin push/merge.

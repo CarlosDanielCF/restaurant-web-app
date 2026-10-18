@@ -1,3 +1,5 @@
+/* eslint-env node */
+/* eslint-disable @typescript-eslint/no-var-requires */
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const ts = require('typescript');
@@ -40,4 +42,40 @@ test('invalid entries are not represented as authoritative change', () => {
 test('large amounts and credit balances retain exact cents', () => {
   assert.equal(difference('99999999999999.99', '0.01'), '99999999999999.98');
   assert.equal(difference('-10.00', '0.01'), '-10.01');
+});
+
+test('mixed 30 card plus 28 cash on 58 keeps exact remaining and 2 change', () => {
+  const parts = [
+    { method: 'CARD', amount: '30.00', receivedAmount: '30.00' },
+    { method: 'CASH', amount: '28.00', receivedAmount: '30.00' }
+  ];
+  const d = exportsObject.paymentDistribution('58.00', parts);
+  assert.equal(d.valid, true);
+  assert.equal(d.distributed, '58.00');
+  assert.equal(d.remaining, '0.00');
+  assert.equal(difference('30.00', '28.00'), '2.00');
+  parts[1].amount = '58.00';
+  const invalid = exportsObject.paymentDistribution('58.00', parts);
+  assert.equal(invalid.valid, false);
+  assert.equal(invalid.exceeds, true);
+  assert.equal(invalid.remaining, '0.00');
+});
+test('partial allowed; invalid, zero, negative, cash short and noncash change rejected', () => {
+  const make = (amount, receivedAmount = amount, method = 'CASH') => [
+    { method, amount, receivedAmount }
+  ];
+  assert.equal(
+    exportsObject.paymentDistribution('58.00', make('20.00')).valid,
+    true
+  );
+  for (const p of [
+    make('0'),
+    make('-1'),
+    make('NaN'),
+    make('5', '4'),
+    make('5', '6', 'CARD'),
+    make('1.001')
+  ])
+    assert.equal(exportsObject.paymentDistribution('58.00', p).valid, false);
+  assert.equal(difference('60.00', '58.00'), '2.00');
 });

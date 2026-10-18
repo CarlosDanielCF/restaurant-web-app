@@ -73,7 +73,12 @@ export const Userbox = ({ showDetails = false }: UserboxProps) => {
   const { online } = useContext(SocketContext);
 
   const user = {
-    name: userState?.username || 'Usuario',
+    name:
+      [userState?.person?.firstName, userState?.person?.lastName]
+        .filter(Boolean)
+        .join(' ') ||
+      userState?.username ||
+      'Usuario',
     avatar: '/static/images/avatars/2.jpg',
     jobtitle: userState?.role?.description,
     restaurantRoles: userState?.restaurantRoles || []

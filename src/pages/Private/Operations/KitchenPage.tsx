@@ -18,7 +18,11 @@ import {
 import { Link } from 'react-router-dom';
 import { restauranteApi } from '@/api';
 import { SocketContext } from '@/context';
-import { KitchenSoundTracker, playKitchenTone } from './kitchenSound';
+import {
+  KitchenSoundTracker,
+  playKitchenTone,
+  announceIncoming
+} from './kitchenSound';
 import { Board, KitchenSnapshot } from './fulfillment.types';
 function details(s: KitchenSnapshot) {
   return [
@@ -59,15 +63,21 @@ export function KitchenPage() {
     try {
       const { data } = await restauranteApi.get<Board>('/kitchen/board');
       if (epoch !== connectionEpoch.current) return;
-      const fresh = tracker.current.observe(
+      const fresh = tracker.current.observeChanges(
         data.dispatches.map((d) => d.id),
         data.notices.map((n) => n.id)
       );
-      if (fresh && soundEnabled.current && audio.current) {
-        if (!playKitchenTone(audio.current)) {
-          soundEnabled.current = false;
-          setSound(false);
+      if (soundEnabled.current && audio.current) {
+        for (let n = 0; n < fresh.dispatches; n++) {
+          const spoken =
+            typeof speechSynthesis !== 'undefined' &&
+            announceIncoming(
+              speechSynthesis,
+              () => new SpeechSynthesisUtterance()
+            );
+          if (!spoken) playKitchenTone(audio.current);
         }
+        if (fresh.notices > 0) playKitchenTone(audio.current);
       }
       setBoard(data);
       setOffset(new Date(data.serverNow).getTime() - Date.now());
@@ -134,6 +144,7 @@ export function KitchenPage() {
     if (soundEnabled.current) {
       soundEnabled.current = false;
       setSound(false);
+      if (typeof speechSynthesis !== 'undefined') speechSynthesis.cancel();
       return;
     }
     try {
@@ -336,6 +347,12 @@ export function KitchenPage() {
                             {i.pending} × {i.itemSnapshot.name}
                           </Typography>
                           <Typography>{details(i.itemSnapshot)}</Typography>
+                          {Number(i.itemSnapshot.takeawayQuantity) > 0 && (
+                            <Chip
+                              color='warning'
+                              label={`Para llevar: ${i.itemSnapshot.takeawayQuantity}`}
+                            />
+                          )}
                           {i.itemSnapshot.notes && (
                             <Typography className='ticket-notes'>
                               {i.itemSnapshot.notes}

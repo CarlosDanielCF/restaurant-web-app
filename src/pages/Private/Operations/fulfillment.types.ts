@@ -1,4 +1,5 @@
 export interface KitchenSnapshot {
+  takeawayQuantity?: number;
   consumptionKind?: string;
   beneficiaryUserId?: string;
   quantity?: number | string;
@@ -15,6 +16,7 @@ export interface DispatchItem {
   consumptionLineId: string;
   quantity: string;
   delivered: string;
+  cancelledQuantity?: string;
   pending: number;
   status: string;
   itemSnapshot: KitchenSnapshot;

@@ -80,3 +80,33 @@ test('audio device failure does not interrupt kitchen data refresh', () => {
     false
   );
 });
+
+test('one spoken announcement per new dispatch; silent initial/reconnect snapshots', () => {
+  const tracker = new KitchenSoundTracker();
+  assert.equal(tracker.observeChanges(['old'], []).dispatches, 0);
+  assert.equal(tracker.observeChanges(['old', 'a', 'b'], []).dispatches, 2);
+  assert.equal(tracker.observeChanges(['a', 'b'], []).dispatches, 0);
+  tracker.reset();
+  assert.equal(tracker.observeChanges(['a', 'b', 'offline'], []).dispatches, 0);
+  const calls = [],
+    male = { name: 'Microsoft Alvaro', lang: 'es-ES' },
+    female = { name: 'Monica', lang: 'es-ES' };
+  assert.equal(
+    exportsScope.announceIncoming(
+      { getVoices: () => [female, male], speak: (u) => calls.push(u) },
+      () => ({})
+    ),
+    true
+  );
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].text, 'Pedido entrante');
+  assert.equal(calls[0].voice, male);
+  assert.equal(calls[0].volume, 1);
+  assert.equal(
+    exportsScope.announceIncoming(
+      { getVoices: () => [], speak: () => assert.fail() },
+      () => ({})
+    ),
+    false
+  );
+});

@@ -1,3 +1,7 @@
+import PaymentsOutlined from '@mui/icons-material/PaymentsOutlined';
+import QrCode2Outlined from '@mui/icons-material/QrCode2Outlined';
+import CreditCardOutlined from '@mui/icons-material/CreditCardOutlined';
+import { paymentDistribution } from './displayMoney';
 import { useLiveRefresh } from '@/hooks/useLiveRefresh';
 import { WorkspaceEmpty } from '@/components/operational/WorkspaceEmpty';
 import { operationalLabel } from '../Insights/labels';
@@ -211,6 +215,7 @@ export function FinancePage() {
   const lock = useRef(false),
     generation = useRef(0);
   const qr = useRestaurantImage(data?.yapeQr);
+  const distribution = paymentDistribution(data?.account.balance || '', parts);
   const own = shifts.find(
     (s) => s.shift.workerId === user?.id && s.shift.status === 'OPEN'
   );
@@ -1156,12 +1161,15 @@ export function FinancePage() {
           </DialogTitle>
           <DialogContent>
             {error && <Alert severity='error'>{error}</Alert>}
-            <Stack spacing={2} sx={{ pt: 1 }}>
+            <Stack spacing={1} sx={{ pt: 1 }}>
               <Paper className='payment-balance' variant='outlined'>
                 <Typography variant='caption'>SALDO ACTUAL</Typography>
                 <Typography variant='h5'>S/ {data?.account.balance}</Typography>
                 <Typography variant='body2'>
-                  Cobrador: {user?.person.firstName || 'Usuario actual'}
+                  Cobrador:{' '}
+                  {[user?.person.firstName, user?.person.lastName]
+                    .filter(Boolean)
+                    .join(' ') || 'Usuario actual'}
                 </Typography>
               </Paper>
               {!own && (
@@ -1213,6 +1221,15 @@ export function FinancePage() {
                       <Chip
                         key={m.id}
                         clickable
+                        icon={
+                          m.id === 'CASH' ? (
+                            <PaymentsOutlined />
+                          ) : m.id === 'YAPE' ? (
+                            <QrCode2Outlined />
+                          ) : (
+                            <CreditCardOutlined />
+                          )
+                        }
                         color={part.method === m.id ? 'primary' : 'default'}
                         label={m.name}
                         onClick={() =>
@@ -1262,6 +1279,16 @@ export function FinancePage() {
                         }
                       />
                     ))}
+                  {partial && parts.length > 1 && (
+                    <Button
+                      color='error'
+                      onClick={() =>
+                        setParts((p) => p.filter((_, j) => j !== i))
+                      }
+                    >
+                      Eliminar método {i + 1}
+                    </Button>
+                  )}
                   {part.method === 'CASH' && (
                     <Typography className='cash-change'>
                       Vuelto estimado: S/{' '}
@@ -1277,34 +1304,15 @@ export function FinancePage() {
                 </Stack>
               ))}
               <Typography variant='body2'>
-                Saldo estimado después del cobro: S/{' '}
-                {difference(
-                  data?.account.balance || '',
-                  sumMoney(parts.map((p) => p.amount))
-                )}
-                . El servidor valida el importe final.
+                Distribuido: S/ {distribution.distributed} · Restante: S/{' '}
+                {distribution.remaining}
               </Typography>
-              {!partial && (
-                <Button onClick={() => setPartial(true)}>
-                  Pago parcial o mixto
-                </Button>
+              {distribution.exceeds && (
+                <Alert severity='error'>
+                  Los importes aplicados superan el saldo. Corrija la
+                  distribución antes de confirmar.
+                </Alert>
               )}
-              {partial && (
-                <Button
-                  disabled={parts.length >= 20}
-                  onClick={() =>
-                    setParts((p) => [
-                      ...p,
-                      { method: 'CASH', amount: '', receivedAmount: '' }
-                    ])
-                  }
-                >
-                  Agregar método para pago mixto
-                </Button>
-              )}
-              <Button onClick={() => setPayment(false)}>
-                Más opciones: dividir, propina, fiado o descuento
-              </Button>
               {parts.some((p) => p.method === 'YAPE') && (
                 <>
                   {qr ? (
@@ -1314,7 +1322,8 @@ export function FinancePage() {
                       alt='QR original de Yape del restaurante'
                       sx={{
                         width: '100%',
-                        maxWidth: 360,
+                        maxWidth: 280,
+                        maxHeight: 280,
                         objectFit: 'contain',
                         alignSelf: 'center'
                       }}
@@ -1325,8 +1334,10 @@ export function FinancePage() {
                     </Alert>
                   )}
                   <Typography>
-                    Muestre este QR al cliente para que lo escanee. Importe
-                    Yape:{' '}
+                    {qr
+                      ? 'Muestre este QR al cliente para que lo escanee. '
+                      : ''}
+                    Importe Yape:{' '}
                     {parts
                       .filter((p) => p.method === 'YAPE')
                       .map((p) => `S/${p.amount || '0.00'}`)
@@ -1345,6 +1356,29 @@ export function FinancePage() {
                   />
                 </>
               )}
+              <Stack direction={{ xs: 'column', sm: 'row' }} gap={0.5}>
+                {!partial && (
+                  <Button onClick={() => setPartial(true)}>
+                    Pago parcial o mixto
+                  </Button>
+                )}
+                {partial && (
+                  <Button
+                    disabled={parts.length >= 20}
+                    onClick={() =>
+                      setParts((p) => [
+                        ...p,
+                        { method: 'CASH', amount: '', receivedAmount: '' }
+                      ])
+                    }
+                  >
+                    Agregar método para pago mixto
+                  </Button>
+                )}
+                <Button onClick={() => setPayment(false)}>
+                  Más opciones: dividir, propina, fiado o descuento
+                </Button>
+              </Stack>
               {manager && (
                 <TextField
                   label='Motivo de excepción administrativa (si corresponde)'
@@ -1362,6 +1396,7 @@ export function FinancePage() {
               disabled={
                 disabled ||
                 !own ||
+                !distribution.valid ||
                 data?.account.version !== payVersion ||
                 parts.some((p) => !p.amount || !p.receivedAmount) ||
                 (parts.some((p) => p.method === 'YAPE') && !manual)

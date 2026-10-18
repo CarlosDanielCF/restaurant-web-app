@@ -15,7 +15,6 @@ import { Roles } from '@/models/roles';
 
 const managers = [Roles.OWNER, Roles.ADMIN];
 const service = [...managers, Roles.WAITER];
-const everyone = [...service, Roles.COOK];
 
 // Canonical F0–F9 routes. Delivery, menu and reservations are tabs in Atención;
 // reports use the F9 domain, never the obsolete dashboard/checkout APIs.
@@ -27,7 +26,13 @@ export const menuSections: MenuSection[] = [
         title: 'Atención, mesas y delivery',
         icon: <TableRestaurantOutlined />,
         to: '/attention',
-        allowedRoles: everyone
+        allowedRoles: service
+      },
+      {
+        title: 'Menú y disponibilidad',
+        icon: <MenuBookOutlined />,
+        to: '/attention',
+        allowedRoles: [Roles.COOK]
       },
       {
         title: 'Cocina',
@@ -51,7 +56,13 @@ export const menuSections: MenuSection[] = [
         title: 'Reportes operativos',
         icon: <AssessmentOutlined />,
         to: '/operational-reports',
-        allowedRoles: everyone
+        allowedRoles: service
+      },
+      {
+        title: 'Tiempos de cocina',
+        icon: <AssessmentOutlined />,
+        to: '/operational-reports',
+        allowedRoles: [Roles.COOK]
       },
       {
         title: 'Pedidos históricos',

@@ -5,6 +5,10 @@ import { useRestaurantStore } from '../Common/store/restaurantStore';
 import { useCallback, useContext, useState } from 'react';
 import {
   Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
   Button,
   Card,
   CardContent,
@@ -37,6 +41,11 @@ export function FulfillmentPanel({
     [error, setError] = useState(false);
   const [exitAmounts, setExitAmounts] = useState<Record<string, number>>({});
   const [exiting, setExiting] = useState(false);
+  const [packing, setPacking] = useState(false);
+  const [takeaway, setTakeaway] = useState<Record<string, number>>({});
+  const drafts = account.lines.filter(
+    (l) => l.status === 'ACTIVE' && !Number(l.confirmedQuantity)
+  );
   const [itemId, setItemId] = useState(''),
     [quantity, setQuantity] = useState(1),
     [eventId, setEventId] = useState(''),
@@ -104,17 +113,103 @@ export function FulfillmentPanel({
           {screens} pantallas de cocina conectadas
         </Typography>
       )}
+      {account.modality === 'TABLE' && drafts.length > 0 && (
+        <>
+          <Stack direction='row' gap={1} flexWrap='wrap'>
+            <Button
+              onClick={() => {
+                setTakeaway(
+                  Object.fromEntries(
+                    drafts.map((l) => [l.id, Number(l.quantity)])
+                  )
+                );
+                setPacking(false);
+              }}
+            >
+              Todo para llevar
+            </Button>
+            <Button onClick={() => setPacking((v) => !v)}>
+              Seleccionar para llevar
+            </Button>
+          </Stack>
+          <Dialog
+            open={packing}
+            onClose={() => setPacking(false)}
+            fullWidth
+            maxWidth='xs'
+          >
+            <DialogTitle>Seleccionar cantidades para llevar</DialogTitle>
+            <DialogContent>
+              <Stack spacing={2} pt={1}>
+                {drafts.map((l) => (
+                  <TextField
+                    key={l.id}
+                    size='small'
+                    type='number'
+                    label={`${l.productSnapshot.name} · para llevar (de ${Number(l.quantity)})`}
+                    value={takeaway[l.id] ?? 0}
+                    inputProps={{
+                      min: 0,
+                      max: Number(l.quantity),
+                      step: 0.001
+                    }}
+                    onChange={(e) =>
+                      setTakeaway((v) => ({
+                        ...v,
+                        [l.id]: Number(e.target.value)
+                      }))
+                    }
+                  />
+                ))}
+              </Stack>
+            </DialogContent>
+            <DialogActions>
+              <Button
+                onClick={() => {
+                  setTakeaway({});
+                  setPacking(false);
+                }}
+              >
+                Todo en mesa
+              </Button>
+              <Button onClick={() => setPacking(false)}>
+                Aplicar selección
+              </Button>
+            </DialogActions>
+          </Dialog>
+          {drafts.some((l) => (takeaway[l.id] ?? 0) > 0) && (
+            <Typography variant='caption'>
+              Para llevar seleccionado · se guardará al enviar
+            </Typography>
+          )}
+        </>
+      )}
       <Button
         variant='contained'
         aria-label='Confirmar consumos y enviar a producción'
         disabled={
           error ||
+          drafts.some(
+            (l) =>
+              !Number.isFinite(takeaway[l.id] ?? 0) ||
+              (takeaway[l.id] ?? 0) < 0 ||
+              (takeaway[l.id] ?? 0) > Number(l.quantity)
+          ) ||
           account.attentionStatus !== 'OPEN' ||
           !account.lines.some(
             (l) => l.status === 'ACTIVE' && !Number(l.confirmedQuantity)
           )
         }
-        onClick={() => void action('confirm', {})}
+        onClick={() =>
+          void action('confirm', {
+            takeaway: drafts.map((l) => ({
+              lineId: l.id,
+              quantity:
+                takeaway[l.id] ??
+                (account.modality === 'TAKE_AWAY' ? Number(l.quantity) : 0)
+            }))
+          })
+        }
       >
         Enviar a producción
       </Button>
@@ -151,6 +246,8 @@ export function FulfillmentPanel({
                   <Stack key={i.id} className='dispatch-line' spacing={1}>
                     <Typography fontWeight={700}>
                       {i.itemSnapshot.name}
+                      {Number(i.itemSnapshot.takeawayQuantity) > 0 &&
+                        ` · Para llevar: ${i.itemSnapshot.takeawayQuantity}`}
                     </Typography>
                     <Typography variant='body2'>
                       {i.itemSnapshot.notes}
@@ -160,10 +257,12 @@ export function FulfillmentPanel({
                     >
                       {i.status === 'CANCELLED'
                         ? 'Cancelado'
-                        : `Enviado: ${i.quantity} · Entregado: ${i.delivered} · Pendiente: ${i.pending}`}
+                        : `Enviado: ${i.quantity} · Entregado: ${i.delivered} · Pendiente: ${i.pending}${Number(i.cancelledQuantity) ? ` · Cancelado: ${i.cancelledQuantity}` : ''}`}
                       {i.status === 'ACTIVE' &&
                         i.pending === 0 &&
-                        ' · ENTREGADO ✓'}
+                        (Number(i.cancelledQuantity)
+                          ? ' · Salidas completadas'
+                          : ' · ENTREGADO ✓')}
                     </Typography>
                     {i.status === 'ACTIVE' && i.pending > 0 && (
                       <Stack direction='row' gap={1}>
