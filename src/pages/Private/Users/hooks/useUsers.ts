@@ -1,5 +1,5 @@
 import { RecoveryLink } from '../services/users.service';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -37,20 +37,19 @@ export const useUsers = () => {
   const { page, rowsPerPage, handleChangePage, handleChangeRowsPerPage } =
     usePaginationAsync();
 
-  const { search, setSearch, debouncedSearch, handleChangeSearch } =
-    useSearch();
+  const { search, debouncedSearch, handleChangeSearch } = useSearch();
 
   const usersQuery = useQuery<{ users: IUser[]; count: number }>({
     queryKey: queryKeys.users.list({
       offset: page,
       limit: rowsPerPage,
-      search
+      search: debouncedSearch
     }),
     queryFn: () =>
       getUsers({
         offset: page,
         limit: rowsPerPage,
-        search
+        search: debouncedSearch
       })
   });
 
@@ -100,8 +99,6 @@ export const useUsersSuggestions = () => {
  * @version 2.0 - Migrated to React Query v5
  */
 export const useUser = (term: string, enabled = true) => {
-  const { enqueueSnackbar } = useSnackbar();
-
   return useQuery({
     queryKey: queryKeys.users.detail(term),
     queryFn: () => getUser(term),
@@ -120,10 +117,10 @@ export const useCreateUser = () => {
 
   return useMutation<IUser, unknown, CreateUserDto>({
     mutationFn: (data: CreateUserDto) => createUser(data),
-    onSuccess: (data: IUser) => {
+    onSuccess: () => {
       enqueueSnackbar('Usuario creado correctamente', { variant: 'success' });
     },
-    onError: (error: unknown) => {
+    onError: () => {
       enqueueSnackbar('No se pudo crear el usuario', { variant: 'error' });
     }
   });
@@ -140,12 +137,12 @@ export const useUpdateUser = () => {
 
   const updateUserMutation = useMutation<IUser, unknown, UpdateUserDto>({
     mutationFn: (data: UpdateUserDto) => updateUser(data.id, data),
-    onSuccess: (data: IUser) => {
+    onSuccess: () => {
       enqueueSnackbar('Usuario actualizado correctamente', {
         variant: 'success'
       });
     },
-    onError: (error: unknown) => {
+    onError: () => {
       enqueueSnackbar('No se pudo actualizar el usuario', {
         variant: 'error'
       });
@@ -164,7 +161,7 @@ export const useUpdateUser = () => {
           variant: 'success'
         });
       },
-      onError: (error: unknown) => {
+      onError: () => {
         enqueueSnackbar('No se pudo actualizar el usuario', {
           variant: 'error'
         });
@@ -186,12 +183,12 @@ export const useChangePasswordUser = () => {
   const { enqueueSnackbar } = useSnackbar();
   return useMutation<void, unknown, ChangePasswordDto>({
     mutationFn: (data: ChangePasswordDto) => changePassword(data),
-    onSuccess: (data: void) => {
+    onSuccess: () => {
       enqueueSnackbar('Contraseña actualizada correctamente', {
         variant: 'success'
       });
     },
-    onError: (error: unknown) => {
+    onError: () => {
       enqueueSnackbar('No se pudo actualizar la contraseña', {
         variant: 'error'
       });
@@ -208,13 +205,12 @@ export const useResetPasswordUser = () => {
 
   return useMutation<RecoveryLink, unknown, ResetPasswordUserDto>({
     mutationFn: (data: ResetPasswordUserDto) => resetPasswordUser(data),
-    onSuccess: (data: RecoveryLink) => {
-      enqueueSnackbar(
-        'Enlace de acceso generado; vence en 30 minutos',
-        { variant: 'success' }
-      );
+    onSuccess: () => {
+      enqueueSnackbar('Enlace de acceso generado; vence en 30 minutos', {
+        variant: 'success'
+      });
     },
-    onError: (error: unknown) => {
+    onError: () => {
       enqueueSnackbar('No se pudo reiniciar la contraseña', {
         variant: 'error'
       });
@@ -223,8 +219,6 @@ export const useResetPasswordUser = () => {
 };
 
 export const useDeleteUser = () => {
-  const { enqueueSnackbar } = useSnackbar();
-
   return {};
 };
 
@@ -244,7 +238,7 @@ export const useRemoveUserFromRestaurant = () => {
         variant: 'success'
       });
     },
-    onError: (error: unknown) => {
+    onError: () => {
       enqueueSnackbar('Error al remover usuario del restaurante', {
         variant: 'error'
       });

@@ -181,3 +181,8 @@ Son aditivas; no se editó ninguna de las 18 migraciones anteriores. Aplicación
 - `tests/operative-review.browser.cjs`
 
 Eliminados: ninguno. Se conservaron contratos históricos, migraciones previas, assets y módulos sin evidencia de eliminación segura.
+
+
+## Revisión global posterior — 2026-10-18
+
+La auditoría sobre base frontend `ca6ea6e` y backend `ea62049` se documenta en [F10-GLOBAL-UX.md](F10-GLOBAL-UX.md). Incluye navegación/contexto por rol, llegada de reserva, disponibilidad, disclosures, reportes móviles, documentos y accesos de trabajador. Backend intacto; ninguna migración/seed ejecutada. Las cifras de pruebas anteriores son históricas, no resultados de esta nueva pasada.

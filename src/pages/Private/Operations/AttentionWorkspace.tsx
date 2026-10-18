@@ -1,5 +1,5 @@
 import { difference, sumMoney } from '../Finance/displayMoney';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { DraftLineEditor } from './DraftLineEditor';
 import { useWorkerAccess } from '@/hooks/useWorkerAccess';
 import { useSelector } from 'react-redux';
@@ -12,7 +12,7 @@ import { OffsitePanel, modalityLabel } from './OffsitePanel';
 import { restauranteApi } from '@/api';
 import { FulfillmentPanel } from './FulfillmentPanel';
 import { useRestaurantStore } from '../Common/store/restaurantStore';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Alert,
   Dialog,
@@ -222,7 +222,21 @@ export function AttentionWorkspace({
     'attention.draft.configure': 'Personalización de borrador'
   };
   const [modality, setModality] = useState<Account['modality']>('TABLE');
-  const [selected, setSelected] = useState('');
+  const [searchParams] = useSearchParams();
+  const [selected, setSelected] = useState(searchParams.get('accountId') || '');
+  const appliedLink = useRef<string | null>(null);
+  useEffect(() => {
+    const linked = searchParams.get('accountId');
+    if (!linked) {
+      appliedLink.current = null;
+    } else if (
+      appliedLink.current !== linked &&
+      accounts.some((a) => a.id === linked)
+    ) {
+      selectAccount(linked);
+      appliedLink.current = linked;
+    }
+  }, [searchParams, accounts]);
   const [customizing, setCustomizing] = useState(false);
   const [cancelLine, setCancelLine] = useState('');
   const [returnConsumption, setReturnConsumption] = useState(false);

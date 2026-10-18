@@ -1,3 +1,6 @@
+import { MoreOptions } from '@/components/operational/MoreOptions';
+import { Button, Stack } from '@mui/material';
+import { QrCode2Outlined } from '@mui/icons-material';
 import { SecuritySettings } from './components/SecuritySettings.component';
 import { TitlePage } from '../components';
 import {
@@ -53,6 +56,29 @@ const Restaurant = () => {
     <Container maxWidth='lg' className='pos-settings' sx={{ pb: 6 }}>
       <TitlePage title='Configuración del Restaurante' />
 
+      <Stack direction='row' gap={1} flexWrap='wrap' mb={2}>
+        <Button
+          startIcon={<StorefrontOutlinedIcon />}
+          onClick={() =>
+            document
+              .getElementById('restaurant-identity')
+              ?.scrollIntoView({ behavior: 'smooth' })
+          }
+        >
+          Datos e identidad
+        </Button>
+        <Button
+          startIcon={<QrCode2Outlined />}
+          onClick={() =>
+            document
+              .getElementById('restaurant-qr')
+              ?.scrollIntoView({ behavior: 'smooth' })
+          }
+        >
+          QR Yape y zona horaria
+        </Button>
+      </Stack>
+      <Box id='restaurant-identity' sx={{ scrollMarginTop: 12 }} />
       {restaurant ? (
         <Grid container spacing={{ xs: 2, md: 3 }}>
           {/* General Information Card */}
@@ -241,12 +267,16 @@ const Restaurant = () => {
         </Alert>
       )}
 
-      <Box className='pos-settings-security'>
+      <Box
+        id='restaurant-qr'
+        className='pos-settings-security'
+        sx={{ scrollMarginTop: 12 }}
+      >
         <SecuritySettings />
       </Box>
-      <Box mt={4}>
+      <MoreOptions title='Áreas de producción'>
         <ProductionAreasList />
-      </Box>
+      </MoreOptions>
     </Container>
   );
 };

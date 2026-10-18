@@ -1,3 +1,4 @@
+import { MoreOptions } from '@/components/operational/MoreOptions';
 import { FC } from 'react';
 import { CreateUser } from '../models/create-user.model';
 import { useWatch, useForm, Controller } from 'react-hook-form';
@@ -24,13 +25,7 @@ interface Props {
   onReset?: () => void;
 }
 
-export const FormUser: FC<Props> = ({
-  user,
-  onSubmit,
-  loading,
-  isNew,
-  onReset
-}) => {
+export const FormUser: FC<Props> = ({ user, onSubmit, loading, isNew }) => {
   const {
     register,
     handleSubmit,
@@ -213,21 +208,23 @@ export const FormUser: FC<Props> = ({
               }
             />
           </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label='Número de teléfono'
-              fullWidth
-              type='number'
-              {...register('numPhone', {
-                minLength: { value: 10, message: 'Minimo 10 caracteres' },
-                maxLength: { value: 10, message: 'Máximo 10 caracteres' }
-              })}
-              helperText={
-                <Typography component='span' color='red'>
-                  {errors.numPhone?.message}{' '}
-                </Typography>
-              }
-            />
+          <Grid item xs={12}>
+            <MoreOptions title='Teléfono de contacto (opcional)'>
+              <TextField
+                label='Número de teléfono'
+                fullWidth
+                type='number'
+                {...register('numPhone', {
+                  minLength: { value: 10, message: 'Minimo 10 caracteres' },
+                  maxLength: { value: 10, message: 'Máximo 10 caracteres' }
+                })}
+                helperText={
+                  <Typography component='span' color='red'>
+                    {errors.numPhone?.message}{' '}
+                  </Typography>
+                }
+              />
+            </MoreOptions>
           </Grid>
 
           <Grid

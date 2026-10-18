@@ -1,7 +1,20 @@
+import { MoreOptions } from '@/components/operational/MoreOptions';
+import {
+  EventAvailableOutlined,
+  EditOutlined,
+  DeleteOutline,
+  SaveOutlined
+} from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { selectAuth } from '@/redux';
 import { useState } from 'react';
 import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  MenuItem,
   Box,
   Button,
   Card,
@@ -49,6 +62,10 @@ export function ReservationsWorkspace({
   run: Run;
   zone: string;
 }) {
+  const navigate = useNavigate();
+  const [cancel, setCancel] = useState<Reservation | null>(null);
+  const [filter, setFilter] = useState('BOOKED');
+  const [search, setSearch] = useState('');
   const user = useSelector(selectAuth).user;
   const waiter = user?.role.name === 'MOZO';
   const [draft, setDraft] = useState(blank());
@@ -56,6 +73,13 @@ export function ReservationsWorkspace({
   const [responsible, setResponsible] = useState(waiter ? user.id : '');
   const [tableIds, setTableIds] = useState<string[]>([]);
   const [reason, setReason] = useState('');
+  const shownReservations = reservations.filter(
+    (r) =>
+      (!filter || r.status === filter) &&
+      `${r.name} ${r.phone}`
+        .toLocaleLowerCase()
+        .includes(search.toLocaleLowerCase())
+  );
   return (
     <Stack spacing={1.5} className='reservation-workbench'>
       <Typography variant='h5' component='h2'>
@@ -102,15 +126,24 @@ export function ReservationsWorkspace({
                 setDraft({ ...draft, people: Number(e.target.value) })
               }
             />
-            <TextField
-              label='Observaciones de reserva'
-              multiline
-              value={draft.notes}
-              onChange={(e) => setDraft({ ...draft, notes: e.target.value })}
-            />
+            <MoreOptions title='Observaciones de reserva (opcional)'>
+              <TextField
+                label='Observaciones de reserva'
+                multiline
+                value={draft.notes}
+                onChange={(e) => setDraft({ ...draft, notes: e.target.value })}
+              />
+            </MoreOptions>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
               <Button
                 variant='contained'
+                startIcon={<SaveOutlined />}
+                disabled={
+                  !draft.name.trim() ||
+                  !draft.phone.trim() ||
+                  !draft.localDateTime ||
+                  draft.people < 1
+                }
                 onClick={async () => {
                   const { id, version, ...data } = draft;
                   if (
@@ -136,19 +169,34 @@ export function ReservationsWorkspace({
         <Typography variant='h6' mb={1}>
           Reservas registradas
         </Typography>
-        <TextField
-          size='small'
-          fullWidth
-          label='Motivo de cancelación de reserva'
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-        />
-        {!reservations.length && (
+        <Stack direction={{ xs: 'column', sm: 'row' }} gap={1} mb={1}>
+          <TextField
+            size='small'
+            label='Buscar reserva'
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <TextField
+            size='small'
+            select
+            label='Estado de reservas'
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+          >
+            <MenuItem value='BOOKED'>Pendientes</MenuItem>
+            <MenuItem value='ARRIVED'>Llegadas</MenuItem>
+            <MenuItem value='CANCELLED'>Canceladas</MenuItem>
+            <MenuItem value=''>Todas</MenuItem>
+          </TextField>
+        </Stack>
+        {!shownReservations.length && (
           <Typography className='operation-empty'>
-            Todavía no hay reservas registradas.
+            {reservations.length
+              ? 'No hay reservas para esta búsqueda o estado.'
+              : 'Todavía no hay reservas registradas.'}
           </Typography>
         )}
-        {reservations.map((r) => (
+        {shownReservations.map((r) => (
           <Card key={r.id}>
             <CardContent>
               <Stack spacing={1}>
@@ -170,6 +218,7 @@ export function ReservationsWorkspace({
                 {r.status === 'BOOKED' && (
                   <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
                     <Button
+                      startIcon={<EditOutlined />}
                       onClick={() =>
                         setDraft({
                           id: r.id,
@@ -185,32 +234,36 @@ export function ReservationsWorkspace({
                       Editar reserva
                     </Button>
                     <Button
+                      variant='contained'
+                      startIcon={<EventAvailableOutlined />}
                       onClick={() => {
                         setArrival(r);
                         setTableIds([]);
-                        setResponsible('');
+                        setResponsible(waiter ? user.id : '');
                       }}
                     >
                       Registrar llegada y elegir mesa
                     </Button>
                     <Button
-                      disabled={reason.trim().length < 2}
                       color='error'
-                      onClick={() =>
-                        void run(`/reservations/${r.id}/cancel`, {
-                          expectedVersion: r.version,
-                          reason
-                        })
-                      }
+                      startIcon={<DeleteOutline />}
+                      onClick={() => {
+                        setCancel(r);
+                        setReason('');
+                      }}
                     >
                       Cancelar reserva
                     </Button>
                   </Stack>
                 )}
                 {r.accountId && (
-                  <Typography>
-                    Cuenta iniciada: {r.accountId.slice(0, 8)}
-                  </Typography>
+                  <Button
+                    onClick={() =>
+                      navigate(`/attention?accountId=${r.accountId}`)
+                    }
+                  >
+                    Abrir cuenta de la reserva
+                  </Button>
                 )}
               </Stack>
             </CardContent>
@@ -218,10 +271,15 @@ export function ReservationsWorkspace({
         ))}
       </Box>
       {arrival && (
-        <Card className='reservation-arrival'>
-          <CardContent>
+        <Dialog open fullWidth maxWidth='sm' onClose={() => setArrival(null)}>
+          <DialogTitle>Llegada de {arrival.name}</DialogTitle>
+          <DialogContent>
             <Stack spacing={2}>
-              <Typography variant='h6'>Llegada de {arrival.name}</Typography>
+              {waiter && (
+                <Typography>
+                  Responsable: {user.person.firstName} {user.person.lastName}
+                </Typography>
+              )}
               {!waiter && (
                 <OperatorSelect
                   operators={operators}
@@ -235,27 +293,78 @@ export function ReservationsWorkspace({
                 selected={tableIds}
                 setSelected={setTableIds}
               />
-              <Button
-                variant='contained'
-                disabled={!responsible || !tableIds.length}
-                onClick={async () => {
-                  if (
-                    await run(`/reservations/${arrival.id}/arrival`, {
+            </Stack>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              variant='contained'
+              disabled={!responsible || !tableIds.length}
+              onClick={async () => {
+                if (
+                  await run(
+                    `/reservations/${arrival.id}/arrival`,
+                    {
                       expectedVersion: arrival.version,
                       responsibleUserId: responsible,
                       tableIds
-                    })
+                    },
+                    'post',
+                    (data) => {
+                      const result = data as {
+                        accountId?: string;
+                        account?: { id: string };
+                      };
+                      const id = result.accountId || result.account?.id;
+                      if (id) navigate(`/attention?accountId=${id}`);
+                    }
                   )
-                    setArrival(null);
-                }}
-              >
-                Confirmar llegada e iniciar cuenta
-              </Button>
-              <Button onClick={() => setArrival(null)}>Volver</Button>
-            </Stack>
-          </CardContent>
-        </Card>
+                )
+                  setArrival(null);
+              }}
+            >
+              Confirmar llegada e iniciar cuenta
+            </Button>
+            <Button onClick={() => setArrival(null)}>Volver</Button>
+          </DialogActions>
+        </Dialog>
       )}
+      <Dialog
+        open={!!cancel}
+        onClose={() => setCancel(null)}
+        fullWidth
+        maxWidth='xs'
+      >
+        <DialogTitle>Cancelar reserva · {cancel?.name}</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            fullWidth
+            margin='dense'
+            label='Motivo de cancelación de reserva'
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCancel(null)}>Volver</Button>
+          <Button
+            color='error'
+            disabled={reason.trim().length < 2}
+            onClick={async () => {
+              if (
+                cancel &&
+                (await run(`/reservations/${cancel.id}/cancel`, {
+                  expectedVersion: cancel.version,
+                  reason
+                }))
+              )
+                setCancel(null);
+            }}
+          >
+            Confirmar cancelación
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Stack>
   );
 }

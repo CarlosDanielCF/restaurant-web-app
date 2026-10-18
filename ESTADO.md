@@ -1,3 +1,16 @@
+# Estado vigente — revisión global UX operativa (2026-10-18)
+
+Frontend sobre `codex/phase-10`, base `ca6ea6ea967cac24a06c1579bcb4c951fa0977a7`. Backend `ea620499d51c438fe13ff906a8616a88a9df2a8e` sin modificaciones. Sin push ni merge. Esta sección prevalece sobre los registros históricos siguientes.
+
+Auditoría transversal de módulos y cuatro roles, navegación contextual, reserva/llegada corregida para mozo, disponibilidad directa, opciones secundarias sin eliminar capacidades, documentos prioritarios, reportes móviles y accesos de trabajador limitados visualmente al rol base. Detalle, conteo aproximado de interacciones, evidencia y límites en [F10-GLOBAL-UX.md](F10-GLOBAL-UX.md).
+
+No se crearon ni ejecutaron migraciones o seeds. El esquema Cloud existente se consulta sin alterar su registro; no se presupone que Windows tenga esas migraciones aplicadas. `tienda` no se utiliza. Las suites históricas que ejecutan seeds/migraciones automáticamente no se invocan; runner nuevo usa APIs reales y fixture aislado sin ese bootstrap.
+
+Validación de esta pasada: backend 105 unitarias; frontend 18 unitarias; build/typecheck/lint focalizado aprobados; integración real HTTP/MySQL/navegador de cuatro roles aprobada, sin excepciones JS ni recargas operativas en el recorrido. Detalles de cobertura y suites no ejecutadas en F10-GLOBAL-UX.md.
+
+---
+## Registro histórico de estados anteriores
+
 # Estado vigente — candidato final F10 (2026-10-16)
 
 Trabajo en `codex/phase-10`, sin merge a main. Barrera A integrada previamente. Este bloque sustituye los estados históricos siguientes (incluidas antiguas restricciones de ciclos).

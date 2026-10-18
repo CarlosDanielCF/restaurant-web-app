@@ -1,7 +1,15 @@
+import { useSearchParams, Link } from 'react-router-dom';
+import {
+  TableRestaurantOutlined,
+  EventAvailableOutlined,
+  MenuBookOutlined,
+  Inventory2Outlined,
+  SoupKitchenOutlined
+} from '@mui/icons-material';
 import { useWorkerAccess } from '@/hooks/useWorkerAccess';
 import { useLiveRefresh } from '@/hooks/useLiveRefresh';
 import './operations.css';
-import { useCallback, useContext, useRef, useState } from 'react';
+import { useCallback, useContext, useRef, useState, useEffect } from 'react';
 import {
   Alert,
   Box,
@@ -46,7 +54,23 @@ export function OperationsPage() {
   const role = user?.role.name;
   const cook = role === 'COCINERO',
     manager = ['DUENO', 'ADMINISTRADOR'].includes(role || '');
-  const [tab, setTab] = useState(cook ? 2 : 0);
+  const [params] = useSearchParams();
+  const initialTab = () =>
+    cook
+      ? params.get('tab') === 'catalog'
+        ? 3
+        : 2
+      : params.get('tab') === 'reservations' && allowReservations
+        ? 1
+        : params.get('tab') === 'menu'
+          ? 2
+          : params.get('tab') === 'catalog'
+            ? 3
+            : 0;
+  const [tab, setTab] = useState(initialTab);
+  useEffect(() => {
+    setTab(initialTab());
+  }, [params, cook, allowReservations]);
   const [products, setProducts] = useState<Product[]>([]);
   const [menus, setMenus] = useState<DailyMenu[]>([]);
   const [portions, setPortions] = useState<Portion[]>([]);
@@ -174,13 +198,25 @@ export function OperationsPage() {
               Servicio diario
             </Typography>
             <Typography variant='h4' component='h1'>
-              Atención del restaurante
+              {cook ? 'Menú y disponibilidad' : 'Atención del restaurante'}
             </Typography>
             <Typography color='text.secondary' mt={1}>
-              Mesas, pedidos y reservas en un solo lugar.
+              {cook
+                ? 'Menú del día, opciones y porciones disponibles.'
+                : 'Mesas, pedidos y reservas en un solo lugar.'}
             </Typography>
           </Box>
           <Stack direction='row' gap={1} flexWrap='wrap' alignItems='center'>
+            {cook && can('kitchen') && (
+              <Button
+                component={Link}
+                to='/kitchen'
+                variant='contained'
+                startIcon={<SoupKitchenOutlined />}
+              >
+                Ver comandas
+              </Button>
+            )}
             <Chip
               size='small'
               variant='outlined'
@@ -263,14 +299,30 @@ export function OperationsPage() {
           variant='scrollable'
           scrollButtons='auto'
         >
-          <Tab label='Cuentas y mesas' disabled={cook} />
           <Tab
+            icon={<TableRestaurantOutlined />}
+            iconPosition='start'
+            label='Cuentas y mesas'
+            disabled={cook}
+            sx={{ display: cook ? 'none' : undefined }}
+          />
+          <Tab
+            icon={<EventAvailableOutlined />}
+            iconPosition='start'
             label='Reservas'
             disabled={cook}
             sx={{ display: allowReservations ? undefined : 'none' }}
           />
-          <Tab label='Menú compuesto' />
-          <Tab label='Carta y disponibilidad' />
+          <Tab
+            icon={<MenuBookOutlined />}
+            iconPosition='start'
+            label='Menú compuesto'
+          />
+          <Tab
+            icon={<Inventory2Outlined />}
+            iconPosition='start'
+            label='Carta y disponibilidad'
+          />
         </Tabs>
         <fieldset
           disabled={busy || !loaded}

@@ -1,3 +1,8 @@
+import {
+  ReceiptLongOutlined,
+  PrintOutlined,
+  HistoryOutlined
+} from '@mui/icons-material';
 import { WorkspaceEmpty } from '@/components/operational/WorkspaceEmpty';
 import { useSearchParams } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
@@ -8,6 +13,8 @@ import {
   Container,
   MenuItem,
   Stack,
+  ToggleButton,
+  ToggleButtonGroup,
   TextField,
   Typography,
   CircularProgress
@@ -163,6 +170,8 @@ export function DocumentsPage() {
           {(['ACCOUNT', 'TICKET'] as const).map((kind) => (
             <Button
               key={kind}
+              startIcon={<ReceiptLongOutlined />}
+              variant={kind === 'ACCOUNT' ? 'contained' : 'outlined'}
               disabled={busy || !selected}
               onClick={() =>
                 void action(`/internal-documents/accounts/${selected}`, {
@@ -178,55 +187,23 @@ export function DocumentsPage() {
             </Button>
           ))}
         </Stack>
-        <Typography variant='h6'>Documentos emitidos ({total})</Typography>
-        {!rows.length && (
-          <WorkspaceEmpty
-            title='Sin documentos emitidos'
-            description='Las cuentas y tickets internos emitidos aparecerán aquí para consultarlos y reimprimirlos.'
-          />
-        )}
-        {rows.map((r) => (
-          <Button
-            key={r.id}
-            disabled={busy}
-            onClick={() =>
-              void action(`/internal-documents/${r.id}/reprint`, {})
-            }
-          >
-            {r.kind === 'ACCOUNT' ? 'Cuenta' : 'Ticket'} ·{' '}
-            {new Date(r.createdAt).toLocaleString('es-PE', {
-              timeZone: restaurant?.timeZone || 'America/Lima'
-            })}{' '}
-            · {r.id.slice(0, 8)}
-          </Button>
-        ))}
-        <Stack direction='row'>
-          <Button
-            disabled={busy || page === 1}
-            onClick={() => setPage((p) => p - 1)}
-          >
-            Anterior
-          </Button>
-          <Typography>Página {page}</Typography>
-          <Button
-            disabled={busy || page * 10 >= total}
-            onClick={() => setPage((p) => p + 1)}
-          >
-            Siguiente
-          </Button>
-        </Stack>
         {doc && (
           <>
-            <TextField
-              select
-              label='Formato de impresión'
+            <ToggleButtonGroup
+              exclusive
+              size='small'
               value={thermal ? 'thermal' : 'paper'}
-              onChange={(e) => setThermal(e.target.value === 'thermal')}
+              aria-label='Formato de impresión'
+              onChange={(_, value) => {
+                if (value) setThermal(value === 'thermal');
+              }}
             >
-              <MenuItem value='paper'>Papel común</MenuItem>
-              <MenuItem value='thermal'>Ticket 80 mm (preparación)</MenuItem>
-            </TextField>
+              <ToggleButton value='paper'>A4 / papel común</ToggleButton>
+              <ToggleButton value='thermal'>Ticket 80 mm</ToggleButton>
+            </ToggleButtonGroup>
             <Button
+              startIcon={<PrintOutlined />}
+              variant='contained'
               disabled={busy}
               onClick={async () => {
                 if (await action(`/internal-documents/${doc.id}/reprint`, {}))
@@ -244,6 +221,51 @@ export function DocumentsPage() {
             )}
           </>
         )}
+        <details className='operational-disclosure' open={!doc}>
+          <summary>
+            <HistoryOutlined />
+            Historial de documentos ({total})
+          </summary>
+          <div className='operational-disclosure-content'>
+            <Typography variant='h6'>Documentos emitidos ({total})</Typography>
+            {!rows.length && (
+              <WorkspaceEmpty
+                title='Sin documentos emitidos'
+                description='Las cuentas y tickets internos emitidos aparecerán aquí para consultarlos y reimprimirlos.'
+              />
+            )}
+            {rows.map((r) => (
+              <Button
+                key={r.id}
+                disabled={busy}
+                onClick={() =>
+                  void action(`/internal-documents/${r.id}/reprint`, {})
+                }
+              >
+                {r.kind === 'ACCOUNT' ? 'Cuenta' : 'Ticket'} ·{' '}
+                {new Date(r.createdAt).toLocaleString('es-PE', {
+                  timeZone: restaurant?.timeZone || 'America/Lima'
+                })}{' '}
+                · {r.id.slice(0, 8)}
+              </Button>
+            ))}
+            <Stack direction='row'>
+              <Button
+                disabled={busy || page === 1}
+                onClick={() => setPage((p) => p - 1)}
+              >
+                Anterior
+              </Button>
+              <Typography>Página {page}</Typography>
+              <Button
+                disabled={busy || page * 10 >= total}
+                onClick={() => setPage((p) => p + 1)}
+              >
+                Siguiente
+              </Button>
+            </Stack>
+          </div>
+        </details>
       </Stack>
     </Container>
   );

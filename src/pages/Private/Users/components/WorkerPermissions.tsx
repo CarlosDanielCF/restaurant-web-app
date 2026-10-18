@@ -1,3 +1,6 @@
+import AdminPanelSettingsOutlined from '@mui/icons-material/AdminPanelSettingsOutlined';
+import { permissionsForRole } from '@/hooks/roleCapabilities';
+import { useRestaurantStore } from '../../Common/store/restaurantStore';
 import { useState } from 'react';
 import {
   Alert,
@@ -14,6 +17,8 @@ import { restauranteApi } from '@/api';
 import { IUser } from '@/models/auth.model';
 import { permissionLabels } from '@/hooks/useWorkerAccess';
 export function WorkerPermissions({ user }: { user: IUser }) {
+  const restaurantId = useRestaurantStore((s) => s.restaurant?.id);
+  const [role, setRole] = useState('');
   const [open, setOpen] = useState(false),
     [denied, setDenied] = useState<string[]>([]),
     [version, setVersion] = useState(0),
@@ -22,9 +27,14 @@ export function WorkerPermissions({ user }: { user: IUser }) {
   async function load() {
     setOpen(true);
     setBusy(true);
+    setVersion(0);
     setError('');
     try {
       const { data } = await restauranteApi.get<IUser>(`/users/${user.id}`);
+      setRole(
+        data.restaurantRoles.find((r) => r.restaurant.id === restaurantId)?.role
+          .name || ''
+      );
       setDenied(data.deniedPermissions || []);
       setVersion(data.version || 0);
     } catch {
@@ -67,7 +77,11 @@ export function WorkerPermissions({ user }: { user: IUser }) {
   }
   return (
     <>
-      <Button onClick={() => void load()} size='small'>
+      <Button
+        startIcon={<AdminPanelSettingsOutlined />}
+        onClick={() => void load()}
+        size='small'
+      >
         Permisos
       </Button>
       <Dialog
@@ -85,10 +99,14 @@ export function WorkerPermissions({ user }: { user: IUser }) {
           </Alert>
           {error && <Alert severity='error'>{error}</Alert>}
           <Stack>
-            {Object.entries(permissionLabels).map(([key, label]) => (
+            {permissionsForRole(role).map((key) => (
               <FormControlLabel
                 key={key}
-                label={label}
+                label={
+                  role === 'COCINERO' && key === 'catalog.manage'
+                    ? 'Editar menú compuesto'
+                    : permissionLabels[key]
+                }
                 control={
                   <Checkbox
                     disabled={
@@ -115,7 +133,9 @@ export function WorkerPermissions({ user }: { user: IUser }) {
           </Button>
           <Button
             variant='contained'
-            disabled={busy || !version}
+            disabled={
+              busy || !version || !permissionsForRole(role).length || !!error
+            }
             onClick={() => void save()}
           >
             Guardar restricciones

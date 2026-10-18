@@ -33,7 +33,6 @@ export function OverviewPage() {
   const generation = useRef(0);
   const load = useCallback(async () => {
     const ticket = ++generation.current;
-    setData(undefined);
     setBusy(true);
     setError('');
     const date = new Intl.DateTimeFormat('en-CA', {
@@ -78,6 +77,7 @@ export function OverviewPage() {
     }
   }, [restaurant?.id, restaurant?.timeZone]);
   useEffect(() => {
+    setData(undefined);
     void load();
     return () => {
       generation.current++;
@@ -154,7 +154,7 @@ export function OverviewPage() {
                 />
                 <Typography>Rendiciones pendientes de revisión</Typography>
                 <Typography variant='h4'>{data.settlements}</Typography>
-                <Button component={Link} to='/finance'>
+                <Button component={Link} to='/finance?view=shifts'>
                   Revisar
                 </Button>
               </Card>
@@ -184,10 +184,7 @@ export function OverviewPage() {
                           {a.tables.map((t) => t.name).join(' + ') ||
                             operationalLabel(a.modality)}
                         </strong>
-                        <small>
-                          {a.id.slice(0, 8)} ·{' '}
-                          {operationalLabel(a.attentionStatus)}
-                        </small>
+                        <small>{operationalLabel(a.attentionStatus)}</small>
                       </div>
                       <span>
                         Consumo <strong>S/ {a.total}</strong>
@@ -195,6 +192,14 @@ export function OverviewPage() {
                       <span>
                         Saldo <strong>S/ {a.balance}</strong>
                       </span>
+                      {a.attentionStatus === 'OPEN' && (
+                        <Button
+                          component={Link}
+                          to={`/attention?accountId=${a.id}`}
+                        >
+                          Atender cuenta
+                        </Button>
+                      )}
                     </div>
                   ))
               )}

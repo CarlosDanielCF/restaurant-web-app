@@ -1,7 +1,9 @@
+import { Link } from 'react-router-dom';
 import { WorkerPermissions } from '../WorkerPermissions';
-import { FC, useEffect } from 'react';
+import { FC } from 'react';
 
 import {
+  Button,
   Avatar,
   Box,
   Card,
@@ -118,6 +120,14 @@ export const TableRowUser: FC<{ user: IUser }> = ({ user }) => {
                 <EditTwoToneIcon fontSize='small' />
               </IconButton>
             </Tooltip>
+            <Button
+              component={Link}
+              to={`/users/edit/${user.id}`}
+              startIcon={<EditTwoToneIcon />}
+              size='small'
+            >
+              Editar
+            </Button>
             <WorkerPermissions user={user} />
             <Tooltip title='Remover del restaurante' arrow>
               <IconButton
@@ -215,6 +225,14 @@ export const UserMobileCard: FC<{ user: IUser }> = ({ user }) => {
                   <EditTwoToneIcon fontSize='small' />
                 </IconButton>
               </Tooltip>
+              <Button
+                component={Link}
+                to={`/users/edit/${user.id}`}
+                startIcon={<EditTwoToneIcon />}
+                size='small'
+              >
+                Editar
+              </Button>
               <WorkerPermissions user={user} />
               <Tooltip title='Remover del restaurante'>
                 <IconButton
@@ -250,10 +268,6 @@ export const UsersTable: FC<Props> = () => {
   const updateList = () => {
     usersQuery.refetch();
   };
-
-  useEffect(() => {
-    updateList();
-  }, [page, rowsPerPage, search]);
 
   const hasUsers = usersQuery.data && usersQuery.data.count > 0;
 

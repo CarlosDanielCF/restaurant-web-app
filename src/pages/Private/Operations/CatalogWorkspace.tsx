@@ -1,8 +1,15 @@
+import { MoreOptions } from '@/components/operational/MoreOptions';
+import {
+  CheckCircleOutline,
+  RemoveCircleOutline,
+  SaveOutlined
+} from '@mui/icons-material';
 import { ServiceCatalog } from './ServiceCatalog';
 import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
+  DialogActions,
   DialogTitle,
   Button,
   Card,
@@ -95,6 +102,44 @@ export function CatalogWorkspace({
         products={products}
         action={manager || availability ? 'Gestionar' : 'Consultar'}
         onSelect={select}
+        secondaryAction={
+          availability
+            ? (p) => (
+                <Button
+                  fullWidth
+                  startIcon={
+                    p.status === 'AVAILABLE' ? (
+                      <RemoveCircleOutline />
+                    ) : (
+                      <CheckCircleOutline />
+                    )
+                  }
+                  color={p.status === 'AVAILABLE' ? 'warning' : 'success'}
+                  onClick={() => {
+                    if (p.trackStock && p.quantity <= 0) select(p.id);
+                    else
+                      void run(
+                        `/products/${p.id}`,
+                        {
+                          status:
+                            p.status === 'AVAILABLE'
+                              ? 'OUT_OF_STOCK'
+                              : 'AVAILABLE',
+                          expectedVersion: p.version
+                        },
+                        'patch'
+                      );
+                  }}
+                >
+                  {p.trackStock && p.quantity <= 0
+                    ? 'Configurar porciones'
+                    : p.status === 'AVAILABLE'
+                      ? 'Marcar agotado'
+                      : 'Marcar disponible'}
+                </Button>
+              )
+            : undefined
+        }
       />
       <details className='secondary-account-selector'>
         <summary>Seleccionar producto por nombre</summary>
@@ -135,6 +180,7 @@ export function CatalogWorkspace({
                   <TextField
                     select
                     label='Preparación / entrega'
+                    disabled={!manager}
                     value={product.productionRouting || 'PRODUCTION'}
                     onChange={(e) =>
                       setProduct({
@@ -221,7 +267,7 @@ export function CatalogWorkspace({
                     />
                   )}
                   {manager && (
-                    <>
+                    <MoreOptions title='Cortesías, acompañamientos, extras y combos'>
                       <FormControlLabel
                         label='Cortesía seleccionable (precio cero)'
                         control={
@@ -441,17 +487,24 @@ export function CatalogWorkspace({
                       >
                         Agregar componente al combo
                       </Button>
-                    </>
-                  )}
-                  {availability && (
-                    <Button variant='contained' onClick={() => void save()}>
-                      Guardar carta/disponibilidad
-                    </Button>
+                    </MoreOptions>
                   )}
                 </Stack>
               </CardContent>
             </Card>
           </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setProduct(null)}>Volver</Button>
+            {(manager || availability) && (
+              <Button
+                variant='contained'
+                startIcon={<SaveOutlined />}
+                onClick={() => void save()}
+              >
+                Guardar carta/disponibilidad
+              </Button>
+            )}
+          </DialogActions>
         </Dialog>
       )}
       <details className='service-details'>

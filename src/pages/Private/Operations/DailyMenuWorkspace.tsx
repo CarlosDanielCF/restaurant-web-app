@@ -2,6 +2,7 @@ import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
+  DialogActions,
   DialogTitle,
   Chip,
   Button,
@@ -343,38 +344,38 @@ export function DailyMenuWorkspace({
                   >
                     Agregar componente
                   </Button>
-                  <Stack direction='row' spacing={2}>
-                    <Button
-                      variant='contained'
-                      onClick={async () => {
-                        const { id, version, ...data } = draft;
-                        if (
-                          await run(
-                            `/daily-menus${id ? '/' + id : ''}`,
-                            {
-                              ...data,
-                              price: Number(data.price),
-                              isAvailable: !!data.isAvailable,
-                              ...(id ? { expectedVersion: version } : {})
-                            },
-                            id ? 'patch' : 'post'
-                          )
-                        ) {
-                          setDraft(blank());
-                          setEditor(false);
-                        }
-                      }}
-                    >
-                      Guardar menú compuesto
-                    </Button>
-                    <Button onClick={() => setDraft(blank())}>
-                      Nuevo / descartar edición
-                    </Button>
-                  </Stack>
                 </Stack>
               </CardContent>
             </Card>
           </DialogContent>
+          <DialogActions>
+            <Button
+              variant='contained'
+              onClick={async () => {
+                const { id, version, ...data } = draft;
+                if (
+                  await run(
+                    `/daily-menus${id ? '/' + id : ''}`,
+                    {
+                      ...data,
+                      price: Number(data.price),
+                      isAvailable: !!data.isAvailable,
+                      ...(id ? { expectedVersion: version } : {})
+                    },
+                    id ? 'patch' : 'post'
+                  )
+                ) {
+                  setDraft(blank());
+                  setEditor(false);
+                }
+              }}
+            >
+              Guardar menú compuesto
+            </Button>
+            <Button onClick={() => setDraft(blank())}>
+              Nuevo / descartar edición
+            </Button>
+          </DialogActions>
         </Dialog>
       )}
     </Stack>

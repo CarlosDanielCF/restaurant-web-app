@@ -23,7 +23,7 @@ export const menuSections: MenuSection[] = [
     title: 'Operación',
     items: [
       {
-        title: 'Atención, mesas y delivery',
+        title: 'Atención y pedidos',
         icon: <TableRestaurantOutlined />,
         to: '/attention',
         allowedRoles: service

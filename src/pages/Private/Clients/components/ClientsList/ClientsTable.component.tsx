@@ -1,3 +1,4 @@
+import { LocationOnOutlined, MailOutline } from '@mui/icons-material';
 import { FC } from 'react';
 
 import {
@@ -153,20 +154,25 @@ export const ClientMobileCard: FC<{ client: IClient }> = ({ client }) => {
 
       {client.address && (
         <Typography variant='body2' color='text.secondary' sx={{ mb: 0.5 }}>
-          📍 {client.address}
+          <LocationOnOutlined
+            fontSize='small'
+            sx={{ verticalAlign: 'middle' }}
+          />{' '}
+          {client.address}
         </Typography>
       )}
 
       {client.person?.email && (
         <Typography variant='body2' color='text.secondary' sx={{ mb: 1 }}>
-          ✉️ {client.person.email}
+          <MailOutline fontSize='small' sx={{ verticalAlign: 'middle' }} />{' '}
+          {client.person.email}
         </Typography>
       )}
 
       <Box display='flex' justifyContent='flex-end' pt={0.5}>
         <Tooltip title='Editar cliente'>
           <IconButton
-            size='small'
+            size='medium'
             color='primary'
             aria-label='Editar cliente'
             onClick={() => editClient(client)}

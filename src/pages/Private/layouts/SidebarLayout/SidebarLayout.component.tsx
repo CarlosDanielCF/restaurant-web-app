@@ -3,6 +3,7 @@ import { OperationalHeaderMeta } from './Header/OperationalHeaderMeta';
 import '../../final.css';
 import '../../../../styles/clean-pos.css';
 import '../../../../styles/point-workspaces.css';
+import '../../../../styles/operational-ux.css';
 import { FC, ReactNode, useContext, useEffect } from 'react';
 import {
   Box,
@@ -14,6 +15,7 @@ import {
 } from '@mui/material';
 import MenuTwoToneIcon from '@mui/icons-material/MenuTwoTone';
 import { Outlet, useLocation } from 'react-router-dom';
+import { Roles } from '@/models/roles';
 import { menuSections } from './data/MenuData';
 
 import Sidebar from './Sidebar/Sidebar.component';
@@ -31,13 +33,17 @@ interface SidebarLayoutProps {
 const SidebarLayout: FC<SidebarLayoutProps> = () => {
   const theme = useTheme();
   const location = useLocation();
+  const { user } = useAppSelector(selectAuth);
   const currentSection = menuSections
     .flatMap((section) => section.items)
-    .find((item) => location.pathname.startsWith(item.to))?.title;
+    .find(
+      (item) =>
+        item.allowedRoles?.includes(user?.role.name as Roles) &&
+        location.pathname.startsWith(item.to)
+    )?.title;
   const mobile = useMediaQuery(theme.breakpoints.down('lg'));
   const { toggleSidebar, closeSidebar } = useContext(SidebarContext);
   const restaurant = useRestaurantStore((state) => state.restaurant);
-  const { user } = useAppSelector(selectAuth);
 
   useEffect(() => {
     if (mobile) closeSidebar();

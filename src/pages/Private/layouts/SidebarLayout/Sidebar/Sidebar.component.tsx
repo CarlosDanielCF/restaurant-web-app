@@ -1,3 +1,4 @@
+import { routePermission, useWorkerAccess } from '@/hooks/useWorkerAccess';
 import { SoftwareBrand } from '@/components/branding/SoftwareBrand';
 import { useRestaurantImage } from '@/hooks/useRestaurantImage';
 import { Roles } from '@/models/roles';
@@ -280,6 +281,7 @@ const Title = ({ isCollapsed = false }: TitleProps) => {
 };
 
 function Sidebar() {
+  const can = useWorkerAccess();
   const { sidebarToggle, closeSidebar, isCollapsed, toggleCollapse } =
     useContext(SidebarContext);
 
@@ -481,6 +483,11 @@ function Sidebar() {
             <List component='nav' disablePadding>
               {menuSections
                 .flatMap((section) => section.items)
+                .filter(
+                  (item) =>
+                    !routePermission(item.to || '') ||
+                    can(routePermission(item.to || '')!)
+                )
                 .map((item: NavItem, index: number) => {
                   if (
                     item.allowedRoles &&

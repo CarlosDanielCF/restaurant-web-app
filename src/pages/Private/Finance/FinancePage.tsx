@@ -1,3 +1,6 @@
+import { MoreOptions } from '@/components/operational/MoreOptions';
+import ReceiptLongOutlined from '@mui/icons-material/ReceiptLongOutlined';
+import FactCheckOutlined from '@mui/icons-material/FactCheckOutlined';
 import PaymentsOutlined from '@mui/icons-material/PaymentsOutlined';
 import QrCode2Outlined from '@mui/icons-material/QrCode2Outlined';
 import CreditCardOutlined from '@mui/icons-material/CreditCardOutlined';
@@ -116,6 +119,7 @@ export function FinancePage() {
   const [params] = useSearchParams();
   const requestedAccount = params.get('accountId');
   const autoOpened = useRef(false);
+  const [advanced, setAdvanced] = useState(false);
   const [partial, setPartial] = useState(false);
   const user = useSelector(selectAuth).user;
   const restaurant = useRestaurantStore((s) => s.restaurant);
@@ -363,6 +367,10 @@ export function FinancePage() {
       openPayment();
     }
   }, [data, ready, requestedAccount, selected, params]);
+  useEffect(() => {
+    if (ready && params.get('view') === 'shifts')
+      document.getElementById('turnos')?.scrollIntoView();
+  }, [ready, params]);
   const disabled = busy || !ready;
   return (
     <Container maxWidth='xl' className='finance-operation' sx={{ py: 2 }}>
@@ -391,6 +399,28 @@ export function FinancePage() {
         )}
         {error && <Alert severity='error'>{error}</Alert>}
         {notice && <Alert severity='success'>{notice}</Alert>}
+        <Stack direction='row' gap={1} flexWrap='wrap'>
+          <Button
+            startIcon={<PaymentsOutlined />}
+            onClick={() =>
+              document
+                .getElementById('cuenta-cobro')
+                ?.scrollIntoView({ behavior: 'smooth' })
+            }
+          >
+            Cobrar cuenta
+          </Button>
+          <Button
+            startIcon={<FactCheckOutlined />}
+            onClick={() =>
+              document
+                .getElementById('turnos')
+                ?.scrollIntoView({ behavior: 'smooth' })
+            }
+          >
+            {manager ? 'Revisar rendiciones' : 'Mi turno y rendición'}
+          </Button>
+        </Stack>
         <details
           className='service-details'
           onToggle={(e) => setShowDebts(e.currentTarget.open)}
@@ -415,6 +445,7 @@ export function FinancePage() {
           </Alert>
         )}
         <TextField
+          id='cuenta-cobro'
           className='finance-account-select'
           select
           label='Cuenta de atención'
@@ -429,8 +460,8 @@ export function FinancePage() {
           <MenuItem value=''>Seleccione</MenuItem>
           {accounts.map((a) => (
             <MenuItem key={a.id} value={a.id}>
-              {a.tables.map((t) => t.name).join(', ') || a.modality} ·{' '}
-              {a.id.slice(0, 8)} · saldo S/{a.balance} · {a.attentionStatus}
+              {a.tables.map((t) => t.name).join(', ') || a.modality} · saldo S/
+              {a.balance} · {operationalLabel(a.attentionStatus)}
             </MenuItem>
           ))}
         </TextField>
@@ -526,213 +557,222 @@ export function FinancePage() {
                 >
                   Registrar {installment ? 'abono' : 'pago'}
                 </Button>
-                <Button
-                  disabled={disabled}
-                  onClick={() =>
-                    accountAction(
-                      'Descuento sobre consumos originales',
-                      'discounts',
-                      [
-                        amount,
-                        reason,
-                        {
-                          key: 'lineId',
-                          label: 'Producto (vacío: toda la cuenta)',
-                          optional: true,
-                          options: data.account.lines
-                            .filter((l) => l.status === 'ACTIVE')
-                            .map((l) => ({
-                              id: l.id,
-                              name: l.productSnapshot.name
-                            }))
-                        }
-                      ]
-                    )
-                  }
-                >
-                  Descuento
-                </Button>
-                <Button
-                  disabled={disabled || !own}
-                  onClick={() =>
-                    accountAction(
-                      'Devolución manual',
-                      'refunds',
-                      [
-                        {
-                          key: 'paymentId',
-                          label: 'Pago original',
-                          options: data.payments
-                            .filter((p) => p.collectorId === user?.id)
-                            .map((p) => ({
-                              id: p.id,
-                              name: `${p.method} S/${p.appliedAmount} · devuelto S/${p.refunded}`
-                            }))
-                        },
-                        amount,
-                        {
-                          key: 'method',
-                          label: 'Medio de devolución',
-                          options: methods
-                        },
-                        reason
-                      ],
-                      { shiftId: own?.shift.id },
-                      'Solo se permite devolver saldo a favor. No ejecuta una reversión externa.'
-                    )
-                  }
-                  color='error'
-                >
-                  Reembolso
-                </Button>
-                <Button
-                  disabled={disabled}
-                  onClick={() =>
-                    accountAction(
-                      'Registrar deuda',
-                      'debt',
-                      [
-                        reason,
-                        ...(!data.account.clientId
-                          ? [
-                              {
-                                key: 'clientId',
-                                label: 'Cliente identificado',
-                                options: clients.map((c) => ({
-                                  id: c.id,
-                                  name: `${c.person.firstName} ${c.person.lastName}`
-                                }))
-                              }
-                            ]
-                          : [])
-                      ],
-                      undefined,
-                      'Requiere cliente identificado. Registre primero cualquier pago inicial. Después cierre la atención con deuda desde Atención.'
-                    )
-                  }
-                >
-                  Registrar fiado
-                </Button>
-                <Button
-                  disabled={disabled || !own}
-                  onClick={() =>
-                    accountAction(
-                      'Propina voluntaria',
-                      'tips',
-                      [
-                        {
-                          key: 'paymentId',
-                          label: 'Cobro del beneficiario',
-                          options: data.payments
-                            .filter((p) => p.collectorId === user?.id)
-                            .map((p) => ({
-                              id: p.id,
-                              name: `${p.method} S/${p.appliedAmount}`
-                            }))
-                        },
-                        {
-                          key: 'kind',
-                          label: 'Tipo',
-                          options: [
-                            { id: 'DIRECT', name: 'Directa al mozo' },
-                            {
-                              id: 'DIGITAL_RECEIPT',
-                              name: 'Digital recibida por restaurante'
-                            }
-                          ]
-                        },
-                        amount,
-                        { key: 'method', label: 'Método', options: methods },
-                        {
-                          key: 'manuallyConfirmed',
-                          label: 'Yape: recepción verificada',
-                          optional: true,
-                          options: [
-                            { id: 'true', name: 'Sí, verificado visualmente' }
-                          ]
-                        }
-                      ],
-                      { shiftId: own?.shift.id }
-                    )
-                  }
-                >
-                  Propina
-                </Button>
-                {manager && (
+              </Stack>
+              <MoreOptions
+                title='Descuentos, propinas, fiado y devoluciones'
+                defaultOpen={advanced}
+                onToggle={setAdvanced}
+              >
+                <Stack direction='row' spacing={1} flexWrap='wrap'>
                   <Button
                     disabled={disabled}
                     onClick={() =>
                       accountAction(
-                        'Entrega de propina digital',
-                        'tip-payouts',
+                        'Descuento sobre consumos originales',
+                        'discounts',
+                        [
+                          amount,
+                          reason,
+                          {
+                            key: 'lineId',
+                            label: 'Producto (vacío: toda la cuenta)',
+                            optional: true,
+                            options: data.account.lines
+                              .filter((l) => l.status === 'ACTIVE')
+                              .map((l) => ({
+                                id: l.id,
+                                name: l.productSnapshot.name
+                              }))
+                          }
+                        ]
+                      )
+                    }
+                  >
+                    Descuento
+                  </Button>
+                  <Button
+                    disabled={disabled || !own}
+                    onClick={() =>
+                      accountAction(
+                        'Devolución manual',
+                        'refunds',
                         [
                           {
-                            key: 'sourceGratuityId',
-                            label: 'Propina pendiente',
-                            options: data.tips
-                              .filter((t) => t.kind === 'DIGITAL_RECEIPT')
-                              .map((t) => ({
-                                id: t.id,
-                                name: `S/${t.amount} · entregado S/${t.paidOut}`
+                            key: 'paymentId',
+                            label: 'Pago original',
+                            options: data.payments
+                              .filter((p) => p.collectorId === user?.id)
+                              .map((p) => ({
+                                id: p.id,
+                                name: `${p.method} S/${p.appliedAmount} · devuelto S/${p.refunded}`
                               }))
                           },
                           amount,
                           {
                             key: 'method',
-                            label: 'Medio de entrega',
+                            label: 'Medio de devolución',
                             options: methods
                           },
                           reason
                         ],
+                        { shiftId: own?.shift.id },
+                        'Solo se permite devolver saldo a favor. No ejecuta una reversión externa.'
+                      )
+                    }
+                    color='error'
+                  >
+                    Reembolso
+                  </Button>
+                  <Button
+                    disabled={disabled}
+                    onClick={() =>
+                      accountAction(
+                        'Registrar deuda',
+                        'debt',
+                        [
+                          reason,
+                          ...(!data.account.clientId
+                            ? [
+                                {
+                                  key: 'clientId',
+                                  label: 'Cliente identificado',
+                                  options: clients.map((c) => ({
+                                    id: c.id,
+                                    name: `${c.person.firstName} ${c.person.lastName}`
+                                  }))
+                                }
+                              ]
+                            : [])
+                        ],
                         undefined,
-                        'Registra dinero entregado por el restaurante al beneficiario. No se descuenta del efectivo que custodia el mozo.'
+                        'Requiere cliente identificado. Registre primero cualquier pago inicial. Después cierre la atención con deuda desde Atención.'
                       )
                     }
                   >
-                    Entregar propina digital
+                    Registrar fiado
                   </Button>
-                )}
-              </Stack>
-              {!data.account.clientId && (
-                <TextField
-                  label='Buscar cliente antes de registrar fiado'
-                  value={clientSearch}
-                  onChange={(e) => setClientSearch(e.target.value)}
-                  helperText='Busque el cliente y luego pulse Registrar fiado. Puede crearlo desde Clientes.'
-                />
-              )}
-              {!own && (
-                <Alert severity='warning'>
-                  Abra su turno para registrar cobros, reembolsos o propinas.
-                </Alert>
-              )}
-              <Stack direction='row' spacing={1} flexWrap='wrap'>
-                <TextField
-                  size='small'
-                  label='Personas'
-                  value={people}
-                  onChange={(e) => setPeople(e.target.value)}
-                />
-                <Button
-                  onClick={async () => {
-                    try {
-                      const { data: r } = await restauranteApi.get<{
-                        amounts: string[];
-                      }>(`${base}/split`, { params: { people } });
-                      setNotice(
-                        `División del saldo: ${r.amounts.map((a) => `S/${a}`).join(' + ')}. Registre cada importe al cobrar.`
-                      );
-                    } catch {
-                      setError('División inválida');
+                  <Button
+                    disabled={disabled || !own}
+                    onClick={() =>
+                      accountAction(
+                        'Propina voluntaria',
+                        'tips',
+                        [
+                          {
+                            key: 'paymentId',
+                            label: 'Cobro del beneficiario',
+                            options: data.payments
+                              .filter((p) => p.collectorId === user?.id)
+                              .map((p) => ({
+                                id: p.id,
+                                name: `${p.method} S/${p.appliedAmount}`
+                              }))
+                          },
+                          {
+                            key: 'kind',
+                            label: 'Tipo',
+                            options: [
+                              { id: 'DIRECT', name: 'Directa al mozo' },
+                              {
+                                id: 'DIGITAL_RECEIPT',
+                                name: 'Digital recibida por restaurante'
+                              }
+                            ]
+                          },
+                          amount,
+                          { key: 'method', label: 'Método', options: methods },
+                          {
+                            key: 'manuallyConfirmed',
+                            label: 'Yape: recepción verificada',
+                            optional: true,
+                            options: [
+                              { id: 'true', name: 'Sí, verificado visualmente' }
+                            ]
+                          }
+                        ],
+                        { shiftId: own?.shift.id }
+                      )
                     }
-                  }}
-                >
-                  Dividir saldo
-                </Button>
-              </Stack>
+                  >
+                    Propina
+                  </Button>
+                  {manager && (
+                    <Button
+                      disabled={disabled}
+                      onClick={() =>
+                        accountAction(
+                          'Entrega de propina digital',
+                          'tip-payouts',
+                          [
+                            {
+                              key: 'sourceGratuityId',
+                              label: 'Propina pendiente',
+                              options: data.tips
+                                .filter((t) => t.kind === 'DIGITAL_RECEIPT')
+                                .map((t) => ({
+                                  id: t.id,
+                                  name: `S/${t.amount} · entregado S/${t.paidOut}`
+                                }))
+                            },
+                            amount,
+                            {
+                              key: 'method',
+                              label: 'Medio de entrega',
+                              options: methods
+                            },
+                            reason
+                          ],
+                          undefined,
+                          'Registra dinero entregado por el restaurante al beneficiario. No se descuenta del efectivo que custodia el mozo.'
+                        )
+                      }
+                    >
+                      Entregar propina digital
+                    </Button>
+                  )}
+                </Stack>
+                {!data.account.clientId && (
+                  <TextField
+                    label='Buscar cliente antes de registrar fiado'
+                    value={clientSearch}
+                    onChange={(e) => setClientSearch(e.target.value)}
+                    helperText='Busque el cliente y luego pulse Registrar fiado. Puede crearlo desde Clientes.'
+                  />
+                )}
+                {!own && (
+                  <Alert severity='warning'>
+                    Abra su turno para registrar cobros, reembolsos o propinas.
+                  </Alert>
+                )}
+                <Stack direction='row' spacing={1} flexWrap='wrap'>
+                  <TextField
+                    size='small'
+                    label='Personas'
+                    value={people}
+                    onChange={(e) => setPeople(e.target.value)}
+                  />
+                  <Button
+                    onClick={async () => {
+                      try {
+                        const { data: r } = await restauranteApi.get<{
+                          amounts: string[];
+                        }>(`${base}/split`, { params: { people } });
+                        setNotice(
+                          `División del saldo: ${r.amounts.map((a) => `S/${a}`).join(' + ')}. Registre cada importe al cobrar.`
+                        );
+                      } catch {
+                        setError('División inválida');
+                      }
+                    }}
+                  >
+                    Dividir saldo
+                  </Button>
+                </Stack>
+              </MoreOptions>
               <Stack direction='row' gap={1} flexWrap='wrap'>
                 <Button
                   component={Link}
+                  startIcon={<ReceiptLongOutlined />}
                   to={`/internal-documents?accountId=${selected}`}
                 >
                   Ver cuenta
@@ -814,7 +854,9 @@ export function FinancePage() {
             </div>
           </Paper>
         )}
-        <Typography variant='h4'>Turnos y rendiciones</Typography>
+        <Typography id='turnos' variant='h4' sx={{ scrollMarginTop: 12 }}>
+          Turnos y rendiciones
+        </Typography>
         <Button
           disabled={disabled || !!own}
           onClick={() => void run('/finance/shifts', { workerId: user?.id })}
@@ -834,7 +876,8 @@ export function FinancePage() {
                 Trabajador{' '}
                 {s.shift.workerId === user?.id
                   ? 'Yo'
-                  : workerNames[s.shift.workerId] || s.shift.workerId}{' '}
+                  : workerNames[s.shift.workerId] ||
+                    'Trabajador registrado'}{' '}
                 · {operationalLabel(s.shift.status)}
               </Typography>
               <div className='pos-shift-summary'>
@@ -1221,6 +1264,7 @@ export function FinancePage() {
                       <Chip
                         key={m.id}
                         clickable
+                        aria-pressed={part.method === m.id}
                         icon={
                           m.id === 'CASH' ? (
                             <PaymentsOutlined />
@@ -1375,7 +1419,12 @@ export function FinancePage() {
                     Agregar método para pago mixto
                   </Button>
                 )}
-                <Button onClick={() => setPayment(false)}>
+                <Button
+                  onClick={() => {
+                    setPayment(false);
+                    setAdvanced(true);
+                  }}
+                >
                   Más opciones: dividir, propina, fiado o descuento
                 </Button>
               </Stack>

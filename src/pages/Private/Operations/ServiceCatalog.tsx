@@ -1,6 +1,6 @@
 import RestaurantOutlined from '@mui/icons-material/RestaurantOutlined';
 import { WorkspaceEmpty } from '@/components/operational/WorkspaceEmpty';
-import { useState } from 'react';
+import { ReactNode, useState } from 'react';
 import {
   Box,
   Button,
@@ -16,11 +16,13 @@ import { Product } from './types';
 function ProductTile({
   product,
   onSelect,
-  action
+  action,
+  secondaryAction
 }: {
   product: Product;
   onSelect: (id: string, quantity?: number, notes?: string) => void;
   action: string;
+  secondaryAction?: (product: Product) => ReactNode;
 }) {
   const [quantity, setQuantity] = useState(1),
     [notes, setNotes] = useState(''),
@@ -107,6 +109,7 @@ function ProductTile({
             )}
           </>
         )}
+        {secondaryAction?.(product)}
         <Button
           variant='outlined'
           fullWidth
@@ -123,11 +126,13 @@ function ProductTile({
 export function ServiceCatalog({
   products,
   onSelect,
-  action = 'Agregar'
+  action = 'Agregar',
+  secondaryAction
 }: {
   products: Product[];
   onSelect: (id: string, quantity?: number, notes?: string) => void;
   action?: string;
+  secondaryAction?: (product: Product) => ReactNode;
 }) {
   const restaurantName = useRestaurantStore((s) => s.restaurant?.name);
   const [search, setSearch] = useState(''),
@@ -190,6 +195,7 @@ export function ServiceCatalog({
               product={p}
               onSelect={onSelect}
               action={action}
+              secondaryAction={secondaryAction}
             />
           ))}
         </Box>

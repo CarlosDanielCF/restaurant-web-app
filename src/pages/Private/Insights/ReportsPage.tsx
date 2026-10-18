@@ -1,3 +1,10 @@
+import { MoreOptions } from '@/components/operational/MoreOptions';
+import {
+  FilterAltOutlined,
+  TodayOutlined,
+  RestartAltOutlined,
+  AssessmentOutlined
+} from '@mui/icons-material';
 import { WorkspaceEmpty } from '@/components/operational/WorkspaceEmpty';
 import { operationalLabel } from './labels';
 import { useEffect, useState } from 'react';
@@ -265,7 +272,10 @@ export function ReportsPage() {
       </nav>
       <Stack spacing={2} className='pos-report-content'>
         <Typography variant='h4'>Reportes operativos</Typography>
-        <Typography variant='h6'>{kinds[kind]}</Typography>
+        <Typography variant='h6'>
+          <AssessmentOutlined sx={{ verticalAlign: 'middle', mr: 1 }} />
+          {kinds[kind]}
+        </Typography>
         <Alert severity='info'>
           Venta, cobro, deuda, cuota, reembolso, propina y custodia son
           conceptos distintos. Los importes se calculan en servidor. Zona
@@ -284,6 +294,43 @@ export function ReportsPage() {
             </MenuItem>
           ))}
         </TextField>
+        <Stack direction='row' gap={1} flexWrap='wrap'>
+          <Button
+            startIcon={<TodayOutlined />}
+            disabled={busy}
+            onClick={() => {
+              const next = { ...filters, from: today, to: today };
+              setFilters(next);
+              setAppliedFilters(next);
+              setPage(1);
+              setRevision((n) => n + 1);
+            }}
+          >
+            Hoy
+          </Button>
+          <Button
+            startIcon={<RestartAltOutlined />}
+            disabled={busy}
+            onClick={() => {
+              const next = {
+                from: today.slice(0, 8) + '01',
+                to: today,
+                userId: '',
+                responsibleUserId: '',
+                method: '',
+                modality: '',
+                status: '',
+                movementType: ''
+              };
+              setFilters(next);
+              setAppliedFilters(next);
+              setPage(1);
+              setRevision((n) => n + 1);
+            }}
+          >
+            Este mes · limpiar filtros
+          </Button>
+        </Stack>
         <Stack
           className='report-filters'
           direction={{ xs: 'column', md: 'row' }}
@@ -304,107 +351,120 @@ export function ReportsPage() {
             value={filters.to}
             onChange={(e) => update('to', e.target.value)}
           />
-          {role !== 'MOZO' && (
-            <TextField
-              select
-              label='Usuario (opcional)'
-              value={filters.userId}
-              onChange={(e) => update('userId', e.target.value)}
+          <MoreOptions title='Filtros adicionales: usuario, método, modalidad y estado'>
+            <Stack
+              direction={{ xs: 'column', md: 'row' }}
+              gap={1}
+              flexWrap='wrap'
             >
-              <MenuItem value=''>Todos</MenuItem>
-              {workers.map((w) => (
-                <MenuItem key={w.id} value={w.id}>
-                  {w.name}
-                  {!w.isActive ? ' (inactivo)' : ''}
-                </MenuItem>
-              ))}
-            </TextField>
-          )}
-          {!noModality.includes(kind) && role !== 'MOZO' && (
-            <TextField
-              select
-              label='Responsable (opcional)'
-              value={filters.responsibleUserId}
-              onChange={(e) => update('responsibleUserId', e.target.value)}
-            >
-              <MenuItem value=''>Todos</MenuItem>
-              {workers.map((w) => (
-                <MenuItem key={w.id} value={w.id}>
-                  {w.name}
-                </MenuItem>
-              ))}
-            </TextField>
-          )}
-          {methodKinds.includes(kind) && (
-            <TextField
-              select
-              label='Método'
-              value={filters.method}
-              onChange={(e) => update('method', e.target.value)}
-            >
-              <MenuItem value=''>Todos</MenuItem>
-              {['CASH', 'YAPE', 'CARD'].map((m) => (
-                <MenuItem key={m} value={m}>
-                  {operationalLabel(m)}
-                </MenuItem>
-              ))}
-            </TextField>
-          )}
-          {!noModality.includes(kind) && (
-            <TextField
-              select
-              label='Modalidad'
-              value={filters.modality}
-              onChange={(e) => update('modality', e.target.value)}
-            >
-              <MenuItem value=''>Todas</MenuItem>
-              {['TABLE', 'TAKE_AWAY', 'OWN_DELIVERY', 'EXTERNAL_COURIER'].map(
-                (m) => (
-                  <MenuItem key={m} value={m}>
-                    {operationalLabel(m)}
-                  </MenuItem>
-                )
+              {role !== 'MOZO' && (
+                <TextField
+                  select
+                  label='Usuario (opcional)'
+                  value={filters.userId}
+                  onChange={(e) => update('userId', e.target.value)}
+                >
+                  <MenuItem value=''>Todos</MenuItem>
+                  {workers.map((w) => (
+                    <MenuItem key={w.id} value={w.id}>
+                      {w.name}
+                      {!w.isActive ? ' (inactivo)' : ''}
+                    </MenuItem>
+                  ))}
+                </TextField>
               )}
-            </TextField>
-          )}
-          {states[kind] && (
-            <TextField
-              select
-              label='Estado'
-              value={filters.status}
-              onChange={(e) => update('status', e.target.value)}
-            >
-              <MenuItem value=''>Todos</MenuItem>
-              {states[kind].map((s) => (
-                <MenuItem key={s} value={s}>
-                  {operationalLabel(s)}
-                </MenuItem>
-              ))}
-            </TextField>
-          )}
-          {types[kind] && (
-            <TextField
-              select
-              label='Tipo de movimiento'
-              value={filters.movementType}
-              onChange={(e) => update('movementType', e.target.value)}
-            >
-              <MenuItem value=''>Todos</MenuItem>
-              {types[kind].map((s) => (
-                <MenuItem key={s} value={s}>
-                  {operationalLabel(s)}
-                </MenuItem>
-              ))}
-            </TextField>
-          )}
-          {kind === 'audit' && (
-            <TextField
-              label='Acción (opcional)'
-              value={filters.movementType}
-              onChange={(e) => update('movementType', e.target.value)}
-            />
-          )}
+              {!noModality.includes(kind) && role !== 'MOZO' && (
+                <TextField
+                  select
+                  label='Responsable (opcional)'
+                  value={filters.responsibleUserId}
+                  onChange={(e) => update('responsibleUserId', e.target.value)}
+                >
+                  <MenuItem value=''>Todos</MenuItem>
+                  {workers.map((w) => (
+                    <MenuItem key={w.id} value={w.id}>
+                      {w.name}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              )}
+              {methodKinds.includes(kind) && (
+                <TextField
+                  select
+                  label='Método'
+                  value={filters.method}
+                  onChange={(e) => update('method', e.target.value)}
+                >
+                  <MenuItem value=''>Todos</MenuItem>
+                  {['CASH', 'YAPE', 'CARD'].map((m) => (
+                    <MenuItem key={m} value={m}>
+                      {operationalLabel(m)}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              )}
+              {!noModality.includes(kind) && (
+                <TextField
+                  select
+                  label='Modalidad'
+                  value={filters.modality}
+                  onChange={(e) => update('modality', e.target.value)}
+                >
+                  <MenuItem value=''>Todas</MenuItem>
+                  {[
+                    'TABLE',
+                    'TAKE_AWAY',
+                    'OWN_DELIVERY',
+                    'EXTERNAL_COURIER'
+                  ].map((m) => (
+                    <MenuItem key={m} value={m}>
+                      {operationalLabel(m)}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              )}
+              {states[kind] && (
+                <TextField
+                  select
+                  label='Estado'
+                  value={filters.status}
+                  onChange={(e) => update('status', e.target.value)}
+                >
+                  <MenuItem value=''>Todos</MenuItem>
+                  {states[kind].map((s) => (
+                    <MenuItem key={s} value={s}>
+                      {operationalLabel(s)}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              )}
+              {types[kind] && (
+                <TextField
+                  select
+                  label='Tipo de movimiento'
+                  value={filters.movementType}
+                  onChange={(e) => update('movementType', e.target.value)}
+                >
+                  <MenuItem value=''>Todos</MenuItem>
+                  {types[kind].map((s) => (
+                    <MenuItem key={s} value={s}>
+                      {operationalLabel(s)}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              )}
+              {kind === 'audit' && (
+                <TextField
+                  label='Acción (opcional)'
+                  value={filters.movementType}
+                  onChange={(e) => update('movementType', e.target.value)}
+                />
+              )}
+            </Stack>
+          </MoreOptions>
           <Button
+            startIcon={<FilterAltOutlined />}
+            variant='contained'
             disabled={busy}
             onClick={() => {
               setPage(1);
@@ -438,35 +498,73 @@ export function ReportsPage() {
                 description='Ajusta las fechas o los filtros para consultar otro período.'
               />
             ) : (
-              <TableContainer component={Paper}>
-                <Table size='small'>
-                  <TableHead>
-                    <TableRow>
-                      {visibleColumns.map((k) => (
-                        <TableCell key={k}>{columns[k] || k}</TableCell>
-                      ))}
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {result.rows.map((r, i) => (
-                      <TableRow key={String(r.id || r.productId || i)}>
+              <>
+                <TableContainer
+                  component={Paper}
+                  sx={{ display: { xs: 'none', sm: 'block' } }}
+                >
+                  <Table size='small'>
+                    <TableHead>
+                      <TableRow>
                         {visibleColumns.map((k) => (
-                          <TableCell
-                            key={k}
-                            sx={{
-                              minWidth: 100,
-                              maxWidth: 480,
-                              overflowWrap: 'anywhere'
-                            }}
-                          >
-                            {cell(k, r[k])}
-                          </TableCell>
+                          <TableCell key={k}>{columns[k] || k}</TableCell>
                         ))}
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+                    </TableHead>
+                    <TableBody>
+                      {result.rows.map((r, i) => (
+                        <TableRow key={String(r.id || r.productId || i)}>
+                          {visibleColumns.map((k) => (
+                            <TableCell
+                              key={k}
+                              sx={{
+                                minWidth: 100,
+                                maxWidth: 480,
+                                overflowWrap: 'anywhere'
+                              }}
+                            >
+                              {cell(k, r[k])}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+                <Stack
+                  spacing={1}
+                  sx={{ display: { xs: 'flex', sm: 'none' } }}
+                  aria-label='Resultados del reporte'
+                >
+                  {result.rows.map((r, i) => (
+                    <Paper
+                      key={String(r.id || r.productId || i)}
+                      className='report-mobile-card'
+                    >
+                      <dl>
+                        {visibleColumns.slice(0, 4).map((k) => (
+                          <div key={k}>
+                            <dt>{columns[k] || k}</dt>
+                            <dd>{cell(k, r[k])}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                      {visibleColumns.length > 4 && (
+                        <MoreOptions title='Ver todos los datos del movimiento'>
+                          <dl>
+                            {visibleColumns.slice(4).map((k) => (
+                              <div key={k}>
+                                <dt>{columns[k] || k}</dt>
+                                <dd>{cell(k, r[k])}</dd>
+                              </div>
+                            ))}
+                          </dl>
+                        </MoreOptions>
+                      )}
+                    </Paper>
+                  ))}
+                </Stack>
+              </>
             )}
             <Stack direction='row'>
               <Button
