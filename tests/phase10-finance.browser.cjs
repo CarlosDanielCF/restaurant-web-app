@@ -126,6 +126,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
     await page
       .getByRole('button', { name: 'Registrar pago', exact: true })
       .click();
+    await page.getByRole('button',{name:'Pago parcial o mixto',exact:true}).click();
     await page.getByLabel('Importe aplicado S/').fill('10.00');
     await page.getByLabel('Importe recibido S/').fill('20.00');
     const paymentKeys = [];
@@ -150,6 +151,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
     await page
       .getByRole('button', { name: 'Registrar pago', exact: true })
       .click();
+    await page.getByRole('button',{name:'Pago parcial o mixto',exact:true}).click();
     await page.getByLabel('Importe aplicado S/').fill('10.00');
     await page.getByLabel('Importe recibido S/').fill('20.00');
     await page.waitForFunction(() =>
@@ -174,11 +176,22 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
     await page
       .getByRole('button', { name: 'Registrar pago', exact: true })
       .click();
-    await page.getByLabel('Método', { exact: true }).click();
-    await page.getByRole('option', { name: 'Yape manual' }).click();
-    await page.getByLabel('Importe aplicado S/').fill('10.00');
-    await page.getByLabel('Importe recibido S/').fill('10.00');
-    await page.getByText(/Sin QR disponible/).waitFor();
+    await page.getByRole('dialog').getByText('Yape manual',{exact:true}).click();
+    await page.getByText(/Este restaurante aún no tiene QR Yape configurado/).waitFor();
+    // A fixture image verifies configured-asset rendering, not an actual bank QR.
+    const sharp=require(path.join(backend,'node_modules/sharp'));
+    const png=await sharp({create:{width:80,height:80,channels:3,background:'#123456'}}).png().toBuffer();
+    const config=await req('/restaurant');
+    const form=new FormData();form.append('file',new Blob([png],{type:'image/png'}),'test-qr.png');
+    const upload=await fetch(base+`/restaurant/yape-qr/${tenant}`,{method:'PATCH',headers:{Authorization:'Bearer '+owner.token,'x-restaurant-id':tenant,'If-Match':String(config.version)},body:form});
+    if(!upload.ok)throw Error('Fixture QR upload failed');
+    await page.getByRole('button',{name:'Volver',exact:true}).click();
+    await page.getByRole('button',{name:'Revalidar información',exact:true}).click();
+    await page.getByRole('button',{name:'Registrar pago',exact:true}).click();
+    await page.getByRole('dialog').getByText('Yape manual',{exact:true}).click();
+    await page.getByAltText('QR original de Yape del restaurante').waitFor();
+    await page.waitForFunction(()=>{const image=document.querySelector('img[alt="QR original de Yape del restaurante"]');return image && image.naturalWidth===80;});
+
     if (
       await page
         .getByRole('button', { name: 'Confirmar cobro manual' })
@@ -314,6 +327,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
     await page
       .getByRole('button', { name: 'Registrar abono', exact: true })
       .click();
+    await page.getByRole('button',{name:'Pago parcial o mixto',exact:true}).click();
     await page.getByLabel('Importe aplicado S/').fill('5.00');
     await page.getByLabel('Importe recibido S/').fill('5.00');
     await submit('/installments', 'Confirmar cobro manual');

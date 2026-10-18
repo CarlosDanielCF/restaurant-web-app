@@ -151,11 +151,12 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
       .click();
     await b.p
       .locator('.current-order-card')
-      .getByText(/Café preparado UX/)
+      .getByText(/Café preparado UX/).first()
       .waitFor();
     await a.p
       .getByRole('button', { name: 'Agregar Agua directa UX', exact: true })
       .click();
+    await a.p.getByRole('button', {name:/^Pedido actual ·/}).click();
     await a.p
       .getByRole('button', {
         name: 'Confirmar consumos y enviar a producción',
@@ -164,11 +165,11 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
       .click();
     await tv.p
       .locator('.kitchen-ticket')
-      .getByText(/Café preparado UX/)
+      .getByText(/Café preparado UX/).first()
       .waitFor();
     await mobile.p
       .locator('.kitchen-ticket')
-      .getByText(/Café preparado UX/)
+      .getByText(/Café preparado UX/).first()
       .waitFor();
     assert.equal(
       await tv.p

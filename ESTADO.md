@@ -82,3 +82,7 @@ Mesa → cuenta atómica → catálogo, responsable mozo automático, ruteo de p
 ## Punto Mar — presentación local
 
 Cliente independiente de Point Restaurant, catálogo real y selección rápida de presentaciones. Ver [PUNTO-MAR.md](PUNTO-MAR.md). Backend añade tradeName y seed aislado/idempotente; requiere 17 migraciones. Fotografías pendientes por bloqueo de acceso/licencias, sin imágenes inventadas. Sin push/merge.
+
+## F10 — revisión operativa posterior a Punto Mar (2026-10-18)
+
+Mesas semánticas, borradores agrupables/editables, catálogo con cantidad/nota, salidas directas, sonido de cocina desbloqueado/deduplicado y cobro contextual simplificado. Requiere backend coordinado y migración 18. Evidencia, flujos, límites y archivos conservados: [F10-OPERATIVE-REVIEW.md](F10-OPERATIVE-REVIEW.md). Solo ramas de revisión; sin push/merge.

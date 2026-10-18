@@ -3,7 +3,7 @@ import { WorkspaceEmpty } from '@/components/operational/WorkspaceEmpty';
 import { operationalLabel } from '../Insights/labels';
 import { DebtCards } from './DebtCards';
 import '../Operations/cycle2.css';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { cents, difference, displayCents, sumMoney } from './displayMoney';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import {
@@ -109,6 +109,10 @@ const methods = [
   { id: 'CARD', name: 'Tarjeta / POS manual' }
 ];
 export function FinancePage() {
+  const [params] = useSearchParams();
+  const requestedAccount = params.get('accountId');
+  const autoOpened = useRef(false);
+  const [partial, setPartial] = useState(false);
   const user = useSelector(selectAuth).user;
   const restaurant = useRestaurantStore((s) => s.restaurant);
   const manager = ['DUENO', 'ADMINISTRADOR'].includes(user?.role.name || '');
@@ -152,8 +156,7 @@ export function FinancePage() {
     [courierId, setCourierId] = useState('');
   useEffect(() => {
     let active = true;
-    setCourierCash(false);
-    setCourierId('');
+
     if (
       selected &&
       data?.account.modality &&
@@ -171,6 +174,11 @@ export function FinancePage() {
       active = false;
     };
   }, [selected, data?.account.modality, data?.account.version]);
+  useEffect(() => {
+    setCourierCash(false);
+    setCourierId('');
+    setLineIds([]);
+  }, [selected]);
   const [people, setPeople] = useState('2');
   const [showDebts, setShowDebts] = useState(false);
   const [clientSearch, setClientSearch] = useState('');
@@ -236,7 +244,11 @@ export function FinancePage() {
     };
   }, [refresh]);
   useLiveRefresh(refresh, ['finance.changed', 'attention.changed']);
-  const run = async (path: string, body: Record<string, unknown>) => {
+  const run = async (
+    path: string,
+    body: Record<string, unknown>,
+    keepPayment = false
+  ) => {
     if (lock.current || !ready) return;
     lock.current = true;
     setBusy(true);
@@ -265,7 +277,7 @@ export function FinancePage() {
       delete pending[signature];
       sessionStorage.setItem(storage, JSON.stringify(pending));
       setAction(undefined);
-      setPayment(false);
+      if (!keepPayment) setPayment(false);
       setNotice('Operación confirmada por el servidor.');
       await refresh();
     } catch (e) {
@@ -305,6 +317,47 @@ export function FinancePage() {
       version: data?.account.version,
       explanation
     });
+  const openPayment = () => {
+    if (!data) return;
+    setPayVersion(data.account.version);
+    setParts([
+      {
+        method: 'CASH',
+        amount: lineIds.length
+          ? sumMoney(
+              data.lineBalances
+                .filter((l) => lineIds.includes(l.lineId))
+                .map((l) => l.remaining)
+            )
+          : data.account.balance,
+        receivedAmount: ''
+      }
+    ]);
+    setPartial(lineIds.length > 0);
+    setManual(false);
+    setAdminReason('');
+    setPayment(true);
+  };
+  useEffect(() => {
+    if (
+      requestedAccount &&
+      !selected &&
+      accounts.some((a) => a.id === requestedAccount)
+    )
+      setSelected(requestedAccount);
+  }, [accounts, requestedAccount, selected]);
+  useEffect(() => {
+    if (
+      !autoOpened.current &&
+      params.get('pay') === '1' &&
+      requestedAccount === selected &&
+      data?.account.id === selected &&
+      ready
+    ) {
+      autoOpened.current = true;
+      openPayment();
+    }
+  }, [data, ready, requestedAccount, selected, params]);
   const disabled = busy || !ready;
   return (
     <Container maxWidth='xl' className='finance-operation' sx={{ py: 2 }}>
@@ -462,17 +515,9 @@ export function FinancePage() {
               </Typography>
               <Stack direction='row' spacing={1} flexWrap='wrap'>
                 <Button
-                  disabled={disabled || !own}
+                  disabled={disabled}
                   variant='contained'
-                  onClick={() => {
-                    setPayVersion(data.account.version);
-                    setParts([
-                      { method: 'CASH', amount: '', receivedAmount: '' }
-                    ]);
-                    setManual(false);
-                    setAdminReason('');
-                    setPayment(true);
-                  }}
+                  onClick={openPayment}
                 >
                   Registrar {installment ? 'abono' : 'pago'}
                 </Button>
@@ -769,7 +814,7 @@ export function FinancePage() {
           disabled={disabled || !!own}
           onClick={() => void run('/finance/shifts', { workerId: user?.id })}
         >
-          Abrir mi turno
+          {own ? 'Mi turno actual · abierto' : 'Abrir mi turno'}
         </Button>
         {ready && shifts.length === 0 && (
           <WorkspaceEmpty
@@ -1105,7 +1150,9 @@ export function FinancePage() {
           fullWidth
         >
           <DialogTitle>
-            {installment ? 'Registrar abono' : 'Confirmar dinero recibido'}
+            {installment
+              ? 'Registrar abono'
+              : `Cobrar ${data?.account.tables?.map((t) => t.name).join(' + ') || 'cuenta'}`}
           </DialogTitle>
           <DialogContent>
             {error && <Alert severity='error'>{error}</Alert>}
@@ -1114,9 +1161,23 @@ export function FinancePage() {
                 <Typography variant='caption'>SALDO ACTUAL</Typography>
                 <Typography variant='h5'>S/ {data?.account.balance}</Typography>
                 <Typography variant='body2'>
-                  Cobrador: {user?.person.firstName || user?.id}
+                  Cobrador: {user?.person.firstName || 'Usuario actual'}
                 </Typography>
               </Paper>
+              {!own && (
+                <Alert severity='info'>
+                  Para atribuir este cobro a tu rendición necesitas un turno
+                  abierto.
+                  <Button
+                    disabled={busy}
+                    onClick={() =>
+                      void run('/finance/shifts', { workerId: user?.id }, true)
+                    }
+                  >
+                    Abrir turno y continuar
+                  </Button>
+                </Alert>
+              )}
               {installment && (
                 <Alert severity='info'>
                   Abono a deuda existente. No registra una segunda venta.
@@ -1157,49 +1218,50 @@ export function FinancePage() {
                         onClick={() =>
                           setParts((p) =>
                             p.map((v, j) =>
-                              j === i ? { ...v, method: m.id } : v
+                              j === i
+                                ? {
+                                    ...v,
+                                    method: m.id,
+                                    receivedAmount:
+                                      m.id === 'CASH' ? '' : v.amount
+                                  }
+                                : v
                             )
                           )
                         }
                       />
                     ))}
                   </Stack>
-                  <TextField
-                    select
-                    label='Método'
-                    value={part.method}
-                    onChange={(e) =>
-                      setParts((p) =>
-                        p.map((v, j) =>
-                          j === i ? { ...v, method: e.target.value } : v
-                        )
-                      )
-                    }
-                  >
-                    {methods.map((m) => (
-                      <MenuItem key={m.id} value={m.id}>
-                        {m.name}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                  {(['amount', 'receivedAmount'] as const).map((key) => (
-                    <TextField
-                      key={key}
-                      label={
-                        key === 'amount'
-                          ? 'Importe aplicado S/'
-                          : 'Importe recibido S/'
-                      }
-                      value={part[key]}
-                      onChange={(e) =>
-                        setParts((p) =>
-                          p.map((v, j) =>
-                            i === j ? { ...v, [key]: e.target.value } : v
+                  {(['amount', 'receivedAmount'] as const)
+                    .filter((key) =>
+                      key === 'amount' ? partial : part.method === 'CASH'
+                    )
+                    .map((key) => (
+                      <TextField
+                        key={key}
+                        label={
+                          key === 'amount'
+                            ? 'Importe aplicado S/'
+                            : 'Importe recibido S/'
+                        }
+                        value={part[key]}
+                        onChange={(e) =>
+                          setParts((p) =>
+                            p.map((v, j) =>
+                              i === j
+                                ? {
+                                    ...v,
+                                    [key]: e.target.value,
+                                    ...(key === 'amount' && v.method !== 'CASH'
+                                      ? { receivedAmount: e.target.value }
+                                      : {})
+                                  }
+                                : v
+                            )
                           )
-                        )
-                      }
-                    />
-                  ))}
+                        }
+                      />
+                    ))}
                   {part.method === 'CASH' && (
                     <Typography className='cash-change'>
                       Vuelto estimado: S/{' '}
@@ -1222,16 +1284,26 @@ export function FinancePage() {
                 )}
                 . El servidor valida el importe final.
               </Typography>
-              <Button
-                disabled={parts.length >= 20}
-                onClick={() =>
-                  setParts((p) => [
-                    ...p,
-                    { method: 'CASH', amount: '', receivedAmount: '' }
-                  ])
-                }
-              >
-                Agregar método para pago mixto
+              {!partial && (
+                <Button onClick={() => setPartial(true)}>
+                  Pago parcial o mixto
+                </Button>
+              )}
+              {partial && (
+                <Button
+                  disabled={parts.length >= 20}
+                  onClick={() =>
+                    setParts((p) => [
+                      ...p,
+                      { method: 'CASH', amount: '', receivedAmount: '' }
+                    ])
+                  }
+                >
+                  Agregar método para pago mixto
+                </Button>
+              )}
+              <Button onClick={() => setPayment(false)}>
+                Más opciones: dividir, propina, fiado o descuento
               </Button>
               {parts.some((p) => p.method === 'YAPE') && (
                 <>
@@ -1240,16 +1312,21 @@ export function FinancePage() {
                       component='img'
                       src={qr}
                       alt='QR original de Yape del restaurante'
-                      sx={{ maxWidth: 280, alignSelf: 'center' }}
+                      sx={{
+                        width: '100%',
+                        maxWidth: 360,
+                        objectFit: 'contain',
+                        alignSelf: 'center'
+                      }}
                     />
                   ) : (
                     <Alert severity='warning'>
-                      Sin QR disponible. Mostrar esta pantalla no registra un
-                      pago.
+                      Este restaurante aún no tiene QR Yape configurado.
                     </Alert>
                   )}
                   <Typography>
-                    Importes Yape:{' '}
+                    Muestre este QR al cliente para que lo escanee. Importe
+                    Yape:{' '}
                     {parts
                       .filter((p) => p.method === 'YAPE')
                       .map((p) => `S/${p.amount || '0.00'}`)

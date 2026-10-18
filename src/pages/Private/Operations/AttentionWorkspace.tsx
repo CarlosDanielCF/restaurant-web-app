@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+import { DraftLineEditor } from './DraftLineEditor';
 import { useWorkerAccess } from '@/hooks/useWorkerAccess';
 import { useSelector } from 'react-redux';
 import { selectAuth } from '@/redux';
@@ -207,6 +209,8 @@ export function AttentionWorkspace({
     'attention.merge': 'Unión de cuentas',
     'attention.merged-into': 'Cuenta unida a otra',
     'attention.close': 'Cierre de atención',
+    'attention.draft.update': 'Edición de borrador',
+    'attention.draft.remove': 'Retiro de borrador',
     'attention.cancel-draft': 'Cancelación de borrador'
   };
   const [modality, setModality] = useState<Account['modality']>('TABLE');
@@ -234,6 +238,11 @@ export function AttentionWorkspace({
   const [portion, setPortion] = useState('');
   const [specialPrice, setSpecialPrice] = useState('');
   const [priceReason, setPriceReason] = useState('');
+  const [confirmationContainer, setConfirmationContainer] =
+    useState<HTMLDivElement | null>(null);
+  const [mobilePane, setMobilePane] = useState<'products' | 'order'>(
+    'products'
+  );
   const [presentationId, setPresentationId] = useState('');
   const [presentationBusy, setPresentationBusy] = useState(false);
   const presentationProduct = products.find((p) => p.id === presentationId);
@@ -241,6 +250,7 @@ export function AttentionWorkspace({
   const menu = menus.find((m) => m.id === sourceId);
   function selectAccount(id: string) {
     setSelected(id);
+    setMobilePane('products');
     setReplaceLine('');
     const next = accounts.find((a) => a.id === id);
     setTableIds(next?.tables.map((t) => t.id) || []);
@@ -286,6 +296,7 @@ export function AttentionWorkspace({
       ...(replaceLine ? { reason } : {}),
       sourceType,
       sourceId,
+      ...(!replaceLine ? { mergeDraft: true } : {}),
       quantity,
       notes,
       ...(sourceType === 'PRODUCT'
@@ -328,16 +339,23 @@ export function AttentionWorkspace({
       'post',
       (data) => {
         setSelected((data as Account).id);
+        setMobilePane('products');
         setJoining(false);
         setTableIds([]);
       }
     );
   }
-  async function chooseProduct(id: string) {
+  async function chooseProduct(
+    id: string,
+    selectedQuantity = 1,
+    selectedNotes = ''
+  ) {
     const item = products.find((p) => p.id === id);
     if (!account || !item) return;
     setSourceType('PRODUCT');
     selectSource(id);
+    setQuantity(selectedQuantity);
+    setNotes(selectedNotes);
     setReplaceLine('');
     // Any presentation/configuration keeps the explicit customization path.
     const options = item.options.filter((o) => o.isActive);
@@ -364,8 +382,9 @@ export function AttentionWorkspace({
       expectedVersion: account.version,
       sourceType: 'PRODUCT',
       sourceId: id,
-      quantity: 1,
-      notes: '',
+      quantity: selectedQuantity,
+      notes: selectedNotes,
+      mergeDraft: true,
       modifierIds: [],
       ...(options[0] ? { productOptionId: options[0].id } : {})
     });
@@ -447,7 +466,11 @@ export function AttentionWorkspace({
     </>
   );
   return (
-    <Stack spacing={1.5} className='attention-service'>
+    <Stack
+      spacing={1.5}
+      className={`attention-service ${account ? 'has-account' : ''}`}
+      data-mobile-pane={mobilePane}
+    >
       <Dialog
         open={!!presentationProduct && !!account}
         onClose={() => !presentationBusy && setPresentationId('')}
@@ -477,8 +500,9 @@ export function AttentionWorkspace({
                           sourceType: 'PRODUCT',
                           sourceId: presentationProduct.id,
                           productOptionId: o.id,
-                          quantity: 1,
-                          notes: '',
+                          quantity,
+                          notes,
+                          mergeDraft: true,
                           modifierIds: []
                         })
                       )
@@ -519,6 +543,24 @@ export function AttentionWorkspace({
           </Button>
         )}
       </Stack>
+      {account && (
+        <Stack className='mobile-order-tabs' direction='row' gap={1}>
+          <Button
+            aria-pressed={mobilePane === 'products'}
+            variant={mobilePane === 'products' ? 'contained' : 'outlined'}
+            onClick={() => setMobilePane('products')}
+          >
+            Productos
+          </Button>
+          <Button
+            aria-pressed={mobilePane === 'order'}
+            variant={mobilePane === 'order' ? 'contained' : 'outlined'}
+            onClick={() => setMobilePane('order')}
+          >
+            Pedido actual · S/ {account.total}
+          </Button>
+        </Stack>
+      )}
       {!account && waiter && can('delivery') && (
         <Stack
           direction='row'
@@ -620,9 +662,13 @@ export function AttentionWorkspace({
                           <Button
                             key={t.id}
                             className='quick-table'
+                            data-occupied={!!active}
                             variant='outlined'
                             aria-pressed={joining ? chosen : undefined}
-                            disabled={!t.isAvailable || (joining && !!active)}
+                            disabled={
+                              (!t.isAvailable && !active) ||
+                              (joining && !!active)
+                            }
                             onClick={() => {
                               if (joining)
                                 setTableIds(
@@ -651,7 +697,9 @@ export function AttentionWorkspace({
                                   (o) => o.id === active.responsibleUserId
                                 )?.firstName || 'Responsable asignado'}{' '}
                                 · S/ {active.total}
-                                {active.tables.length > 1 ? ' · Unida' : ''}
+                                {active.tables.length > 1
+                                  ? ` · ${active.tables.map((t) => t.name).join(' + ')}`
+                                  : ''}
                               </small>
                             )}
                           </Button>
@@ -798,11 +846,7 @@ export function AttentionWorkspace({
             <Box className='order-catalog' id='service-catalog'>
               <Button
                 sx={{ display: { md: 'none' } }}
-                onClick={() =>
-                  document
-                    .getElementById('current-order')
-                    ?.scrollIntoView({ behavior: 'smooth' })
-                }
+                onClick={() => setMobilePane('order')}
               >
                 Ver pedido actual
               </Button>
@@ -813,7 +857,7 @@ export function AttentionWorkspace({
                   </Typography>
                   <ServiceCatalog
                     products={products}
-                    onSelect={(id) => void chooseProduct(id)}
+                    onSelect={(id, q, n) => void chooseProduct(id, q, n)}
                   />
                   <Typography variant='h6' mt={2} mb={1}>
                     Menú compuesto · precio conjunto
@@ -860,11 +904,7 @@ export function AttentionWorkspace({
             <Box className='current-order' id='current-order'>
               <Button
                 sx={{ display: { md: 'none' } }}
-                onClick={() =>
-                  document
-                    .getElementById('service-catalog')
-                    ?.scrollIntoView({ behavior: 'smooth' })
-                }
+                onClick={() => setMobilePane('products')}
               >
                 Volver a productos
               </Button>
@@ -881,8 +921,10 @@ export function AttentionWorkspace({
                     </Typography>
                     <Typography>
                       Responsable:{' '}
-                      {operators.find((o) => o.id === account.responsibleUserId)
-                        ?.firstName || account.responsibleUserId}
+                      {operators
+                        .filter((o) => o.id === account.responsibleUserId)
+                        .map((o) => `${o.firstName} ${o.lastName}`)
+                        .join('') || 'Responsable asignado'}
                     </Typography>
                     <Typography>
                       Atención:{' '}
@@ -905,7 +947,11 @@ export function AttentionWorkspace({
                       <Card variant='outlined' key={line.id}>
                         <CardContent>
                           <Typography>
-                            {line.quantity} × {line.productSnapshot.name} · S/
+                            <strong>
+                              × {Number(line.quantity)} ·{' '}
+                              {line.productSnapshot.name}
+                            </strong>{' '}
+                            · S/
                             {line.appliedUnitPrice} · Subtotal S/{line.subtotal}{' '}
                             ·{' '}
                             {line.status === 'CANCELLED'
@@ -942,7 +988,17 @@ export function AttentionWorkspace({
                             <Typography>Cortesía de cliente</Typography>
                           )}
                           {account.attentionStatus === 'OPEN' &&
-                            line.status === 'ACTIVE' && (
+                            line.status === 'ACTIVE' &&
+                            !Number(line.confirmedQuantity) && (
+                              <DraftLineEditor
+                                account={account}
+                                line={line}
+                                run={run}
+                              />
+                            )}
+                          {account.attentionStatus === 'OPEN' &&
+                            line.status === 'ACTIVE' &&
+                            Number(line.confirmedQuantity) > 0 && (
                               <Stack direction='row' gap={1}>
                                 <Button
                                   size='small'
@@ -985,11 +1041,50 @@ export function AttentionWorkspace({
                         Total S/ {account.total}
                       </Typography>
                       <Typography>Saldo S/ {account.balance}</Typography>
+                      <div
+                        className='order-production'
+                        ref={setConfirmationContainer}
+                      />
+                      {can('finance') && Number(account.balance) > 0 && (
+                        <Button
+                          variant='contained'
+                          component={Link}
+                          to={`/finance?accountId=${account.id}&pay=1`}
+                        >
+                          Cobrar S/ {account.balance}
+                        </Button>
+                      )}
+                      {account.attentionStatus === 'OPEN' &&
+                        Number(account.balance) === 0 && (
+                          <Button
+                            variant='contained'
+                            onClick={() =>
+                              void run(
+                                `/attention-accounts/${account.id}/close`,
+                                {
+                                  expectedVersion: account.version,
+                                  mode: 'END_ATTENTION',
+                                  reason:
+                                    'El cliente se retiró; atención finalizada'
+                                },
+                                'post',
+                                () => selectAccount('')
+                              )
+                            }
+                          >
+                            Finalizar atención
+                          </Button>
+                        )}
                     </Box>
                   </Stack>
                 </CardContent>
               </Card>
-              <FulfillmentPanel key={account.id} account={account} run={run} />
+              <FulfillmentPanel
+                key={account.id}
+                account={account}
+                run={run}
+                confirmationContainer={confirmationContainer}
+              />
             </Box>
           </Box>
           {account.modality !== 'TABLE' && (

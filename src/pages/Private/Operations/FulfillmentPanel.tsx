@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import { useLiveRefresh } from '@/hooks/useLiveRefresh';
 import './cycle2.css';
 import { useRestaurantStore } from '../Common/store/restaurantStore';
@@ -21,10 +22,12 @@ import { Dispatch } from './fulfillment.types';
 import { Run } from './Operations.page';
 export function FulfillmentPanel({
   account,
-  run
+  run,
+  confirmationContainer
 }: {
   account: Account;
   run: Run;
+  confirmationContainer?: HTMLElement | null;
 }) {
   const zone =
     useRestaurantStore((s) => s.restaurant?.timeZone) || 'America/Lima';
@@ -32,6 +35,8 @@ export function FulfillmentPanel({
   const [dispatches, setDispatches] = useState<Dispatch[]>([]),
     [screens, setScreens] = useState<number | null>(null),
     [error, setError] = useState(false);
+  const [exitAmounts, setExitAmounts] = useState<Record<string, number>>({});
+  const [exiting, setExiting] = useState(false);
   const [itemId, setItemId] = useState(''),
     [quantity, setQuantity] = useState(1),
     [eventId, setEventId] = useState(''),
@@ -80,45 +85,56 @@ export function FulfillmentPanel({
     )
       await refresh();
   }
+  const confirmation = (
+    <Stack spacing={0.5}>
+      {(!online || error) && (
+        <Alert severity='warning'>
+          Datos de cocina sin actualizar. No se confirmará una operación sin
+          respuesta del servidor.
+        </Alert>
+      )}
+      {screens === 0 && (
+        <Alert severity='warning'>
+          No hay pantallas de cocina conectadas. Avise verbalmente; el envío
+          quedará guardado.
+        </Alert>
+      )}
+      {!confirmationContainer && screens !== null && screens > 0 && (
+        <Typography variant='caption'>
+          {screens} pantallas de cocina conectadas
+        </Typography>
+      )}
+      <Button
+        variant='contained'
+        aria-label='Confirmar consumos y enviar a producción'
+        disabled={
+          error ||
+          account.attentionStatus !== 'OPEN' ||
+          !account.lines.some(
+            (l) => l.status === 'ACTIVE' && !Number(l.confirmedQuantity)
+          )
+        }
+        onClick={() => void action('confirm', {})}
+      >
+        Enviar a producción
+      </Button>
+      {!confirmationContainer && (
+        <Typography variant='caption'>
+          Solo unidades nuevas · producción según configuración. No registra
+          pago ni cierra la cuenta.
+        </Typography>
+      )}
+    </Stack>
+  );
   return (
     <Card className='fulfillment-card'>
       <CardContent>
         <Stack spacing={2}>
           <Typography variant='h6'>Envíos y salida por mozo</Typography>
-          {(!online || error) && (
-            <Alert severity='warning'>
-              Datos de cocina sin actualizar. No se confirmará una operación sin
-              respuesta del servidor.
-            </Alert>
-          )}
-          {screens === 0 && (
-            <Alert severity='warning'>
-              No hay pantallas de cocina conectadas. Avise verbalmente; el envío
-              quedará guardado.
-            </Alert>
-          )}
-          {screens !== null && screens > 0 && (
-            <Typography>{screens} pantallas de cocina conectadas</Typography>
-          )}
-          <Button
-            variant='contained'
-            disabled={
-              error ||
-              account.attentionStatus !== 'OPEN' ||
-              !account.lines.some(
-                (l) => l.status === 'ACTIVE' && !Number(l.confirmedQuantity)
-              )
-            }
-            onClick={() => void action('confirm', {})}
-          >
-            Confirmar consumos y enviar a producción
-          </Button>
-          <Typography variant='caption'>
-            Solo confirma unidades nuevas. Se envían los productos configurados
-            para producción, incluidas las bebidas preparadas. Cada envío
-            conserva su hora; no registra pago ni cierra la cuenta.
-          </Typography>
-          <details className='service-details'>
+          {confirmationContainer
+            ? createPortal(confirmation, confirmationContainer)
+            : confirmation}
+          <details className='service-details' open>
             <summary>Envíos ({dispatches.length})</summary>
             {dispatches.map((d) => (
               <Stack key={d.id} spacing={1} className='dispatch-summary'>
@@ -132,19 +148,80 @@ export function FulfillmentPanel({
                     ` · ${Math.max(0, Math.floor((Date.now() - new Date(d.confirmedAt).getTime()) / 60000))} min desde el envío`}
                 </Typography>
                 {d.items.map((i) => (
-                  <Typography key={i.id} className='dispatch-line'>
-                    {i.itemSnapshot.name} ·{' '}
-                    {i.status === 'CANCELLED'
-                      ? 'Cancelado'
-                      : `Enviado: ${i.quantity} · Entregado: ${i.delivered} · Pendiente: ${i.pending}`}{' '}
-                    · {i.itemSnapshot.notes}
-                  </Typography>
+                  <Stack key={i.id} className='dispatch-line' spacing={1}>
+                    <Typography fontWeight={700}>
+                      {i.itemSnapshot.name}
+                    </Typography>
+                    <Typography variant='body2'>
+                      {i.itemSnapshot.notes}
+                    </Typography>
+                    <Typography
+                      color={i.pending === 0 ? 'primary' : 'text.primary'}
+                    >
+                      {i.status === 'CANCELLED'
+                        ? 'Cancelado'
+                        : `Enviado: ${i.quantity} · Entregado: ${i.delivered} · Pendiente: ${i.pending}`}
+                      {i.status === 'ACTIVE' &&
+                        i.pending === 0 &&
+                        ' · ENTREGADO ✓'}
+                    </Typography>
+                    {i.status === 'ACTIVE' && i.pending > 0 && (
+                      <Stack direction='row' gap={1}>
+                        {i.pending > 1 && (
+                          <TextField
+                            size='small'
+                            type='number'
+                            label={`Unidades de ${i.itemSnapshot.name}`}
+                            value={Math.min(
+                              exitAmounts[i.id] ?? i.pending,
+                              i.pending
+                            )}
+                            inputProps={{
+                              min: 0.001,
+                              max: i.pending,
+                              step: 0.001
+                            }}
+                            onChange={(e) =>
+                              setExitAmounts((v) => ({
+                                ...v,
+                                [i.id]: Number(e.target.value)
+                              }))
+                            }
+                          />
+                        )}
+                        <Button
+                          variant='contained'
+                          disabled={
+                            exiting ||
+                            error ||
+                            (exitAmounts[i.id] ?? i.pending) <= 0
+                          }
+                          onClick={async () => {
+                            if (exiting) return;
+                            setExiting(true);
+                            try {
+                              await action(`dispatch-items/${i.id}/exits`, {
+                                quantity: Math.min(
+                                  exitAmounts[i.id] ?? i.pending,
+                                  i.pending
+                                )
+                              });
+                            } finally {
+                              setExiting(false);
+                            }
+                          }}
+                        >
+                          ✓ Entregar
+                        </Button>
+                      </Stack>
+                    )}
+                  </Stack>
                 ))}
               </Stack>
             ))}
           </details>
           <details className='service-details'>
-            <summary>Salidas, cambios y correcciones</summary>
+            <summary>Más opciones · cambios y correcciones</summary>
             <Stack spacing={1.5} mt={1}>
               <TextField
                 select

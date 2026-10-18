@@ -18,6 +18,7 @@ import {
 import { Link } from 'react-router-dom';
 import { restauranteApi } from '@/api';
 import { SocketContext } from '@/context';
+import { KitchenSoundTracker, playKitchenTone } from './kitchenSound';
 import { Board, KitchenSnapshot } from './fulfillment.types';
 function details(s: KitchenSnapshot) {
   return [
@@ -46,25 +47,27 @@ export function KitchenPage() {
     [sound, setSound] = useState(false),
     [busy, setBusy] = useState(false);
   const audio = useRef<AudioContext | null>(null),
-    seen = useRef(new Set<string>()),
+    tracker = useRef(new KitchenSoundTracker()),
+    soundEnabled = useRef(false),
+    connectionEpoch = useRef(0),
     sentinel = useRef<HTMLDivElement | null>(null),
     inFlight = useRef(false);
   const refresh = useCallback(async () => {
     if (inFlight.current) return;
     inFlight.current = true;
+    const epoch = connectionEpoch.current;
     try {
       const { data } = await restauranteApi.get<Board>('/kitchen/board');
-      const fresh = data.notices.some((n) => !seen.current.has(n.id));
-      data.notices.forEach((n) => seen.current.add(n.id));
-      if (fresh && sound && audio.current) {
-        const oscillator = audio.current.createOscillator(),
-          gain = audio.current.createGain();
-        gain.gain.value = 0.12;
-        oscillator.connect(gain);
-        gain.connect(audio.current.destination);
-        oscillator.frequency.value = 880;
-        oscillator.start();
-        oscillator.stop(audio.current.currentTime + 0.4);
+      if (epoch !== connectionEpoch.current) return;
+      const fresh = tracker.current.observe(
+        data.dispatches.map((d) => d.id),
+        data.notices.map((n) => n.id)
+      );
+      if (fresh && soundEnabled.current && audio.current) {
+        if (!playKitchenTone(audio.current)) {
+          soundEnabled.current = false;
+          setSound(false);
+        }
       }
       setBoard(data);
       setOffset(new Date(data.serverNow).getTime() - Date.now());
@@ -74,18 +77,25 @@ export function KitchenPage() {
       setFailed(true);
     } finally {
       inFlight.current = false;
+      if (epoch !== connectionEpoch.current) void refresh();
     }
-  }, [sound]);
+  }, []);
   useLiveRefresh(refresh, ['kitchen.changed', 'attention.changed']);
   useEffect(() => {
     void refresh();
 
+    const resetSoundBaseline = () => {
+      connectionEpoch.current++;
+      tracker.current.reset();
+    };
     const watch = () => {
+      resetSoundBaseline();
       socket?.emit('kitchen.watch', true);
       void refresh();
     };
 
     socket?.on('connect', watch);
+    socket?.on('disconnect', resetSoundBaseline);
     if (socket?.connected) watch();
     const heartbeat = setInterval(() => {
       if (socket?.connected) socket.emit('kitchen.watch', true);
@@ -94,6 +104,7 @@ export function KitchenPage() {
       clearInterval(heartbeat);
 
       socket?.off('connect', watch);
+      socket?.off('disconnect', resetSoundBaseline);
       socket?.emit('kitchen.watch', false);
     };
   }, [socket, refresh]);
@@ -120,9 +131,29 @@ export function KitchenPage() {
     visible = board?.dispatches.slice(start, wide ? start + 3 : limit) || [],
     stale = !online || failed || !lastSync || tick - lastSync > 90000;
   async function enableSound() {
-    if (!audio.current) audio.current = new AudioContext();
-    await audio.current.resume();
-    setSound(true);
+    if (soundEnabled.current) {
+      soundEnabled.current = false;
+      setSound(false);
+      return;
+    }
+    try {
+      if (!audio.current) {
+        audio.current = new AudioContext();
+        audio.current.onstatechange = () => {
+          if (audio.current?.state !== 'running') {
+            soundEnabled.current = false;
+            setSound(false);
+          }
+        };
+      }
+      await audio.current.resume();
+      const unlocked = playKitchenTone(audio.current);
+      soundEnabled.current = unlocked;
+      setSound(unlocked);
+    } catch {
+      soundEnabled.current = false;
+      setSound(false);
+    }
   }
   async function acknowledge(id: string) {
     if (busy) return;
@@ -146,9 +177,7 @@ export function KitchenPage() {
       key={n.id}
     >
       <Stack spacing={1}>
-        <Typography>
-          {n.location} · envío {n.dispatchId.slice(0, 8)}
-        </Typography>
+        <Typography>{n.location} · aviso de comanda</Typography>
         <Typography fontWeight='bold'>
           {n.kind === 'CANCELLATION'
             ? 'CANCELACIÓN: detener preparación'
@@ -198,8 +227,8 @@ export function KitchenPage() {
           {failed && (
             <Button onClick={() => void refresh()}>Reintentar conexión</Button>
           )}
-          <Button disabled={sound} onClick={() => void enableSound()}>
-            {sound ? 'Sonido activado' : 'Activar avisos sonoros'}
+          <Button aria-pressed={sound} onClick={() => void enableSound()}>
+            {sound ? 'Sonido activado' : 'Sonido desactivado · Activar sonido'}
           </Button>
         </Stack>
         {stale && (
@@ -277,7 +306,7 @@ export function KitchenPage() {
                       Mozo: {d.firstName} {d.lastName}
                     </Typography>
                     <Typography>
-                      Envío {d.id.slice(0, 8)} ·{' '}
+                      Envío #{d.sequenceNumber} ·{' '}
                       {new Date(d.confirmedAt).toLocaleTimeString('es-PE', {
                         timeZone: zone
                       })}

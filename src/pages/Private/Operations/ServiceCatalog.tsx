@@ -1,3 +1,4 @@
+import RestaurantOutlined from '@mui/icons-material/RestaurantOutlined';
 import { WorkspaceEmpty } from '@/components/operational/WorkspaceEmpty';
 import { useState } from 'react';
 import {
@@ -18,9 +19,12 @@ function ProductTile({
   action
 }: {
   product: Product;
-  onSelect: (id: string) => void;
+  onSelect: (id: string, quantity?: number, notes?: string) => void;
   action: string;
 }) {
+  const [quantity, setQuantity] = useState(1),
+    [notes, setNotes] = useState(''),
+    [details, setDetails] = useState(false);
   const image = useRestaurantImage(product.images || undefined);
   const available =
     product.status === 'AVAILABLE' &&
@@ -31,11 +35,8 @@ function ProductTile({
         <img src={image} alt={product.name} loading='lazy' />
       ) : (
         <Box className='product-symbol'>
-          <img
-            src='/branding/point-restaurant-logo.png'
-            alt='Point Restaurant · producto sin imagen'
-            style={{ width: 64, height: 56, objectFit: 'contain' }}
-          />
+          <RestaurantOutlined sx={{ fontSize: 36 }} aria-hidden />
+          <Typography variant='caption'>Sin imagen</Typography>
         </Box>
       )}
       <Box className='product-info'>
@@ -69,11 +70,48 @@ function ProductTile({
               .join(' · ')}
           </Typography>
         )}
+        {action === 'Agregar' && (
+          <>
+            <Stack
+              direction='row'
+              alignItems='center'
+              justifyContent='space-between'
+              className='product-quantity'
+            >
+              <Button
+                aria-label={`Reducir cantidad de ${product.name}`}
+                disabled={quantity <= 1}
+                onClick={() => setQuantity((q) => q - 1)}
+              >
+                −
+              </Button>
+              <Typography fontWeight={800}>× {quantity}</Typography>
+              <Button
+                aria-label={`Aumentar cantidad de ${product.name}`}
+                onClick={() => setQuantity((q) => q + 1)}
+              >
+                +
+              </Button>
+            </Stack>
+            <Button size='small' onClick={() => setDetails((v) => !v)}>
+              Observación{notes ? ' •' : ''}
+            </Button>
+            {details && (
+              <TextField
+                size='small'
+                label={`Instrucción para ${product.name}`}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                fullWidth
+              />
+            )}
+          </>
+        )}
         <Button
           variant='outlined'
           fullWidth
           disabled={action === 'Agregar' && !available}
-          onClick={() => onSelect(product.id)}
+          onClick={() => onSelect(product.id, quantity, notes)}
           aria-label={`${action} ${product.name}`}
         >
           {action}
@@ -88,7 +126,7 @@ export function ServiceCatalog({
   action = 'Agregar'
 }: {
   products: Product[];
-  onSelect: (id: string) => void;
+  onSelect: (id: string, quantity?: number, notes?: string) => void;
   action?: string;
 }) {
   const restaurantName = useRestaurantStore((s) => s.restaurant?.name);
@@ -115,6 +153,7 @@ export function ServiceCatalog({
       <TextField
         size='small'
         fullWidth
+        className='point-catalog-search'
         label='Buscar producto'
         placeholder='Nombre del producto…'
         value={search}

@@ -31,3 +31,5 @@ node --test tests/idempotency.test.cjs tests/display-money.test.cjs
 Pruebas de navegador `tests/*.browser.cjs` requieren backend real, MySQL, Chromium y Playwright. `PLAYWRIGHT_MODULE`/`CHROMIUM_PATH` permiten indicar instalación externa; no se agrega una dependencia pesada a producción. Ejecutarlas secuencialmente con las suites HTTP. Datos de prueba en tenants propios, nunca en una base distinta. Evidencia y comandos en [PHASE10.md](PHASE10.md), estado en [ESTADO.md](ESTADO.md).
 
 Demo: ejecutar `npm run seed:demo` en backend siguiendo su README. No inventar credenciales; DEMO_PASSWORD lo elige el operador. SMTP CONFIGURADO: NO; pendiente proveedor/credenciales. No bloquea login ni operación habitual. Backup/restore en documentación backend.
+
+Revisión operativa F10/Punto Mar: [flujos, validación y requisitos coordinados del backend](F10-OPERATIVE-REVIEW.md).

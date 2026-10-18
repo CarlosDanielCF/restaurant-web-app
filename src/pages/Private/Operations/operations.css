@@ -444,3 +444,176 @@
     overflow: auto;
   }
 }
+/* Occupancy comes from active accounts; payment never changes this state. */
+.attention-service .quick-table[data-occupied='false'] {
+  border-color: #16a34a;
+  background: #f0fdf4;
+  color: #166534;
+}
+.attention-service .quick-table[data-occupied='true'] {
+  border-color: #dc2626;
+  background: #fef2f2;
+  color: #991b1b;
+}
+.mobile-order-tabs {
+  display: none;
+}
+@media (min-width: 900px) {
+  .attention-service .order-workbench {
+    height: calc(100dvh - 410px);
+    min-height: 300px;
+    align-items: stretch;
+  }
+  .attention-service .order-catalog,
+  .attention-service .current-order {
+    height: 100%;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .attention-service .current-order {
+    display: block;
+    position: static;
+  }
+  .attention-service .current-order-card,
+  .attention-service .current-order > .fulfillment-card {
+    max-height: none;
+    overflow: visible;
+  }
+  .attention-service .point-category-rail {
+    position: sticky;
+    top: 0;
+    align-self: start;
+  }
+}
+@media (max-width: 899px) {
+  .mobile-order-tabs {
+    display: flex;
+    position: sticky;
+    top: 56px;
+    z-index: 3;
+    background: white;
+    padding: 4px;
+    gap: 8px;
+  }
+  .attention-service[data-mobile-pane='products'] .current-order,
+  .attention-service[data-mobile-pane='order'] .order-catalog {
+    display: none;
+  }
+  .attention-service .current-order {
+    height: auto;
+    overflow: visible;
+  }
+  .attention-service .current-order-card,
+  .attention-service .current-order > .fulfillment-card {
+    max-height: none;
+    overflow: visible;
+  }
+}
+.attention-service .product-symbol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  background: #f1f5f9;
+}
+
+@media (min-width: 900px) {
+  .attention-service .point-catalog-search {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    background: #fff;
+  }
+  .attention-service .point-category-rail {
+    top: 54px;
+    background: #fff;
+    z-index: 2;
+  }
+  .attention-service .order-total {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    background: #fff;
+    border-top: 1px solid #e2e8f0;
+  }
+}
+.service-product .product-quantity {
+  display: grid;
+  grid-template-columns: 44px minmax(24px, 1fr) 44px;
+  align-items: center;
+  gap: 2px;
+}
+.service-product .product-quantity .MuiButton-root {
+  width: 44px;
+  min-width: 44px;
+  padding: 4px;
+}
+.service-product .product-quantity .MuiTypography-root {
+  white-space: nowrap;
+  text-align: center;
+}
+.mobile-order-tabs .MuiButton-root[aria-pressed='true'] {
+  background: #0f766e;
+  color: white;
+}
+.mobile-order-tabs .MuiButton-root[aria-pressed='false'] {
+  background: #f1f5f9;
+  color: #334155;
+}
+.operations-workspace:has(.has-account) .operations-metrics {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.operations-workspace:has(.has-account) .operations-metrics > div {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 10px;
+  flex: 1;
+}
+.operations-workspace:has(.has-account) .operations-metrics .MuiTypography-h4 {
+  font-size: 20px;
+}
+.operations-workspace:has(.has-account)
+  .operations-metrics
+  .MuiTypography-root {
+  font-size: 13px;
+}
+.operations-workspace:has(.has-account) .operations-heading {
+  gap: 8px;
+}
+.operations-workspace:has(.has-account) .operations-heading .MuiTypography-h4 {
+  font-size: 22px;
+}
+.operations-workspace:has(.has-account) > .MuiStack-root > * + * {
+  margin-top: 8px;
+}
+.operations-workspace:has(.has-account) .MuiAlert-root {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.attention-service .order-total {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 6px;
+  align-items: center;
+  padding: 10px;
+}
+.attention-service .order-total > .MuiTypography-root {
+  font-size: 13px;
+  line-height: 1.4;
+}
+.attention-service .order-total > .MuiTypography-h6 {
+  font-size: 17px;
+  font-weight: 700;
+}
+.attention-service .order-production .MuiButton-root {
+  font-size: 12px;
+  min-height: 44px;
+}
+.attention-service .order-production:has(.MuiAlert-root) {
+  grid-column: 1/-1;
+}
