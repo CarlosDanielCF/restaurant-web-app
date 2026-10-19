@@ -12,10 +12,11 @@ import {
   InputAdornment,
   IconButton
 } from '@mui/material';
-import { LoadingButton } from '@mui/lab';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
+import LoadingButton from '@mui/lab/LoadingButton';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
-import { useAppSelector } from '../../../../hooks';
+import { useAppSelector } from '../../../../hooks/useRedux';
 import { IFormLogin, PublicRoutes } from '../../../../models';
 import { onChecking, selectAuth } from '../../../../redux';
 import { useLogin } from '../hooks/useAuth';

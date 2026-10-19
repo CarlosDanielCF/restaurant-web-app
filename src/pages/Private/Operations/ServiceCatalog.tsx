@@ -1,3 +1,4 @@
+import { presentationLabel } from './presentationLabel';
 import RestaurantOutlined from '@mui/icons-material/RestaurantOutlined';
 import { WorkspaceEmpty } from '@/components/operational/WorkspaceEmpty';
 import { ReactNode, useState } from 'react';
@@ -68,7 +69,7 @@ function ProductTile({
           <Typography variant='caption' display='block'>
             {product.options
               .filter((o) => o.isActive)
-              .map((o) => o.name)
+              .map((o, index) => presentationLabel(o.name, index))
               .join(' · ')}
           </Typography>
         )}

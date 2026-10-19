@@ -7,7 +7,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { CssBaseline, IconButton } from '@mui/material';
 
 import { SnackbarProvider, closeSnackbar } from 'notistack';
-import { CloseTwoTone } from '@mui/icons-material';
+import CloseTwoTone from '@mui/icons-material/CloseTwoTone';
 
 import { AppRouter } from './routers';
 
@@ -15,7 +15,7 @@ import './styles/global-styles.css';
 
 import ThemeProvider from './theme/ThemeProvider';
 
-import { SuspenseLoader } from './components/ui/';
+import SuspenseLoader from './components/ui/SuspenseLoader';
 
 /**
  * @author Santiago Quirumbay

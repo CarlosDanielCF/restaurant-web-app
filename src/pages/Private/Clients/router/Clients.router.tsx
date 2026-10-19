@@ -3,9 +3,15 @@ import { lazy } from 'react';
 import { RouteObject } from 'react-router-dom';
 
 import { PrivateRoutes } from '../../../../models/routes.model';
-import { ClientsList } from '../components';
-import { AddClient } from '../components/AddClient';
-import { EditClient } from '../components/EditClient';
+const ClientsList = lazy(() =>
+  import('../components').then((m) => ({ default: m.ClientsList }))
+);
+const AddClient = lazy(() =>
+  import('../components/AddClient').then((m) => ({ default: m.AddClient }))
+);
+const EditClient = lazy(() =>
+  import('../components/EditClient').then((m) => ({ default: m.EditClient }))
+);
 
 const Clients = lazy(() => import('../Clients.page'));
 

@@ -20,6 +20,8 @@ fs.mkdirSync(output, { recursive: true });
   let browser, tenant, db;
   const users = [],
     errors = [],
+    missingApi = [],
+    legacyCashRequests = [],
     checks = [],
     navigations = new Map();
   const suffix = crypto.randomUUID().replaceAll('-', '');
@@ -136,6 +138,14 @@ fs.mkdirSync(output, { recursive: true });
       const p = await context.newPage();
       p.setDefaultTimeout(18000);
       p.on('pageerror', (e) => errors.push(e.message));
+      p.on('response', (r) => {
+        if (r.url().includes('/api/') && r.status() === 404)
+          missingApi.push(r.url());
+      });
+      p.on('request', (r) => {
+        if (r.url().includes('/cash-register/'))
+          legacyCashRequests.push(r.url());
+      });
       if (auth.username) {
         await p.goto(front + '/auth/login');
         await p.locator('input[name=username]').fill(auth.username);
@@ -201,6 +211,10 @@ fs.mkdirSync(output, { recursive: true });
       await o
         .getByRole('link', { name: 'Tiempos de cocina', exact: true })
         .count(),
+      0
+    );
+    assert.equal(
+      await c.getByRole('tab', { name: 'Reservas', exact: true }).count(),
       0
     );
     // Role-scoped restrictions, without displaying grants from other base roles.
@@ -322,6 +336,35 @@ fs.mkdirSync(output, { recursive: true });
       .getByRole('button', { name: 'Aplicar selección', exact: true })
       .click();
     await route(c, '/kitchen');
+    await c.evaluate(() => {
+      window.audioEvents = [];
+      const original = AudioContext.prototype.createOscillator;
+      AudioContext.prototype.createOscillator = function () {
+        const o = original.call(this);
+        const start = o.start.bind(o);
+        o.start = (...args) => {
+          window.audioEvents.push('bell');
+          return start(...args);
+        };
+        return o;
+      };
+      window.SpeechSynthesisUtterance = class {};
+      speechSynthesis.getVoices = () => [
+        { name: 'Microsoft Alvaro', lang: 'es-ES' }
+      ];
+      speechSynthesis.speak = (u) => window.audioEvents.push(u.text);
+    });
+    await c
+      .getByRole('button', {
+        name: 'Sonido desactivado · Activar sonido',
+        exact: true
+      })
+      .click();
+    await c.waitForTimeout(450);
+    assert.deepEqual(await c.evaluate(() => window.audioEvents), ['bell']);
+    await c.evaluate(() => {
+      window.audioEvents = [];
+    });
     await w
       .getByRole('button', {
         name: 'Confirmar consumos y enviar a producción',
@@ -330,6 +373,28 @@ fs.mkdirSync(output, { recursive: true });
       .click();
     await c.getByText('2 × Plato revisión', { exact: true }).waitFor();
     await c.getByText('Para llevar: 1', { exact: true }).waitFor();
+    await c.waitForTimeout(600);
+    assert.deepEqual(await c.evaluate(() => window.audioEvents), [
+      'bell',
+      'Pedido entrante'
+    ]);
+    await c.waitForTimeout(1200);
+    assert.deepEqual(await c.evaluate(() => window.audioEvents), [
+      'bell',
+      'Pedido entrante'
+    ]);
+    await c.context().setOffline(true);
+    await c.waitForTimeout(800);
+    await c.context().setOffline(false);
+    await c
+      .locator('.MuiChip-root')
+      .getByText('Conectado', { exact: true })
+      .waitFor();
+    await c.waitForTimeout(1500);
+    assert.deepEqual(await c.evaluate(() => window.audioEvents), [
+      'bell',
+      'Pedido entrante'
+    ]);
     await w.getByLabel('Unidades de Plato revisión').fill('1');
     await w.getByRole('button', { name: '✓ Entregar', exact: true }).click();
     await c.getByText('1 × Plato revisión', { exact: true }).waitFor();
@@ -444,6 +509,124 @@ fs.mkdirSync(output, { recursive: true });
     checks.push(
       'delivery contextual edit audited, responsive and direct known-account payment'
     );
+    // Owner opening is contextual; no permanent form, variants add directly.
+    const extraTable = await api(owner, '/tables', 'POST', {
+      name: 'Mesa contextual',
+      chairs: 4
+    });
+    await api(owner, '/products', 'POST', {
+      name: 'Variante revisión',
+      categoryId: category.id,
+      price: 35,
+      kind: 'FOOD',
+      productionRouting: 'PRODUCTION'
+    });
+    const variant = (await api(owner, '/products')).find(
+      (p) => p.name === 'Variante revisión'
+    );
+    await api(owner, '/product-options', 'POST', {
+      productId: variant.id,
+      name: 'Presentación A · nombre pendiente',
+      price: 35
+    });
+    await api(owner, '/product-options', 'POST', {
+      productId: variant.id,
+      name: 'Presentación B · nombre pendiente',
+      price: 60
+    });
+    await route(o, '/attention');
+    assert.equal(await o.getByLabel('Mozo responsable').count(), 0);
+    assert.equal(
+      await o.getByText('Para llevar y delivery', { exact: true }).count(),
+      0
+    );
+    await o.getByRole('button', { name: /Mesa contextual Disponible/ }).click();
+    const opening = o.getByRole('dialog');
+    await opening.getByLabel('Mozo responsable').click();
+    await o.getByRole('option', { name: 'Ana MOZO', exact: true }).click();
+    await opening
+      .getByRole('button', { name: 'Abrir atención', exact: true })
+      .click();
+    await o.getByText('Tomar pedido', { exact: true }).waitFor();
+    await o
+      .getByRole('button', { name: 'Agregar Variante revisión', exact: true })
+      .click();
+    await o
+      .getByRole('dialog')
+      .getByRole('button', { name: 'Opción 1 · S/ 35', exact: true })
+      .click();
+    await o.getByRole('dialog').waitFor({ state: 'hidden' });
+    const contextual = (await api(owner, '/attention-accounts')).find((a) =>
+      a.tables.some((t) => t.id === extraTable.id)
+    );
+    assert.equal(Number(contextual.lines[0].quantity), 1);
+    assert.equal(contextual.total, '35.00');
+    for (const [width, height] of [
+      [390, 844],
+      [900, 1100],
+      [1440, 900]
+    ])
+      await shot(o, 'order-' + width, width, height);
+    const widths = await o.locator('.order-workbench').evaluate((e) => {
+      const c = e.querySelector('.current-order');
+      return [c.getBoundingClientRect().width, e.getBoundingClientRect().width];
+    });
+    assert.ok(widths[0] / widths[1] >= 0.35 && widths[0] / widths[1] <= 0.42);
+    await route(o, '/attention');
+    await o
+      .locator('.quick-table')
+      .filter({ hasText: 'Mesa contextual' })
+      .getByText('ABIERTA', { exact: true })
+      .waitFor();
+    assert.equal(
+      await o
+        .locator('.quick-table')
+        .filter({ hasText: 'Mesa contextual' })
+        .getAttribute('data-occupied'),
+      'false'
+    );
+    await o.getByRole('button', { name: 'Delivery', exact: true }).click();
+    await o
+      .getByText('Delivery · atenciones activas', { exact: true })
+      .waitFor();
+    assert.equal(
+      await o.getByLabel('Referencia de entrega').isVisible(),
+      false
+    );
+    checks.push(
+      'owner contextual opening, neutral variant names, one-tap variant, order width, draft badge, unified Delivery'
+    );
+    // Modern shifts preserve cash movement, submission and manager confirmation.
+    let shift = (await api(waiter, '/finance/shifts')).find(
+      (s) => s.shift.workerId === waiter.user.id
+    );
+    await api(owner, '/finance/shifts/' + shift.shift.id + '/cash', 'POST', {
+      expectedVersion: shift.shift.version,
+      kind: 'CHANGE_FUND',
+      amount: '10.00',
+      reason: 'Fondo de prueba'
+    });
+    shift = (await api(waiter, '/finance/shifts')).find(
+      (s) => s.shift.workerId === waiter.user.id
+    );
+    assert.equal(shift.expectedCash, '68.00');
+    await api(waiter, '/finance/shifts/' + shift.shift.id + '/submit', 'POST', {
+      expectedVersion: shift.shift.version,
+      deliveredCash: '68.00'
+    });
+    shift = (await api(owner, '/finance/shifts')).find(
+      (s) => s.shift.workerId === waiter.user.id
+    );
+    await api(owner, '/finance/shifts/' + shift.shift.id + '/confirm', 'POST', {
+      expectedVersion: shift.shift.version
+    });
+    shift = (await api(owner, '/finance/shifts')).find(
+      (s) => s.shift.workerId === waiter.user.id
+    );
+    assert.equal(shift.shift.status, 'CLOSED');
+    checks.push(
+      'modern shifts open/read/cash/pay/submit/confirm retained without legacy request'
+    );
     // All accessible module routes and responsive views with real server responses.
     for (const [name, url] of [
       ['overview', '/operational-overview'],
@@ -477,6 +660,9 @@ fs.mkdirSync(output, { recursive: true });
     await shot(c, 'kitchen-TV', 1920, 1080);
     await shot(c, 'kitchen-mobile', 390, 844);
     // Server still imposes base roles and tenant scope.
+    await route(c, '/attention?tab=reservations');
+    await c.getByText('Acceso no autorizado', { exact: true }).waitFor();
+    await api(cook, '/reservations', 'GET', null, 403);
     await api(cook, '/finance/shifts', 'GET', null, 403);
     await api(cook, '/attention-accounts', 'GET', null, 403);
     await api(
@@ -488,6 +674,8 @@ fs.mkdirSync(output, { recursive: true });
     );
     checks.push('cook finance/attention denied; cross-restaurant denied');
     assert.deepEqual(errors, []);
+    assert.deepEqual(missingApi, []);
+    assert.deepEqual(legacyCashRequests, []);
     assert.equal(
       [...navigations.values()].reduce((sum, n) => sum + n, 0),
       0

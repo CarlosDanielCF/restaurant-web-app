@@ -1,9 +1,26 @@
-import { OverviewPage } from '../Insights/OverviewPage';
-import { DocumentsPage } from '../Insights/DocumentsPage';
-import { ReportsPage } from '../Insights/ReportsPage';
-import { FinancePage } from '../Finance/FinancePage';
-import { KitchenPage } from '../Operations/KitchenPage';
-import { OperationsPage } from '../Operations/Operations.page';
+import { lazy } from 'react';
+const OverviewPage = lazy(() =>
+  import('../Insights/OverviewPage').then((m) => ({ default: m.OverviewPage }))
+);
+const DocumentsPage = lazy(() =>
+  import('../Insights/DocumentsPage').then((m) => ({
+    default: m.DocumentsPage
+  }))
+);
+const ReportsPage = lazy(() =>
+  import('../Insights/ReportsPage').then((m) => ({ default: m.ReportsPage }))
+);
+const FinancePage = lazy(() =>
+  import('../Finance/FinancePage').then((m) => ({ default: m.FinancePage }))
+);
+const KitchenPage = lazy(() =>
+  import('../Operations/KitchenPage').then((m) => ({ default: m.KitchenPage }))
+);
+const OperationsPage = lazy(() =>
+  import('../Operations/Operations.page').then((m) => ({
+    default: m.OperationsPage
+  }))
+);
 import { Navigate, RouteObject } from 'react-router-dom';
 
 import SidebarLayout from '../layouts/SidebarLayout/SidebarLayout.component';
@@ -18,7 +35,11 @@ import { RestaurantRouter } from '../Restaurant/router';
 import { UnauthorizedPage } from '../../Status/Unauthorized.page';
 import Auth from '../components/Auth.component';
 import BaseLayout from '../layouts/BaseLayout';
-import { NewRestaurant } from '../Restaurant/views/NewRestaurant/NewRestaurant.view';
+const NewRestaurant = lazy(() =>
+  import('../Restaurant/views/NewRestaurant/NewRestaurant.view').then((m) => ({
+    default: m.NewRestaurant
+  }))
+);
 import { Roles } from '@/models/roles';
 
 export const PrivateRouter: RouteObject[] = [

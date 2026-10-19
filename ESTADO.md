@@ -1,3 +1,7 @@
+# Revisión post-manual — 19 octubre 2026
+
+Correcciones frontend de carga por rutas, retirada del consumidor de caja legacy, apertura contextual, Delivery integrado, pedido más ancho, presentaciones neutras y timbre seguido de voz. Backend sin cambios;20 migraciones conservadas, sin seeds. Evidencia y límites: [F10-POST-MANUAL.md](F10-POST-MANUAL.md). Pendiente revisión local; sin push/merge.
+
 # Estado vigente — revisión global UX operativa (2026-10-18)
 
 Frontend sobre `codex/phase-10`, base `ca6ea6ea967cac24a06c1579bcb4c951fa0977a7`. Backend `ea620499d51c438fe13ff906a8616a88a9df2a8e` sin modificaciones. Sin push ni merge. Esta sección prevalece sobre los registros históricos siguientes.

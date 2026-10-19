@@ -102,11 +102,9 @@ function OffsiteCard({
       <Typography variant='body2'>
         Responsable:{' '}
         {operators.find((o) => o.id === account.responsibleUserId)?.firstName ||
-          account.responsibleUserId}
+          'Responsable asignado'}
       </Typography>
-      <Button onClick={() => onSelect(account.id)}>
-        Ver atención {account.id.slice(0, 8)}
-      </Button>
+      <Button onClick={() => onSelect(account.id)}>Ver atención</Button>
     </Card>
   );
 }
@@ -129,14 +127,27 @@ export function OffsiteCards({
   );
   return (
     <section>
-      <Typography variant='h6'>Para llevar y delivery</Typography>
+      <Typography variant='h6'>Delivery · atenciones activas</Typography>
       <Stack direction='row' gap={1} flexWrap='wrap' mb={1}>
-        {['', 'TAKE_AWAY', 'OWN_DELIVERY', 'EXTERNAL_COURIER'].map((m) => (
+        {[
+          '',
+          'OWN_DELIVERY',
+          'EXTERNAL_COURIER',
+          ...(accounts.some(
+            (a) => a.modality === 'TAKE_AWAY' && a.attentionStatus === 'OPEN'
+          )
+            ? ['TAKE_AWAY']
+            : [])
+        ].map((m) => (
           <Chip
             key={m}
             clickable
             color={mode === m ? 'primary' : 'default'}
-            label={modalityLabel[m] || 'Todos'}
+            label={
+              m === 'TAKE_AWAY'
+                ? 'Recogidas existentes'
+                : modalityLabel[m] || 'Todos'
+            }
             onClick={() => {
               setMode(m);
               setPage(0);
@@ -157,7 +168,7 @@ export function OffsiteCards({
       {!rows.length && (
         <WorkspaceEmpty
           title='Sin atenciones en esta modalidad'
-          description='Al abrir una atención para llevar o delivery aparecerán aquí su preparación, entrega y pago.'
+          description='Al abrir un delivery aparecerán aquí su preparación, entrega y pago.'
         />
       )}
       {rows.length > 6 && (

@@ -93,9 +93,8 @@ export function WorkerPermissions({ user }: { user: IUser }) {
         <DialogTitle>Accesos · {user.person.firstName}</DialogTitle>
         <DialogContent>
           <Alert severity='info'>
-            Solo restringe el rol actual; marcar una opción no concede permisos
-            de otro rol. Cobros, delivery, documentos y reservas requieren
-            Atención.
+            Puedes restringir accesos de este trabajador dentro de su rol. Estas
+            opciones no conceden permisos de otros roles.
           </Alert>
           {error && <Alert severity='error'>{error}</Alert>}
           <Stack>

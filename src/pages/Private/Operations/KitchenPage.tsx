@@ -1,3 +1,6 @@
+import VolumeUpOutlined from '@mui/icons-material/VolumeUpOutlined';
+import VolumeOffOutlined from '@mui/icons-material/VolumeOffOutlined';
+import { presentationLabel } from './presentationLabel';
 import { useLiveRefresh } from '@/hooks/useLiveRefresh';
 import RestaurantMenuOutlined from '@mui/icons-material/RestaurantMenuOutlined';
 import './cycle2.css';
@@ -26,7 +29,7 @@ import {
 import { Board, KitchenSnapshot } from './fulfillment.types';
 function details(s: KitchenSnapshot) {
   return [
-    s.option?.name,
+    s.option?.name ? presentationLabel(s.option.name) : '',
     ...(s.modifiers || []).map((m) => m.name),
     ...(s.components || []).map((c) => `${c.quantity || 1} × ${c.name}`),
     s.portionKind === 'SPECIAL'
@@ -69,13 +72,17 @@ export function KitchenPage() {
       );
       if (soundEnabled.current && audio.current) {
         for (let n = 0; n < fresh.dispatches; n++) {
-          const spoken =
-            typeof speechSynthesis !== 'undefined' &&
-            announceIncoming(
-              speechSynthesis,
-              () => new SpeechSynthesisUtterance()
-            );
-          if (!spoken) playKitchenTone(audio.current);
+          playKitchenTone(audio.current, () => {
+            if (
+              soundEnabled.current &&
+              audio.current?.state === 'running' &&
+              typeof speechSynthesis !== 'undefined'
+            )
+              announceIncoming(
+                speechSynthesis,
+                () => new SpeechSynthesisUtterance()
+              );
+          });
         }
         if (fresh.notices > 0) playKitchenTone(audio.current);
       }
@@ -228,9 +235,6 @@ export function KitchenPage() {
             variant='outlined'
           />
         </Stack>
-        <Typography>
-          Cocina avisa con timbre o verbalmente. El mozo registra la salida.
-        </Typography>
         <Stack direction='row' spacing={1} flexWrap='wrap'>
           <Button component={Link} to='/attention'>
             Menú y disponibilidad
@@ -238,7 +242,12 @@ export function KitchenPage() {
           {failed && (
             <Button onClick={() => void refresh()}>Reintentar conexión</Button>
           )}
-          <Button aria-pressed={sound} onClick={() => void enableSound()}>
+          <Button
+            variant={sound ? 'contained' : 'outlined'}
+            startIcon={sound ? <VolumeUpOutlined /> : <VolumeOffOutlined />}
+            aria-pressed={sound}
+            onClick={() => void enableSound()}
+          >
             {sound ? 'Sonido activado' : 'Sonido desactivado · Activar sonido'}
           </Button>
         </Stack>

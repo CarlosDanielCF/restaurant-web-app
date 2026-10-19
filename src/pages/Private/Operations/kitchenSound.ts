@@ -28,7 +28,7 @@ export class KitchenSoundTracker {
   }
 }
 /** Must be unlocked by an explicit gesture. Never resume automatically. */
-export function playKitchenTone(context: AudioContext) {
+export function playKitchenTone(context: AudioContext, after?: () => void) {
   try {
     if (context.state !== 'running') return false;
     const oscillator = context.createOscillator(),
@@ -43,6 +43,7 @@ export function playKitchenTone(context: AudioContext) {
     oscillator.onended = () => {
       oscillator.disconnect();
       gain.disconnect();
+      after?.();
     };
     oscillator.start(now);
     oscillator.stop(now + 0.35);

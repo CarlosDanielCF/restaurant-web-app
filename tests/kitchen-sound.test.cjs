@@ -110,3 +110,44 @@ test('one spoken announcement per new dispatch; silent initial/reconnect snapsho
     false
   );
 });
+
+test('incoming voice runs only after generated bell ends; blocked audio never schedules voice', () => {
+  const calls = [];
+  const oscillator = {
+    frequency: { value: 0 },
+    connect() {},
+    disconnect() {},
+    start() {
+      calls.push('bell');
+    },
+    stop() {}
+  };
+  const gain = {
+    gain: {
+      setValueAtTime() {},
+      linearRampToValueAtTime() {},
+      exponentialRampToValueAtTime() {}
+    },
+    connect() {},
+    disconnect() {}
+  };
+  const context = {
+    state: 'running',
+    currentTime: 0,
+    createOscillator: () => oscillator,
+    createGain: () => gain
+  };
+  assert.equal(
+    playKitchenTone(context, () => calls.push('voice')),
+    true
+  );
+  assert.deepEqual(calls, ['bell']);
+  oscillator.onended();
+  assert.deepEqual(calls, ['bell', 'voice']);
+  context.state = 'suspended';
+  assert.equal(
+    playKitchenTone(context, () => calls.push('blocked')),
+    false
+  );
+  assert.deepEqual(calls, ['bell', 'voice']);
+});

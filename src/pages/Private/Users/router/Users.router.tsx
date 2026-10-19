@@ -1,12 +1,26 @@
 import { lazy } from 'react';
 import { RouteObject } from 'react-router';
 
-import { AddUser } from '../components/AddUser/AddUser.component';
-import { UsersList } from '../pages/UsersList.page';
+const AddUser = lazy(() =>
+  import('../components/AddUser/AddUser.component').then((m) => ({
+    default: m.AddUser
+  }))
+);
+const UsersList = lazy(() =>
+  import('../pages/UsersList.page').then((m) => ({ default: m.UsersList }))
+);
 
-import { EditUser } from '../components/EditUser/EditUser.component';
-import { Profile } from '../views/Profile/Profile.view';
-import { Account } from '../views/Account/Account.view';
+const EditUser = lazy(() =>
+  import('../components/EditUser/EditUser.component').then((m) => ({
+    default: m.EditUser
+  }))
+);
+const Profile = lazy(() =>
+  import('../views/Profile/Profile.view').then((m) => ({ default: m.Profile }))
+);
+const Account = lazy(() =>
+  import('../views/Account/Account.view').then((m) => ({ default: m.Account }))
+);
 import { PrivateRoutes } from '../../../../models';
 
 const Users = lazy(() => import('../Users.page'));

@@ -186,3 +186,8 @@ Eliminados: ninguno. Se conservaron contratos históricos, migraciones previas, 
 ## Revisión global posterior — 2026-10-18
 
 La auditoría sobre base frontend `ca6ea6e` y backend `ea62049` se documenta en [F10-GLOBAL-UX.md](F10-GLOBAL-UX.md). Incluye navegación/contexto por rol, llegada de reserva, disponibilidad, disclosures, reportes móviles, documentos y accesos de trabajador. Backend intacto; ninguna migración/seed ejecutada. Las cifras de pruebas anteriores son históricas, no resultados de esta nueva pasada.
+
+
+## Corrección consolidada posterior
+
+Ver [F10-POST-MANUAL.md](F10-POST-MANUAL.md) para la auditoría por observación, retirada del404 legacy sin perder turnos, métricas de carga, apertura contextual y validación sin seeds/migraciones.

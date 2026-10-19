@@ -1,3 +1,5 @@
+import { presentationLabel } from './presentationLabel';
+import { MoreOptions } from '@/components/operational/MoreOptions';
 import { difference, sumMoney } from '../Finance/displayMoney';
 import { Link, useSearchParams } from 'react-router-dom';
 import { DraftLineEditor } from './DraftLineEditor';
@@ -221,6 +223,7 @@ export function AttentionWorkspace({
     'attention.return-consumption': 'Devolución excepcional de consumo',
     'attention.draft.configure': 'Personalización de borrador'
   };
+  const [openAttention, setOpenAttention] = useState(false);
   const [modality, setModality] = useState<Account['modality']>('TABLE');
   const [searchParams] = useSearchParams();
   const [selected, setSelected] = useState(searchParams.get('accountId') || '');
@@ -417,13 +420,152 @@ export function AttentionWorkspace({
       ...(options[0] ? { productOptionId: options[0].id } : {})
     });
   }
+  const openingForm = (
+    <Stack
+      spacing={modality === 'TABLE' ? 1.5 : 2}
+      className={
+        modality === 'TABLE' ? 'open-attention-form' : 'operation-form-grid'
+      }
+    >
+      <Typography variant='h6' component='h2'>
+        Abrir atención
+      </Typography>
+      {modality !== 'TABLE' && (
+        <details className='service-details'>
+          <summary>Opciones de reparto</summary>
+          <TextField
+            select
+            size='small'
+            label='Tipo de reparto'
+            value={modality}
+            onChange={(e) => setModality(e.target.value as Account['modality'])}
+            fullWidth
+          >
+            <MenuItem value='OWN_DELIVERY'>Reparto propio</MenuItem>
+            <MenuItem value='EXTERNAL_COURIER'>Courier externo</MenuItem>
+            <MenuItem value='TAKE_AWAY'>
+              Recogida sin mesa (atención independiente)
+            </MenuItem>
+          </TextField>
+          <Typography variant='caption'>
+            El envío es gratuito. Entrega y pago se registran por separado.
+          </Typography>
+        </details>
+      )}
+      {modality === 'TABLE' && (
+        <MoreOptions title='Seleccionar o cambiar mesas'>
+          <TableChoices
+            tables={tables}
+            accounts={accounts}
+            selected={tableIds}
+            setSelected={setTableIds}
+          />
+        </MoreOptions>
+      )}
+      {!waiter && (
+        <OperatorSelect
+          operators={operators}
+          value={responsible}
+          onChange={setResponsible}
+        />
+      )}
+      {!operators.length && (
+        <Typography>
+          Administración debe crear o activar un trabajador con rol Mozo antes
+          de abrir atención.
+        </Typography>
+      )}
+      {modality !== 'TABLE' &&
+        (['customerName', 'phone', 'address'] as const).map((key) => (
+          <TextField
+            size='medium'
+            key={key}
+            label={
+              {
+                customerName: 'Nombre de quien recibe',
+                phone: 'Teléfono de contacto',
+                address: 'Dirección de entrega',
+                reference: 'Referencia de entrega'
+              }[key]
+            }
+            value={offsite[key]}
+            onChange={(e) =>
+              setOffsite((f) => ({ ...f, [key]: e.target.value }))
+            }
+          />
+        ))}
+      <MoreOptions title='Más detalles: cliente, referencia y observaciones'>
+        <TextField
+          size={modality === 'TABLE' ? 'small' : 'medium'}
+          select
+          label='Cliente (opcional)'
+          value={client}
+          onChange={(e) => setClient(e.target.value)}
+        >
+          <MenuItem value=''>Sin cliente</MenuItem>
+          {clients.map((c) => (
+            <MenuItem key={c.id} value={c.id}>
+              {c.person.firstName} {c.person.lastName}
+            </MenuItem>
+          ))}
+        </TextField>
+        {modality !== 'TABLE' && (
+          <TextField
+            label='Referencia de entrega'
+            value={offsite.reference}
+            onChange={(e) =>
+              setOffsite((f) => ({ ...f, reference: e.target.value }))
+            }
+          />
+        )}
+        <TextField
+          size={modality === 'TABLE' ? 'small' : 'medium'}
+          label='Observaciones de la atención'
+          value={accountNotes}
+          onChange={(e) => setAccountNotes(e.target.value)}
+        />
+      </MoreOptions>
+
+      <Button
+        variant='contained'
+        disabled={!responsible || (modality === 'TABLE' && !tableIds.length)}
+        onClick={async () => {
+          if (
+            await run(
+              '/attention-accounts',
+              {
+                modality,
+                notes: accountNotes,
+                ...(modality !== 'TABLE' ? { offsite } : {}),
+                responsibleUserId: responsible,
+                tableIds,
+                ...(client ? { clientId: client } : {})
+              },
+              'post',
+              (data) => {
+                selectAccount((data as Account).id);
+                setOpenAttention(false);
+              }
+            )
+          ) {
+            setTableIds([]);
+            setClient('');
+          }
+        }}
+      >
+        Abrir atención
+      </Button>
+    </Stack>
+  );
   const accountCards = (
     <>
       {' '}
       {!account && (
         <Box className='account-cards'>
           {accounts
-            .filter((a) => a.attentionStatus === 'OPEN')
+            .filter(
+              (a) => a.attentionStatus === 'OPEN' && a.modality === 'TABLE'
+            )
             .map((a) => (
               <Card variant='outlined' className='account-tile' key={a.id}>
                 <Typography fontWeight={700}>
@@ -432,8 +574,14 @@ export function AttentionWorkspace({
                 </Typography>
                 <Typography variant='body2'>
                   Mozo:{' '}
-                  {operators.find((o) => o.id === a.responsibleUserId)
-                    ?.firstName || a.responsibleUserId}
+                  {(() => {
+                    const worker = operators.find(
+                      (o) => o.id === a.responsibleUserId
+                    );
+                    return worker
+                      ? `${worker.firstName} ${worker.lastName}`
+                      : 'Responsable asignado';
+                  })()}
                 </Typography>
                 <Typography variant='body2'>
                   {a.lines.filter((l) => l.status === 'ACTIVE').length} consumos
@@ -456,7 +604,9 @@ export function AttentionWorkspace({
                 </Button>
               </Card>
             ))}
-          {!accounts.some((a) => a.attentionStatus === 'OPEN') && (
+          {!accounts.some(
+            (a) => a.attentionStatus === 'OPEN' && a.modality === 'TABLE'
+          ) && (
             <Typography color='text.secondary'>
               No hay cuentas abiertas. Selecciona mesas para iniciar la
               atención.
@@ -508,7 +658,7 @@ export function AttentionWorkspace({
         <DialogTitle>{presentationProduct?.name}</DialogTitle>
         <DialogContent>
           <Typography color='text.secondary' sx={{ mb: 2 }}>
-            Elige una presentación
+            Elige una presentación para agregar al pedido.
           </Typography>
           <Stack spacing={1}>
             {presentationProduct?.options
@@ -540,7 +690,7 @@ export function AttentionWorkspace({
                     }
                   }}
                 >
-                  {o.name} · S/ {o.price}
+                  {presentationLabel(o.name)} · S/ {o.price}
                 </Button>
               ))}
             <Button
@@ -589,7 +739,7 @@ export function AttentionWorkspace({
           </Button>
         </Stack>
       )}
-      {!account && waiter && can('delivery') && (
+      {!account && can('delivery') && (
         <Stack
           direction='row'
           gap={1}
@@ -631,11 +781,7 @@ export function AttentionWorkspace({
           className={modality === 'TABLE' ? 'open-attention-card' : undefined}
         >
           <CardContent>
-            <Box
-              className={
-                modality === 'TABLE' && !waiter ? 'open-attention-layout' : ''
-              }
-            >
+            <Box className={''}>
               {modality === 'TABLE' && (
                 <Box className='open-attention-map'>
                   <Stack
@@ -681,10 +827,12 @@ export function AttentionWorkspace({
                     {joining && (
                       <Button
                         variant='contained'
-                        disabled={
-                          tableIds.length < 2 || (!waiter && !responsible)
+                        disabled={tableIds.length < 2}
+                        onClick={() =>
+                          waiter
+                            ? void enterTables(tableIds)
+                            : setOpenAttention(true)
                         }
-                        onClick={() => void enterTables(tableIds)}
                       >
                         Unir y atender
                       </Button>
@@ -705,6 +853,9 @@ export function AttentionWorkspace({
                             key={t.id}
                             className='quick-table'
                             data-occupied={!!active?.hasConfirmedConsumption}
+                            data-open-draft={
+                              !!active && !active.hasConfirmedConsumption
+                            }
                             variant='outlined'
                             aria-pressed={joining ? chosen : undefined}
                             disabled={
@@ -719,11 +870,21 @@ export function AttentionWorkspace({
                                     : [...tableIds, t.id]
                                 );
                               else if (active) selectAccount(active.id);
-                              else void enterTables([t.id]);
+                              else if (!waiter) {
+                                setTableIds([t.id]);
+                                setOpenAttention(true);
+                              } else void enterTables([t.id]);
                             }}
                           >
                             <TableRestaurantOutlined />
                             <strong>{t.name}</strong>
+                            {active && !active.hasConfirmedConsumption && (
+                              <Chip
+                                size='small'
+                                label='ABIERTA'
+                                className='open-draft-badge'
+                              />
+                            )}
                             <span>
                               {chosen
                                 ? '✓ Seleccionada'
@@ -759,6 +920,12 @@ export function AttentionWorkspace({
                     Cuentas abiertas
                   </Typography>
                   {accountCards}
+
+                  {!waiter && (
+                    <Button onClick={() => setOpenAttention(true)}>
+                      Abrir atención manualmente
+                    </Button>
+                  )}
                   <Typography
                     variant='caption'
                     color='text.secondary'
@@ -770,141 +937,30 @@ export function AttentionWorkspace({
                   </Typography>
                 </Box>
               )}
-              <Stack
-                sx={{
-                  display: waiter && modality === 'TABLE' ? 'none' : undefined
-                }}
-                spacing={modality === 'TABLE' ? 1.5 : 2}
-                className={
-                  modality === 'TABLE'
-                    ? 'open-attention-form'
-                    : 'operation-form-grid'
-                }
-              >
-                <Typography variant='h6' component='h2'>
-                  Abrir atención
-                </Typography>
-                <TextField
-                  select
-                  size='small'
-                  label='Modalidad'
-                  value={modality === 'TABLE' ? 'TABLE' : 'OWN_DELIVERY'}
-                  onChange={(e) => {
-                    setModality(e.target.value as Account['modality']);
-                    setTableIds([]);
-                  }}
+              {modality !== 'TABLE' ? (
+                openingForm
+              ) : (
+                <Dialog
+                  open={openAttention}
+                  onClose={() => setOpenAttention(false)}
+                  fullWidth
+                  maxWidth='sm'
                 >
-                  <MenuItem value='TABLE'>Mesa</MenuItem>
-                  {can('delivery') && (
-                    <MenuItem value='OWN_DELIVERY'>Delivery</MenuItem>
-                  )}
-                </TextField>
-                {modality !== 'TABLE' && (
-                  <details className='service-details'>
-                    <summary>Opciones de reparto</summary>
-                    <TextField
-                      select
-                      size='small'
-                      label='Tipo de reparto'
-                      value={modality}
-                      onChange={(e) =>
-                        setModality(e.target.value as Account['modality'])
-                      }
-                      fullWidth
-                    >
-                      <MenuItem value='OWN_DELIVERY'>Reparto propio</MenuItem>
-                      <MenuItem value='EXTERNAL_COURIER'>
-                        Courier externo
-                      </MenuItem>
-                      <MenuItem value='TAKE_AWAY'>
-                        Recogida sin mesa (atención independiente)
-                      </MenuItem>
-                    </TextField>
-                    <Typography variant='caption'>
-                      El envío es gratuito. Entrega y pago se registran por
-                      separado.
-                    </Typography>
-                  </details>
-                )}
-                {!waiter && (
-                  <OperatorSelect
-                    operators={operators}
-                    value={responsible}
-                    onChange={setResponsible}
-                  />
-                )}
-                {!operators.length && (
-                  <Typography>
-                    Administración debe crear o activar un trabajador con rol
-                    Mozo antes de abrir atención.
-                  </Typography>
-                )}
-                <TextField
-                  size={modality === 'TABLE' ? 'small' : 'medium'}
-                  select
-                  label='Cliente (opcional)'
-                  value={client}
-                  onChange={(e) => setClient(e.target.value)}
-                >
-                  <MenuItem value=''>Sin cliente</MenuItem>
-                  {clients.map((c) => (
-                    <MenuItem key={c.id} value={c.id}>
-                      {c.person.firstName} {c.person.lastName}
-                    </MenuItem>
-                  ))}
-                </TextField>
-                {modality !== 'TABLE' &&
-                  (
-                    ['customerName', 'phone', 'address', 'reference'] as const
-                  ).map((key) => (
-                    <TextField
-                      size='medium'
-                      key={key}
-                      label={
-                        {
-                          customerName: 'Nombre de quien recibe',
-                          phone: 'Teléfono de contacto',
-                          address: 'Dirección de entrega',
-                          reference: 'Referencia de entrega'
-                        }[key]
-                      }
-                      value={offsite[key]}
-                      onChange={(e) =>
-                        setOffsite((f) => ({ ...f, [key]: e.target.value }))
-                      }
-                    />
-                  ))}
-                <TextField
-                  size={modality === 'TABLE' ? 'small' : 'medium'}
-                  label='Observaciones de la atención'
-                  value={accountNotes}
-                  onChange={(e) => setAccountNotes(e.target.value)}
-                />
-
-                <Button
-                  variant='contained'
-                  disabled={
-                    !responsible || (modality === 'TABLE' && !tableIds.length)
-                  }
-                  onClick={async () => {
-                    if (
-                      await run('/attention-accounts', {
-                        modality,
-                        notes: accountNotes,
-                        ...(modality !== 'TABLE' ? { offsite } : {}),
-                        responsibleUserId: responsible,
-                        tableIds,
-                        ...(client ? { clientId: client } : {})
-                      })
-                    ) {
-                      setTableIds([]);
-                      setClient('');
-                    }
-                  }}
-                >
-                  Abrir atención
-                </Button>
-              </Stack>
+                  <DialogTitle>
+                    Abrir atención ·{' '}
+                    {tables
+                      .filter((t) => tableIds.includes(t.id))
+                      .map((t) => t.name)
+                      .join(' + ')}
+                  </DialogTitle>
+                  <DialogContent>
+                    {openingForm}
+                    <Button onClick={() => setOpenAttention(false)}>
+                      Volver
+                    </Button>
+                  </DialogContent>
+                </Dialog>
+              )}
             </Box>
           </CardContent>
         </Card>
@@ -1254,24 +1310,26 @@ export function AttentionWorkspace({
                       )}
                       {account.attentionStatus === 'OPEN' &&
                         Number(account.balance) === 0 && (
-                          <Button
-                            variant='contained'
-                            onClick={() =>
-                              void run(
-                                `/attention-accounts/${account.id}/close`,
-                                {
-                                  expectedVersion: account.version,
-                                  mode: 'END_ATTENTION',
-                                  reason:
-                                    'El cliente se retiró; atención finalizada'
-                                },
-                                'post',
-                                () => selectAccount('')
-                              )
-                            }
-                          >
-                            Finalizar atención
-                          </Button>
+                          <MoreOptions title='Más opciones de atención'>
+                            <Button
+                              variant='contained'
+                              onClick={() =>
+                                void run(
+                                  `/attention-accounts/${account.id}/close`,
+                                  {
+                                    expectedVersion: account.version,
+                                    mode: 'END_ATTENTION',
+                                    reason:
+                                      'El cliente se retiró; atención finalizada'
+                                  },
+                                  'post',
+                                  () => selectAccount('')
+                                )
+                              }
+                            >
+                              Finalizar atención
+                            </Button>
+                          </MoreOptions>
                         )}
                     </Box>
                   </Stack>
@@ -1456,7 +1514,7 @@ export function AttentionWorkspace({
                                   .filter((o) => o.isActive && o.isAvailable)
                                   .map((o) => (
                                     <MenuItem key={o.id} value={String(o.id)}>
-                                      {o.name} · S/{o.price}
+                                      {presentationLabel(o.name)} · S/{o.price}
                                     </MenuItem>
                                   ))}
                               </TextField>
@@ -1810,7 +1868,7 @@ export function AttentionWorkspace({
           </Dialog>
         </>
       )}
-      {!account && can('delivery') && (
+      {!account && modality !== 'TABLE' && can('delivery') && (
         <OffsiteCards
           accounts={accounts}
           operators={operators}

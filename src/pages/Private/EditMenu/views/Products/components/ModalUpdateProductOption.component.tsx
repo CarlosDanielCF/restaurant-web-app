@@ -114,7 +114,10 @@ export const ModalUpdateProductOption = NiceModal.create<Props>(
                         message: 'Minimo 2 caracteres'
                       }
                     })}
-                    helperText={errors.name?.message}
+                    helperText={
+                      errors.name?.message ||
+                      'Nombre comercial confirmado por el restaurante. El POS usa Opción 1/2 mientras figure nombre pendiente.'
+                    }
                     error={!!errors.name}
                   />
                 </Grid>

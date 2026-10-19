@@ -2,10 +2,31 @@ import { lazy } from 'react';
 
 import { Navigate, RouteObject } from 'react-router-dom';
 
-import { EditCategory, ProductsList } from '../components';
-import { EditProduct, Products, CreateProduct } from '../views/Products/';
-import { Sections } from '../views/Sections/Sections.view';
-import { Categories } from '../views/Categories/Categories.view';
+const EditCategory = lazy(() =>
+  import('../components').then((m) => ({ default: m.EditCategory }))
+);
+const ProductsList = lazy(() =>
+  import('../components').then((m) => ({ default: m.ProductsList }))
+);
+const EditProduct = lazy(() =>
+  import('../views/Products/').then((m) => ({ default: m.EditProduct }))
+);
+const Products = lazy(() =>
+  import('../views/Products/').then((m) => ({ default: m.Products }))
+);
+const CreateProduct = lazy(() =>
+  import('../views/Products/').then((m) => ({ default: m.CreateProduct }))
+);
+const Sections = lazy(() =>
+  import('../views/Sections/Sections.view').then((m) => ({
+    default: m.Sections
+  }))
+);
+const Categories = lazy(() =>
+  import('../views/Categories/Categories.view').then((m) => ({
+    default: m.Categories
+  }))
+);
 
 const EditMenu = lazy(() => import('../EditMenu.page'));
 

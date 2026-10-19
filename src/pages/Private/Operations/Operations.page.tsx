@@ -1,4 +1,4 @@
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams, Link, Navigate } from 'react-router-dom';
 import {
   TableRestaurantOutlined,
   EventAvailableOutlined,
@@ -47,10 +47,11 @@ export type Run = (
   onSuccess?: (data: unknown) => void
 ) => Promise<boolean>;
 export function OperationsPage() {
-  const can = useWorkerAccess();
-  const allowReservations = can('reservations'),
-    allowClients = can('clients');
   const user = useSelector(selectAuth).user;
+  const can = useWorkerAccess();
+  const allowReservations =
+      user?.role.name !== 'COCINERO' && can('reservations'),
+    allowClients = can('clients');
   const role = user?.role.name;
   const cook = role === 'COCINERO',
     manager = ['DUENO', 'ADMINISTRADOR'].includes(role || '');
@@ -189,6 +190,8 @@ export function OperationsPage() {
       setBusy(false);
     }
   };
+  if (cook && params.get('tab') === 'reservations')
+    return <Navigate to='/unauthorized' replace />;
   return (
     <Container maxWidth='xl' className='operations-workspace'>
       <Stack spacing={1.5} py={0.5}>

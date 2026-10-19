@@ -127,3 +127,42 @@
     justify-self: start;
   }
 }
+
+/* Post-manual: one scroll per working column, adequate order width, no tiny account scroll. */
+body [data-testid='app-content'] .open-attention-map > .account-cards {
+  max-height: none;
+  overflow: visible;
+}
+.attention-service .quick-table[data-open-draft='true'] {
+  border: 2px dashed #15803d;
+  background: #f0fdf4;
+}
+.attention-service .open-draft-badge {
+  background: #dcfce7;
+  color: #166534;
+  font-weight: 800;
+  font-size: 11px;
+}
+@media (min-width: 900px) {
+  body [data-testid='app-content'] .attention-service .order-workbench {
+    grid-template-columns: minmax(0, 1.55fr) minmax(340px, 1fr);
+    height: calc(100dvh - 350px);
+    min-height: 360px;
+  }
+  body [data-testid='app-content'] .attention-service .current-order {
+    position: static;
+    height: 100%;
+    max-height: none;
+    overflow-y: auto;
+  }
+  body [data-testid='app-content'] .attention-service .current-order-card,
+  body
+    [data-testid='app-content']
+    .attention-service
+    .current-order
+    > .fulfillment-card {
+    overflow: visible;
+    max-height: none;
+    flex-shrink: 0;
+  }
+}

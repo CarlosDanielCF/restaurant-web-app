@@ -1,4 +1,4 @@
-import { Navigate, useNavigate, useRoutes, useLocation } from 'react-router-dom';
+import { useNavigate, useRoutes, useLocation } from 'react-router-dom';
 
 import { useAppSelector, useMenu } from '../../hooks';
 
@@ -7,15 +7,9 @@ import { SidebarProvider } from './Common/contexts/SidebarContext';
 
 import { CircularProgress } from '@mui/material';
 import { OrderProvider } from './Orders/context/Order.context';
-import { useRestaurant } from './Restaurant/hooks/useRestaurant';
 
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import {
-  useAllActiveCashRegisters,
-  useCashRegisterActive
-} from './Balance/hooks/useCashRegister';
-import { ModalCreateCashRegister } from './Balance/components/ModalCreateCashRegister.component';
 import {
   useActiveOrders,
   useOnOrderCreated,
@@ -45,7 +39,13 @@ export const Private = () => {
 
   const navigate = useNavigate();
   const location = useLocation();
-  useEffect(()=>{if(user?.role.name===Roles.COOK && ['/', '/orders','/orders/'].includes(location.pathname)) navigate('/kitchen',{replace:true});},[user?.role.name,location.pathname,navigate]);
+  useEffect(() => {
+    if (
+      user?.role.name === Roles.COOK &&
+      ['/', '/orders', '/orders/'].includes(location.pathname)
+    )
+      navigate('/kitchen', { replace: true });
+  }, [user?.role.name, location.pathname, navigate]);
 
   // Load all menu
   const menuQuery = useMenu();
@@ -57,12 +57,12 @@ export const Private = () => {
   const { activeOrdersQuery } = useActiveOrders();
 
   // Load tables
-  const { tablesQuery } = useTables();
+  useTables();
 
   // Load cash register active
   // useCashRegisterActive();
 
-  useAllActiveCashRegisters();
+  // Financial shifts are owned by FinancePage (/finance/shifts), not legacy cash registers.
 
   // listener update table
   useOnTableUpdated();
@@ -99,8 +99,6 @@ export const Private = () => {
             <>{content}</>
           </SidebarProvider>
         </OrderProvider>
-
-        <ModalCreateCashRegister />
       </LocalizationProvider>
     </>
   );
