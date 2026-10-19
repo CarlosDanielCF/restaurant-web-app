@@ -3,7 +3,6 @@ import { createContext, FC, useReducer, useState } from 'react';
 import { IClient, ITable } from '../../../../models';
 
 import { ICreateOrderDetail, TypeOrder } from '../../../../models/orders.model';
-import { CreateOrderDto, CreateOrderDetailDto } from '../dto/create-order.dto';
 
 export enum OrderActionType {
   SET_CLIENT = 'set_client',
@@ -92,7 +91,7 @@ const orderReducer = (state: typeof initialState, action: ActionType) => {
         typeOrder: action.payload
       };
 
-    case OrderActionType.ADD_DETAIL:
+    case OrderActionType.ADD_DETAIL: {
       const isDetail = state.details.find(
         (det) => det.product.id === action.payload.product.id
       );
@@ -123,7 +122,7 @@ const orderReducer = (state: typeof initialState, action: ActionType) => {
           })
         };
       }
-
+    }
     case OrderActionType.UPDATE_DETAIL:
       return {
         ...state,
@@ -176,26 +175,6 @@ interface IOrderContext {
   state: IOrderState;
   activeStep: number;
   changeStep: (step: number) => void;
-
-  // amount: number;
-  // client: IClient | null;
-  // details: ICreateOrderDetail[];
-  // table: ITable | undefined;
-
-  // people: number | undefined;
-  // typeOrder: TypeOrder;
-
-  // addDetail: (detail: ICreateOrderDetail) => void;
-  // deleteDetail: (nameProduct: string) => void;
-  // reset: () => void;
-  // setPeople: (people: number) => void;
-  // setClient: (client: IClient | null) => void;
-  // setTable: (table: ITable) => void;
-  // updateDetail: (detail: ICreateOrderDetail) => void;
-  // getOrder: () => CreateOrderDto;
-  // setDetails: (details: ICreateOrderDetail[]) => void;
-  // setTypeOrder: (typeOrder: TypeOrder) => void;
-  // getTotalProducts: () => number;
 }
 
 interface Props {
@@ -211,95 +190,6 @@ export const OrderProvider: FC<Props> = ({ children }) => {
 
   const changeStep = (step: number) => {
     setActiveStep(step);
-  };
-
-  const [details, setDetails] = useState<ICreateOrderDetail[]>([]);
-  const [table, setTable] = useState<ITable>();
-  const [client, setClient] = useState<IClient | null>(null);
-  const [people, setPeople] = useState<number>(1);
-  const [typeOrder, setTypeOrder] = useState<TypeOrder>(TypeOrder.IN_PLACE);
-
-  const addDetail = (detail: ICreateOrderDetail) => {
-    const isDetail = details.find(
-      (det) => det.product.id === detail.product.id
-    );
-
-    if (!isDetail) {
-      setDetails((details) => [detail, ...details]);
-    } else {
-      updateDetail(detail);
-    }
-  };
-
-  const deleteDetail = (nameProduct: string) => {
-    setDetails((details) =>
-      details.filter((det) => {
-        const isSameProduct = det.product.name !== nameProduct;
-
-        if (!isSameProduct) {
-          const amountDiff = det.quantity * det.product.price;
-        }
-
-        return isSameProduct;
-      })
-    );
-  };
-
-  const updateDetail = (detail: ICreateOrderDetail) => {
-    console.log('actualizando detalle', detail);
-
-    setDetails((details) =>
-      details.map((det) => {
-        if (det.product.name === detail.product.name) {
-          return detail;
-        }
-        return det;
-      })
-    );
-  };
-
-  const getOrder = () => {
-    const order: CreateOrderDto = {
-      clientId: client?.id || '',
-      tableId: table?.id || '',
-      details: details.map((detail) => {
-        const orderDetail: CreateOrderDetailDto = {
-          productId: detail.product.id,
-          quantity: detail.quantity,
-          description: detail.description,
-          price: detail.product.price
-        };
-        return orderDetail;
-      }),
-
-      people,
-      typeOrder
-    };
-
-    return order;
-  };
-
-  const getTotalProducts = (): number => {
-    return details.reduce(
-      (acc, detail) =>
-        acc +
-        Math.floor(detail.quantity) +
-        (Number.isInteger(detail.quantity) ? 0 : 1),
-      0
-    );
-  };
-
-  const amount = details.reduce(
-    (acc, detail) => acc + detail.product.price * detail.quantity,
-    0
-  );
-
-  const reset = () => {
-    setClient(null);
-    setTable(undefined);
-    setDetails([]);
-    setPeople(1);
-    setTypeOrder(TypeOrder.IN_PLACE);
   };
 
   return (

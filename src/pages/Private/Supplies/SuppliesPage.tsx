@@ -14,6 +14,7 @@ import {
   FormControlLabel,
   LinearProgress,
   MenuItem,
+  Skeleton,
   Stack,
   TextField,
   Typography
@@ -29,6 +30,11 @@ import { MoreOptions } from '@/components/operational/MoreOptions';
 import { WorkspaceEmpty } from '@/components/operational/WorkspaceEmpty';
 import { useRestaurantStore } from '../Common/store/restaurantStore';
 import { presentationLabel } from '../Operations/presentationLabel';
+import {
+  displayOperatingDate,
+  displayUnits,
+  restaurantDate
+} from '../Insights/reportView';
 import { cents } from '../Finance/displayMoney';
 import {
   Page,
@@ -50,6 +56,19 @@ type Action =
   | 'count'
   | 'recover'
   | 'expense';
+const READ_TIMEOUT_MS = 15000;
+const successMessages: Record<Action, string> = {
+  configure:
+    'Control de stock activado correctamente. No se añadieron unidades ni gastos.',
+  purchase:
+    'Ingreso de bebidas confirmado. El stock y la compra se registraron una sola vez.',
+  opening: 'Stock inicial registrado. No se generó una compra ni un gasto.',
+  adjust: 'Ajuste registrado con su motivo en el Kardex.',
+  count: 'Conteo físico registrado. La diferencia quedó en el historial.',
+  recover:
+    'Recuperación confirmada. Las unidades autorizadas regresaron al stock.',
+  expense: 'Compra de mercado registrada correctamente.'
+};
 const emptyPage = <T,>(): Page<T> => ({
   rows: [],
   total: 0,
@@ -79,7 +98,12 @@ const titles: Record<Action, string> = {
 const stockLabel = (stock: Pick<Stock, 'productName' | 'optionName'>) =>
   `${stock.productName}${stock.optionName ? ` · ${presentationLabel(stock.optionName)}` : ''}`;
 function apiError(error: unknown) {
-  const value = error as { data?: { message?: string | string[] } };
+  const value = error as {
+    code?: string;
+    data?: { message?: string | string[] };
+  };
+  if (value.code === 'ECONNABORTED' || value.code === 'ETIMEDOUT')
+    return 'La consulta tardó demasiado. Puedes reintentar; se conserva la información visible.';
   const message = value.data?.message;
   return Array.isArray(message)
     ? message.join('. ')
@@ -122,9 +146,7 @@ export function SuppliesPage() {
   const timeZone = restaurant?.timeZone || 'America/Lima';
   const currency =
     restaurant?.currency === 'PEN' ? 'S/' : restaurant?.currency || 'PEN';
-  const today = new Intl.DateTimeFormat('en-CA', { timeZone }).format(
-    new Date()
-  );
+  const today = restaurantDate(timeZone);
   const initialView = params.get('view');
   const [view, setView] = useState<View>(
     initialView === 'expenses' || initialView === 'movements'
@@ -141,7 +163,7 @@ export function SuppliesPage() {
   const [stocks, setStocks] = useState(emptyPage<Stock>()),
     [movements, setMovements] = useState(emptyPage<StockMovement>()),
     [expenses, setExpenses] = useState(emptyPage<Expense>());
-  const [busy, setBusy] = useState(false),
+  const [busy, setBusy] = useState(true),
     [saving, setSaving] = useState(false),
     [error, setError] = useState(''),
     [notice, setNotice] = useState(''),
@@ -152,7 +174,9 @@ export function SuppliesPage() {
   const [catalog, setCatalog] = useState(emptyPage<SupplyProduct>()),
     [catalogSearch, setCatalogSearch] = useState(''),
     [catalogPage, setCatalogPage] = useState(1),
-    [catalogBusy, setCatalogBusy] = useState(false);
+    [catalogBusy, setCatalogBusy] = useState(false),
+    [catalogError, setCatalogError] = useState(''),
+    [catalogRevision, setCatalogRevision] = useState(0);
   const [product, setProduct] = useState<SupplyProduct>(),
     [optionId, setOptionId] = useState(0),
     [factory, setFactory] = useState(false);
@@ -175,6 +199,7 @@ export function SuppliesPage() {
       const response = await restauranteApi.get(
         `/supplies/${view === 'stock' ? 'stocks' : view}`,
         {
+          timeout: READ_TIMEOUT_MS,
           params: {
             page,
             pageSize: 25,
@@ -215,15 +240,17 @@ export function SuppliesPage() {
     let current = true;
     const timer = setTimeout(() => {
       setCatalogBusy(true);
+      setCatalogError('');
       restauranteApi
         .get<Page<SupplyProduct>>('/supplies/catalog', {
+          timeout: READ_TIMEOUT_MS,
           params: { search: catalogSearch, page: catalogPage, pageSize: 20 }
         })
         .then((r) => {
           if (current) setCatalog(r.data);
         })
         .catch((e) => {
-          if (current) setFormError(apiError(e));
+          if (current) setCatalogError(apiError(e));
         })
         .finally(() => {
           if (current) setCatalogBusy(false);
@@ -233,12 +260,13 @@ export function SuppliesPage() {
       current = false;
       clearTimeout(timer);
     };
-  }, [action, catalogSearch, catalogPage, restaurant?.id]);
+  }, [action, catalogSearch, catalogPage, catalogRevision, restaurant?.id]);
   useEffect(() => {
     if (action !== 'recover' || !selected) return;
     let current = true;
     restauranteApi
       .get<Page<Recoverable>>('/supplies/recoverable', {
+        timeout: READ_TIMEOUT_MS,
         params: { stockId: selected.id, page: recoverPage, pageSize: 20 }
       })
       .then((r) => {
@@ -265,14 +293,20 @@ export function SuppliesPage() {
     setOptionId(0);
     setCatalogPage(1);
     setCatalogSearch('');
+    setCatalogError('');
+    setCatalog(emptyPage());
     setRecoverPage(1);
   };
   const update = (key: string, value: string) =>
     setValues((v) => ({ ...v, [key]: value }));
   const preview = purchasePreview(values.quantity || '', values.unitCost || '');
   const recovery = recoverable.rows.find((row) => row.lineId === values.lineId);
+  const selectedControl = product?.stockControls?.find(
+    (stock) => stock.optionId === optionId
+  );
   const validation = () => {
-    if (action === 'configure') return product && factory;
+    if (action === 'configure')
+      return product && factory && !selectedControl?.controlStock;
     if (action === 'expense')
       return (
         !!values.concept?.trim() &&
@@ -293,6 +327,7 @@ export function SuppliesPage() {
       );
     if (action === 'opening')
       return (
+        selected?.hasMovements === false &&
         wholeUnits(values.quantity || '', true) &&
         values.reason?.trim().length >= 2
       );
@@ -320,7 +355,8 @@ export function SuppliesPage() {
         productId: product!.id,
         ...(optionId ? { optionId } : {}),
         controlStock: true,
-        factoryPackaged: true
+        factoryPackaged: true,
+        ...(selectedControl ? { expectedVersion: selectedControl.version } : {})
       };
     } else if (action === 'expense') {
       path = '/supplies/expenses';
@@ -370,9 +406,7 @@ export function SuppliesPage() {
     try {
       await restauranteApi.post(path, body);
       setAction(undefined);
-      setNotice(
-        'Operación confirmada. El historial y los importes fueron registrados por el servidor.'
-      );
+      setNotice(successMessages[action]);
       await refresh();
     } catch (e) {
       setFormError(apiError(e));
@@ -380,6 +414,7 @@ export function SuppliesPage() {
       if (selected) {
         try {
           const r = await restauranteApi.get<Page<Stock>>('/supplies/stocks', {
+            timeout: READ_TIMEOUT_MS,
             params: { stockId: selected.id, page: 1, pageSize: 1 }
           });
           const current = r.data.rows.find((s) => s.id === selected.id);
@@ -483,7 +518,22 @@ export function SuppliesPage() {
             {error}
           </Alert>
         )}
-        {busy && <LinearProgress />}
+        {busy && <LinearProgress aria-label='Actualizando compras y bebidas' />}
+        {busy && !currentPage.rows.length && (
+          <div
+            className='supplies-grid'
+            role='status'
+            aria-label='Cargando datos de compras y bebidas'
+          >
+            {[0, 1, 2].map((item) => (
+              <Card className='supplies-stock' key={item} aria-hidden='true'>
+                <Skeleton width='70%' height={30} />
+                <Skeleton width='40%' height={44} />
+                <Skeleton variant='rounded' height={44} />
+              </Card>
+            ))}
+          </div>
+        )}
         {view === 'stock' ? (
           <>
             <div className='supplies-toolbar'>
@@ -506,7 +556,7 @@ export function SuppliesPage() {
               configuradas aquí. Las bebidas preparadas y la disponibilidad por
               porciones conservan su propio funcionamiento.
             </Alert>
-            {!busy && !stocks.rows.length && (
+            {!busy && !error && !stocks.rows.length && (
               <WorkspaceEmpty
                 title='Sin bebidas configuradas'
                 description='Selecciona productos reales de la carta. Registra el stock inicial solo después de conocer el conteo; no se asignan existencias de demostración.'
@@ -544,7 +594,7 @@ export function SuppliesPage() {
                   </Stack>
                   <div>
                     <span className='supplies-stock-count'>
-                      {Number(stock.quantity)}
+                      {displayUnits(stock.quantity)}
                     </span>{' '}
                     <Typography component='span' color='text.secondary'>
                       unidades esperadas
@@ -552,8 +602,9 @@ export function SuppliesPage() {
                   </div>
                   {Number(stock.quantity) === 0 && stock.controlStock && (
                     <Typography variant='caption' color='text.secondary'>
-                      Registra saldo inicial o compra con cantidades reales
-                      antes de confirmar consumos.
+                      {stock.hasMovements
+                        ? 'Ingresa una compra real o registra un conteo físico antes de confirmar nuevos consumos.'
+                        : 'Registra el conteo inicial o una compra real antes de confirmar consumos.'}
                     </Typography>
                   )}
                   <div className='supplies-stock-actions'>
@@ -590,11 +641,18 @@ export function SuppliesPage() {
                         Ajuste con motivo
                       </Button>
                       <Button
-                        disabled={saving}
+                        disabled={saving || stock.hasMovements !== false}
                         onClick={() => open('opening', stock)}
                       >
                         Stock inicial (sin movimientos previos)
                       </Button>
+                      {stock.hasMovements && (
+                        <Typography variant='caption' color='text.secondary'>
+                          El stock inicial ya no está disponible: esta unidad
+                          tiene movimientos. Usa conteo físico o ajuste con
+                          motivo.
+                        </Typography>
+                      )}
                       <Button
                         disabled={saving}
                         onClick={() => open('recover', stock)}
@@ -672,7 +730,7 @@ export function SuppliesPage() {
                   registra las compras de mercado; no repitas el costo de las
                   bebidas.
                 </Alert>
-                {!busy && !expenses.rows.length && (
+                {!busy && !error && !expenses.rows.length && (
                   <WorkspaceEmpty
                     title='Sin compras ni gastos en el período'
                     description='Los ingresos de bebidas y los gastos confirmados aparecerán con su fecha operativa.'
@@ -697,7 +755,7 @@ export function SuppliesPage() {
                     <dl>
                       <div>
                         <dt>Fecha operativa</dt>
-                        <dd>{expense.operatingDate}</dd>
+                        <dd>{displayOperatingDate(expense.operatingDate)}</dd>
                       </div>
                       <div>
                         <dt>Registrado por</dt>
@@ -718,7 +776,7 @@ export function SuppliesPage() {
               </>
             ) : (
               <>
-                {!busy && !movements.rows.length && (
+                {!busy && !error && !movements.rows.length && (
                   <WorkspaceEmpty
                     title='Sin movimientos para estos filtros'
                     description='Compras, consumos confirmados, recuperaciones y ajustes conservan su trazabilidad aquí.'
@@ -738,15 +796,15 @@ export function SuppliesPage() {
                       </div>
                       <Typography variant='h6'>
                         {Number(movement.quantityDelta) > 0 ? '+' : ''}
-                        {Number(movement.quantityDelta)} uds.
+                        {displayUnits(movement.quantityDelta)} uds.
                       </Typography>
                     </header>
                     <dl>
                       <div>
                         <dt>Anterior → posterior</dt>
                         <dd>
-                          {Number(movement.stockBefore)} →{' '}
-                          {Number(movement.stockAfter)}
+                          {displayUnits(movement.stockBefore)} →{' '}
+                          {displayUnits(movement.stockAfter)}
                         </dd>
                       </div>
                       <div>
@@ -799,7 +857,8 @@ export function SuppliesPage() {
           {action ? titles[action] : ''}
           {selected && (
             <Typography color='text.secondary'>
-              {stockLabel(selected)} · {Number(selected.quantity)} unidades
+              {stockLabel(selected)} · {displayUnits(selected.quantity)}{' '}
+              unidades
             </Typography>
           )}
         </DialogTitle>
@@ -824,17 +883,49 @@ export function SuppliesPage() {
                       }}
                     />
                     {catalogBusy && <LinearProgress />}
+                    {catalogError && (
+                      <Alert
+                        severity='error'
+                        action={
+                          <Button
+                            color='inherit'
+                            onClick={() =>
+                              setCatalogRevision((value) => value + 1)
+                            }
+                          >
+                            Reintentar
+                          </Button>
+                        }
+                      >
+                        {catalogError}
+                      </Alert>
+                    )}
                     {catalog.rows.map((item) => (
                       <Button
                         className='supplies-product-option'
                         key={item.id}
                         variant='outlined'
+                        aria-label={item.name}
                         onClick={() => setProduct(item)}
                       >
-                        {item.name}
+                        <span>{item.name}</span>
+                        <Typography
+                          component='span'
+                          variant='caption'
+                          color='text.secondary'
+                        >
+                          {item.options.length
+                            ? `${item.options.length} presentaciones`
+                            : 'Unidad sin presentación'}
+                          {item.stockControls?.some(
+                            (control) => control.controlStock
+                          )
+                            ? ' · Con control'
+                            : ''}
+                        </Typography>
                       </Button>
                     ))}
-                    {!catalogBusy && !catalog.rows.length && (
+                    {!catalogBusy && !catalogError && !catalog.rows.length && (
                       <Typography>
                         No hay productos para esta búsqueda.
                       </Typography>
@@ -852,6 +943,15 @@ export function SuppliesPage() {
                 ) : (
                   <>
                     <Typography variant='h6'>{product.name}</Typography>
+                    <Chip
+                      size='small'
+                      sx={{ alignSelf: 'flex-start' }}
+                      label={
+                        product.productionRouting === 'PRODUCTION'
+                          ? 'Ruteo configurado: producción'
+                          : 'Ruteo configurado: entrega directa'
+                      }
+                    />
                     <Button
                       onClick={() => {
                         setProduct(undefined);
@@ -877,6 +977,25 @@ export function SuppliesPage() {
                         ))}
                       </TextField>
                     )}
+                    <Alert
+                      severity={
+                        selectedControl?.controlStock ? 'success' : 'info'
+                      }
+                    >
+                      <strong>Unidad seleccionada:</strong>{' '}
+                      {optionId
+                        ? presentationLabel(
+                            product.options.find(
+                              (option) => option.id === optionId
+                            )?.name || ''
+                          )
+                        : 'Sin presentación'}
+                      {selectedControl?.controlStock
+                        ? '. Ya tiene control activo; gestiona sus existencias desde la tarjeta de la bebida.'
+                        : selectedControl
+                          ? '. El control está desactivado; se reactivará conservando stock e historial.'
+                          : '. Todavía no tiene control de stock. Activarlo no añade existencias.'}
+                    </Alert>
                     <FormControlLabel
                       control={
                         <Checkbox
@@ -932,7 +1051,7 @@ export function SuppliesPage() {
                           disabled={Number(row.quantityRecoverable) <= 0}
                         >
                           {row.accountLabel} · {row.productName} · recuperable:{' '}
-                          {row.quantityRecoverable}
+                          {displayUnits(row.quantityRecoverable)}
                         </MenuItem>
                       ))}
                     </TextField>

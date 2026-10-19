@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { getAllMenu } from '../services';
+import { getAllMenu } from '../services/menu.service';
 import { Menu } from '../models';
 import { useDispatch } from 'react-redux';
 import { loadMenu } from '../redux';

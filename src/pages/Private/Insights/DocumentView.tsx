@@ -38,7 +38,13 @@ export interface InternalDocument {
       status: string;
       notes: string;
     }[];
-    discounts: { id: string; lineId: string; amount: string; reason: string }[];
+    discounts: {
+      id: string;
+      lineId: string;
+      amount: string;
+      reason: string;
+      status?: 'APPLIED' | 'INACTIVE';
+    }[];
     payments: {
       id: string;
       collectorId: string;
@@ -186,7 +192,9 @@ export function DocumentView({
               {d.reason}{' '}
               {s.lines.find((l) => l.id === d.lineId)?.status === 'CANCELLED'
                 ? '(inactivo por cancelación)'
-                : ''}
+                : d.status === 'INACTIVE'
+                  ? '(inactivo; no reduce el total)'
+                  : ''}
             </p>
           ))}
         </>

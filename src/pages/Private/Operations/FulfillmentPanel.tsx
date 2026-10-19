@@ -1,8 +1,9 @@
+import { commandLabel, requiresProduction } from './operationFeedback';
 import { createPortal } from 'react-dom';
 import { useLiveRefresh } from '@/hooks/useLiveRefresh';
 import './cycle2.css';
 import { useRestaurantStore } from '../Common/store/restaurantStore';
-import { useCallback, useContext, useState } from 'react';
+import { useCallback, useContext, useRef, useState } from 'react';
 import {
   Alert,
   Dialog,
@@ -41,11 +42,18 @@ export function FulfillmentPanel({
     [error, setError] = useState(false);
   const [exitAmounts, setExitAmounts] = useState<Record<string, number>>({});
   const [exiting, setExiting] = useState(false);
+  const confirmationLock = useRef(false);
+  const [confirming, setConfirming] = useState(false);
+  const [confirmationResult, setConfirmationResult] = useState<{
+    error: boolean;
+    message: string;
+  } | null>(null);
   const [packing, setPacking] = useState(false);
   const [takeaway, setTakeaway] = useState<Record<string, number>>({});
   const drafts = account.lines.filter(
     (l) => l.status === 'ACTIVE' && !Number(l.confirmedQuantity)
   );
+  const production = requiresProduction(drafts);
   const [itemId, setItemId] = useState(''),
     [quantity, setQuantity] = useState(1),
     [eventId, setEventId] = useState(''),
@@ -53,19 +61,25 @@ export function FulfillmentPanel({
   const [lineId, setLineId] = useState(''),
     [notes, setNotes] = useState(''),
     [notPrepared, setNotPrepared] = useState(false);
+  const refreshSequence = useRef(0);
   const refresh = useCallback(async () => {
+    const sequence = ++refreshSequence.current;
     try {
       const [d, p] = await Promise.all([
         restauranteApi.get<Dispatch[]>(
-          `/attention-accounts/${account.id}/dispatches`
+          `/attention-accounts/${account.id}/dispatches`,
+          { timeout: 15000 }
         ),
-        restauranteApi.get<{ screens: number }>('/kitchen/presence')
+        restauranteApi.get<{ screens: number }>('/kitchen/presence', {
+          timeout: 15000
+        })
       ]);
+      if (sequence !== refreshSequence.current) return;
       setDispatches(d.data);
       setScreens(p.data.screens);
       setError(false);
     } catch {
-      setError(true);
+      if (sequence === refreshSequence.current) setError(true);
     }
   }, [account.id]);
   useLiveRefresh(
@@ -74,7 +88,7 @@ export function FulfillmentPanel({
     String(account.version)
   );
   const items = dispatches.flatMap((d) =>
-    d.items.map((i) => ({ ...i, sequence: d.sequenceNumber }))
+    d.items.map((i) => ({ ...i, command: commandLabel(d) }))
   );
   const events = dispatches
     .flatMap((d) => d.events)
@@ -85,34 +99,34 @@ export function FulfillmentPanel({
     body: object,
     method: 'post' | 'patch' = 'post'
   ) {
-    if (
-      await run(
-        `/attention-accounts/${account.id}/${path}`,
-        { expectedVersion: account.version, ...body },
-        method
-      )
-    )
-      await refresh();
+    await run(
+      `/attention-accounts/${account.id}/${path}`,
+      { expectedVersion: account.version, ...body },
+      method
+    );
   }
   const confirmation = (
     <Stack spacing={0.5}>
-      {(!online || error) && (
+      {production && (!online || error) && (
         <Alert severity='warning'>
           Datos de cocina sin actualizar. No se confirmará una operación sin
           respuesta del servidor.
         </Alert>
       )}
-      {screens === 0 && (
+      {production && screens === 0 && (
         <Alert severity='warning'>
           No hay pantallas de cocina conectadas. Avise verbalmente; el envío
           quedará guardado.
         </Alert>
       )}
-      {!confirmationContainer && screens !== null && screens > 0 && (
-        <Typography variant='caption'>
-          {screens} pantallas de cocina conectadas
-        </Typography>
-      )}
+      {production &&
+        !confirmationContainer &&
+        screens !== null &&
+        screens > 0 && (
+          <Typography variant='caption'>
+            {screens} pantallas de cocina conectadas
+          </Typography>
+        )}
       {account.modality === 'TABLE' && drafts.length > 0 && (
         <>
           <Stack direction='row' gap={1} flexWrap='wrap'>
@@ -186,9 +200,14 @@ export function FulfillmentPanel({
       )}
       <Button
         variant='contained'
-        aria-label='Confirmar consumos y enviar a producción'
+        aria-label={
+          production
+            ? 'Confirmar pedido y enviar a producción'
+            : 'Confirmar pedido'
+        }
+        aria-busy={confirming}
         disabled={
-          error ||
+          confirming ||
           drafts.some(
             (l) =>
               !Number.isFinite(takeaway[l.id] ?? 0) ||
@@ -200,19 +219,58 @@ export function FulfillmentPanel({
             (l) => l.status === 'ACTIVE' && !Number(l.confirmedQuantity)
           )
         }
-        onClick={() =>
-          void action('confirm', {
-            takeaway: drafts.map((l) => ({
-              lineId: l.id,
-              quantity:
-                takeaway[l.id] ??
-                (account.modality === 'TAKE_AWAY' ? Number(l.quantity) : 0)
-            }))
-          })
-        }
+        onClick={async () => {
+          if (confirmationLock.current) return;
+          confirmationLock.current = true;
+          setConfirming(true);
+          setConfirmationResult(null);
+          try {
+            const ok = await run(
+              `/attention-accounts/${account.id}/confirm`,
+              {
+                expectedVersion: account.version,
+                takeaway: drafts.map((l) => ({
+                  lineId: l.id,
+                  quantity:
+                    takeaway[l.id] ??
+                    (account.modality === 'TAKE_AWAY' ? Number(l.quantity) : 0)
+                }))
+              },
+              'post',
+              (data) =>
+                setConfirmationResult({
+                  error: false,
+                  message:
+                    (data as { warning?: string }).warning ||
+                    'Pedido confirmado'
+                }),
+              (message) => setConfirmationResult({ error: true, message })
+            );
+            if (ok) {
+              setTakeaway({});
+            }
+          } finally {
+            confirmationLock.current = false;
+            setConfirming(false);
+          }
+        }}
       >
-        Enviar a producción
+        {confirming
+          ? 'Enviando…'
+          : confirmationResult?.error && drafts.length
+            ? 'Reintentar confirmación'
+            : production
+              ? 'Confirmar pedido · producción'
+              : 'Confirmar pedido'}
       </Button>
+      {confirmationResult && (
+        <Alert
+          severity={confirmationResult.error ? 'error' : 'success'}
+          role='status'
+        >
+          {confirmationResult.message}
+        </Alert>
+      )}
       {!confirmationContainer && (
         <Typography variant='caption'>
           Solo unidades nuevas · producción según configuración. No registra
@@ -225,19 +283,21 @@ export function FulfillmentPanel({
     <Card className='fulfillment-card'>
       <CardContent>
         <Stack spacing={2}>
-          <Typography variant='h6'>Envíos y salida por mozo</Typography>
+          <Typography variant='h6'>Comandas y salida por mozo</Typography>
           {confirmationContainer
             ? createPortal(confirmation, confirmationContainer)
             : confirmation}
           <details className='service-details' open>
-            <summary>Envíos ({dispatches.length})</summary>
+            <summary>Comandas ({dispatches.length})</summary>
             {dispatches.map((d) => (
               <Stack key={d.id} spacing={1} className='dispatch-summary'>
                 <Typography fontWeight='bold'>
-                  Comanda {d.sequenceNumber} ·{' '}
+                  {commandLabel(d)} ·{' '}
                   {new Date(d.confirmedAt).toLocaleTimeString('es-PE', {
-                    timeZone: zone
+                    timeZone: d.operatingTimeZone || zone
                   })}{' '}
+                  {d.operatingDate &&
+                    ` · ${d.operatingDate.split('-').reverse().join('/')}`}
                   · {d.pending ? 'Pendiente' : 'Sin producción pendiente'}
                   {d.pending &&
                     ` · ${Math.max(0, Math.floor((Date.now() - new Date(d.confirmedAt).getTime()) / 60000))} min desde el envío`}
@@ -257,10 +317,11 @@ export function FulfillmentPanel({
                     >
                       {i.status === 'CANCELLED'
                         ? 'Cancelado'
-                        : `Enviado: ${i.quantity} · Entregado: ${i.delivered} · Pendiente: ${i.pending}${Number(i.cancelledQuantity) ? ` · Cancelado: ${i.cancelledQuantity}` : ''}`}
+                        : `Enviado: ${Number(i.quantity) - Number(i.itemSnapshot.reclassifiedCourtesyQuantity || 0)} · Entregado: ${Number(i.delivered)} · Pendiente: ${i.pending}${Number(i.cancelledQuantity) > Number(i.itemSnapshot.reclassifiedCourtesyQuantity || 0) ? ` · Cancelado: ${Number(i.cancelledQuantity) - Number(i.itemSnapshot.reclassifiedCourtesyQuantity || 0)}` : ''}`}
                       {i.status === 'ACTIVE' &&
                         i.pending === 0 &&
-                        (Number(i.cancelledQuantity)
+                        (Number(i.cancelledQuantity) >
+                        Number(i.itemSnapshot.reclassifiedCourtesyQuantity || 0)
                           ? ' · Salidas completadas'
                           : ' · ENTREGADO ✓')}
                     </Typography>
@@ -334,7 +395,7 @@ export function FulfillmentPanel({
                 <MenuItem value=''>Seleccione</MenuItem>
                 {items.map((i) => (
                   <MenuItem key={i.id} value={i.id}>
-                    #{i.sequence} {i.itemSnapshot.name} · {i.pending} pendientes
+                    {i.command} · {i.itemSnapshot.name} · {i.pending} pendientes
                   </MenuItem>
                 ))}
               </TextField>
@@ -390,9 +451,12 @@ export function FulfillmentPanel({
                 {events.map((e) => (
                   <MenuItem key={e.id} value={e.id}>
                     {e.quantityDelta} unidades ·{' '}
-                    {new Date(e.createdAt).toLocaleTimeString('es-PE', {
-                      timeZone: zone
-                    })}
+                    {new Date(e.occurredAt || e.createdAt).toLocaleTimeString(
+                      'es-PE',
+                      {
+                        timeZone: zone
+                      }
+                    )}
                   </MenuItem>
                 ))}
               </TextField>

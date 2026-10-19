@@ -6,6 +6,7 @@ import {
   Inventory2Outlined,
   SoupKitchenOutlined
 } from '@mui/icons-material';
+import { reconcileAccounts } from './operationFeedback';
 import { useWorkerAccess } from '@/hooks/useWorkerAccess';
 import { useLiveRefresh } from '@/hooks/useLiveRefresh';
 import './operations.css';
@@ -44,7 +45,8 @@ export type Run = (
   path: string,
   body: object,
   method?: 'post' | 'patch',
-  onSuccess?: (data: unknown) => void
+  onSuccess?: (data: unknown) => void,
+  onError?: (message: string) => void
 ) => Promise<boolean>;
 export function OperationsPage() {
   const user = useSelector(selectAuth).user;
@@ -87,32 +89,41 @@ export function OperationsPage() {
   const [busy, setBusy] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const lock = useRef(false);
+  const accountEpoch = useRef(0);
   const retry = useRef<{ signature: string; key: string }>();
   const { online } = useContext(SocketContext);
   const restaurant = useRestaurantStore((s) => s.restaurant);
   const refresh = useCallback(async () => {
+    const readEpoch = accountEpoch.current;
     try {
       const [p, m, pol] = await Promise.all([
-        restauranteApi.get<Product[]>('/products'),
-        restauranteApi.get<DailyMenu[]>('/daily-menus'),
-        restauranteApi.get<Portion[]>('/portion-policies')
+        restauranteApi.get<Product[]>('/products', { timeout: 15000 }),
+        restauranteApi.get<DailyMenu[]>('/daily-menus', { timeout: 15000 }),
+        restauranteApi.get<Portion[]>('/portion-policies', { timeout: 15000 })
       ]);
       setProducts(p.data);
       setMenus(m.data);
       setPortions(pol.data);
       if (!cook) {
         const [a, t, o, r, c] = await Promise.all([
-          restauranteApi.get<Account[]>('/attention-accounts'),
-          restauranteApi.get<Table[]>('/tables'),
-          restauranteApi.get<Operator[]>('/attention-accounts/operators'),
+          restauranteApi.get<Account[]>('/attention-accounts', {
+            timeout: 15000
+          }),
+          restauranteApi.get<Table[]>('/tables', { timeout: 15000 }),
+          restauranteApi.get<Operator[]>('/attention-accounts/operators', {
+            timeout: 15000
+          }),
           allowReservations
-            ? restauranteApi.get<Reservation[]>('/reservations')
+            ? restauranteApi.get<Reservation[]>('/reservations', {
+                timeout: 15000
+              })
             : Promise.resolve({ data: [] }),
           allowClients
-            ? restauranteApi.get('/clients?limit=100')
+            ? restauranteApi.get('/clients?limit=100', { timeout: 15000 })
             : Promise.resolve({ data: { clients: [] } })
         ]);
-        setAccounts(a.data);
+        if (readEpoch === accountEpoch.current)
+          setAccounts((current) => reconcileAccounts(current, a.data));
         setTables(t.data);
         setOperators(o.data);
         setReservations(r.data);
@@ -120,11 +131,13 @@ export function OperationsPage() {
       }
       setLoaded(true);
       setError('');
+      return true;
     } catch {
       setLoaded(false);
       setError(
         'No se pudieron actualizar los datos. Se reintentará automáticamente antes de operar.'
       );
+      return false;
     }
   }, [cook, restaurant?.id, allowReservations, allowClients]);
   useLiveRefresh(refresh, [
@@ -135,7 +148,7 @@ export function OperationsPage() {
     'finance.changed',
     'update-table'
   ]);
-  const run: Run = async (path, body, method = 'post', onSuccess) => {
+  const run: Run = async (path, body, method = 'post', onSuccess, onError) => {
     if (lock.current) return false;
     lock.current = true;
     setBusy(true);
@@ -166,24 +179,48 @@ export function OperationsPage() {
         method,
         url: path,
         data: body,
-        headers: { 'Idempotency-Key': key }
+        headers: { 'Idempotency-Key': key },
+        timeout: 20000
       });
       retry.current = undefined;
       delete pending[signature];
       sessionStorage.setItem(storageKey, JSON.stringify(pending));
-      await refresh();
+      const updated = result.data?.account || result.data;
+      if (
+        updated?.id &&
+        Number.isInteger(updated.version) &&
+        Array.isArray(updated.lines) &&
+        Array.isArray(updated.tables)
+      ) {
+        accountEpoch.current++;
+        setAccounts((current) =>
+          reconcileAccounts(current, [
+            ...current.filter((account) => account.id !== updated.id),
+            updated as Account
+          ])
+        );
+        // The mutation already returned the authoritative account. Catalog/presence refresh must not delay its feedback.
+        void refresh();
+      } else await refresh();
       onSuccess?.(result.data);
       setMessage(result.data?.warning || 'Operación guardada');
       return true;
     } catch (e) {
-      const response = e as { data?: { message?: string | string[] } };
+      const response = e as {
+        status?: number;
+        data?: { message?: string | string[] };
+      };
       const msg = response?.data?.message;
-      setError(
-        Array.isArray(msg)
-          ? msg.join('. ')
-          : msg ||
-              'Sin confirmación. Reintente la misma operación; no se duplicará.'
-      );
+      const detail = Array.isArray(msg) ? msg.join('. ') : msg;
+      // A conflict never replays a write automatically. Reconcile the account before a deliberate retry.
+      const reconciled = response.status === 409 ? await refresh() : false;
+      const message =
+        response.status === 409
+          ? `${detail || 'La cuenta cambió en otro dispositivo'}. ${reconciled ? 'Datos actualizados; revise el pedido antes de reintentar.' : 'No se pudo actualizar la cuenta. Reintente la conexión antes de confirmar.'}`
+          : detail ||
+            'Sin confirmación del servidor. Reintente la misma operación; se conservará su clave para evitar duplicados.';
+      setError(message);
+      onError?.(message);
       return false;
     } finally {
       lock.current = false;

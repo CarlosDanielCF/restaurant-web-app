@@ -12,7 +12,7 @@ const SetupRestaurant = lazy(() =>
 );
 import { useRestaurantStore } from '@/pages/Private/Common/store/restaurantStore';
 import { useRenewToken } from '@/pages/Public/Auth/hooks/useAuth';
-import { Box, CircularProgress, Typography } from '@mui/material';
+import { SessionCheckStatus } from '@/components/ui/SessionCheckStatus';
 
 const Private = lazy(() => import('../pages/Private/Private'));
 
@@ -26,24 +26,7 @@ export const AppRouter = () => {
   useRenewToken();
 
   if (status === 'checking') {
-    return (
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '100vh',
-          backgroundColor: 'background.default',
-          gap: 2
-        }}
-      >
-        <CircularProgress size={44} thickness={4} color='primary' />
-        <Typography variant='body1' fontWeight={500} color='text.secondary'>
-          Verificando sesión...
-        </Typography>
-      </Box>
-    );
+    return <SessionCheckStatus />;
   }
 
   return (

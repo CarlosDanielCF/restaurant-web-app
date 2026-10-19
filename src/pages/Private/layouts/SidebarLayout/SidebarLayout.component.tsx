@@ -4,7 +4,11 @@ import '../../final.css';
 import '../../../../styles/clean-pos.css';
 import '../../../../styles/point-workspaces.css';
 import '../../../../styles/operational-ux.css';
-import { FC, ReactNode, useContext, useEffect } from 'react';
+import { FC, ReactNode, Suspense, lazy, useContext, useEffect } from 'react';
+import { RouteLoading } from '@/components/ui/RouteLoading';
+const LegacyWorkspaceData = lazy(
+  () => import('../../components/LegacyWorkspaceData')
+);
 import {
   Box,
   useTheme,
@@ -33,6 +37,10 @@ interface SidebarLayoutProps {
 const SidebarLayout: FC<SidebarLayoutProps> = () => {
   const theme = useTheme();
   const location = useLocation();
+  const needsHistoricalStores =
+    /^\/(orders(?:\/|$)|menu(?:\/|$)|tables(?:\/|$)|restaurant(?:\/|$)|users\/profile(?:\/|$))/.test(
+      location.pathname
+    );
   const { user } = useAppSelector(selectAuth);
   const currentSection = menuSections
     .flatMap((section) => section.items)
@@ -138,7 +146,15 @@ const SidebarLayout: FC<SidebarLayoutProps> = () => {
           </Box>
           <Box sx={{ p: { xs: 1.5, sm: 2, md: 2 }, flex: 1, minWidth: 0 }}>
             <WorkerAccessBoundary>
-              <Outlet />
+              <Suspense fallback={<RouteLoading />}>
+                {needsHistoricalStores ? (
+                  <LegacyWorkspaceData>
+                    <Outlet />
+                  </LegacyWorkspaceData>
+                ) : (
+                  <Outlet />
+                )}
+              </Suspense>
             </WorkerAccessBoundary>
           </Box>
         </Box>

@@ -1,3 +1,9 @@
+# Estado vigente — observaciones operativas (19/10/2026)
+
+Base `51f0a1f8b9b179a1f5baa9192604a486645c9464`, rama `codex/phase-10`. Confirmación con feedback/reconciliación, DIRECT separado de producción, captura limpia tras éxito, cortesías parciales contextuales, responsable directo, comandas diarias, carga recuperable y compras/stock claras. Backend coordinado requiere migración22; no ejecutada en base local. Detalles y límites: [F10-OBSERVATIONS-REVIEW.md](F10-OBSERVATIONS-REVIEW.md). No push ni cambios en main.
+
+## Registro histórico de revisiones anteriores
+
 # Corrección de alcance — compras de mercado y bebidas (19 octubre 2026)
 
 Base exacta `d97b320638278b9dce3430d55e7110048a23821a`, rama `codex/phase-10`. Se retira el tercer tipo genérico de egreso del formulario manual, tipos, etiquetas, dashboard y fórmula. Registrar compra de mercado envía MARKET; la compra de bebidas sigue generando su egreso BEVERAGE al ingresar stock. Resultado = cobranzas netas − compras de mercado − compras de bebidas.

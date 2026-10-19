@@ -49,6 +49,26 @@ export function validReportRange(range: DateRange): boolean {
     (end.getTime() - start.getTime()) / 86400000 < 366
   );
 }
+/** A SQL DATE is a calendar label, not a UTC instant. Do not shift it through a timezone. */
+export function displayOperatingDate(value: unknown): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})(?:T00:00:00(?:\.\d+)?Z)?$/.exec(
+    String(value)
+  );
+  if (!match) return '—';
+  const day = `${match[1]}-${match[2]}-${match[3]}`;
+  return validReportRange({ from: day, to: day })
+    ? `${match[3]}/${match[2]}/${match[1]}`
+    : '—';
+}
+/** Preserve decimal quantities without showing storage-scale zeros or rounding through Number. */
+export function displayUnits(value: unknown): string {
+  const match = /^(-?)(\d+)(?:\.(\d+))?$/.exec(String(value));
+  if (!match) return '—';
+  const integer = match[2].replace(/^0+(?=\d)/, '');
+  const fraction = (match[3] || '').replace(/0+$/, '');
+  const negative = match[1] && (integer !== '0' || fraction) ? '-' : '';
+  return `${negative}${integer}${fraction ? `.${fraction}` : ''}`;
+}
 /** No recomputation or floating point rounding of authoritative decimal totals. */
 export function reportAmount(value: unknown, currency = 'PEN'): string {
   const match = /^(-?)(\d+)(?:\.(\d+))?$/.exec(String(value));

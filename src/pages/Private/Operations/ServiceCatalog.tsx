@@ -1,7 +1,7 @@
 import { presentationLabel } from './presentationLabel';
 import RestaurantOutlined from '@mui/icons-material/RestaurantOutlined';
 import { WorkspaceEmpty } from '@/components/operational/WorkspaceEmpty';
-import { ReactNode, useState } from 'react';
+import { ReactNode, useEffect, useRef, useState } from 'react';
 import {
   Box,
   Button,
@@ -18,16 +18,30 @@ function ProductTile({
   product,
   onSelect,
   action,
-  secondaryAction
+  secondaryAction,
+  resetToken = 0
 }: {
   product: Product;
-  onSelect: (id: string, quantity?: number, notes?: string) => void;
+  onSelect: (
+    id: string,
+    quantity?: number,
+    notes?: string
+  ) => void | Promise<boolean | void>;
   action: string;
   secondaryAction?: (product: Product) => ReactNode;
+  resetToken?: number;
 }) {
   const [quantity, setQuantity] = useState(1),
     [notes, setNotes] = useState(''),
     [details, setDetails] = useState(false);
+  const [adding, setAdding] = useState(false);
+  const lock = useRef(false);
+  useEffect(() => {
+    if (!resetToken) return;
+    setQuantity(1);
+    setNotes('');
+    setDetails(false);
+  }, [resetToken]);
   const image = useRestaurantImage(product.images || undefined);
   const available =
     product.status === 'AVAILABLE' &&
@@ -114,11 +128,21 @@ function ProductTile({
         <Button
           variant='outlined'
           fullWidth
-          disabled={action === 'Agregar' && !available}
-          onClick={() => onSelect(product.id, quantity, notes)}
+          disabled={adding || (action === 'Agregar' && !available)}
+          onClick={async () => {
+            if (lock.current) return;
+            lock.current = true;
+            setAdding(true);
+            try {
+              await onSelect(product.id, quantity, notes);
+            } finally {
+              lock.current = false;
+              setAdding(false);
+            }
+          }}
           aria-label={`${action} ${product.name}`}
         >
-          {action}
+          {adding ? 'Agregando…' : action}
         </Button>
       </Box>
     </Card>
@@ -128,12 +152,18 @@ export function ServiceCatalog({
   products,
   onSelect,
   action = 'Agregar',
-  secondaryAction
+  secondaryAction,
+  captureResets = {}
 }: {
   products: Product[];
-  onSelect: (id: string, quantity?: number, notes?: string) => void;
+  onSelect: (
+    id: string,
+    quantity?: number,
+    notes?: string
+  ) => void | Promise<boolean | void>;
   action?: string;
   secondaryAction?: (product: Product) => ReactNode;
+  captureResets?: Record<string, number>;
 }) {
   const restaurantName = useRestaurantStore((s) => s.restaurant?.name);
   const [search, setSearch] = useState(''),
@@ -197,6 +227,7 @@ export function ServiceCatalog({
               onSelect={onSelect}
               action={action}
               secondaryAction={secondaryAction}
+              resetToken={captureResets[p.id] || 0}
             />
           ))}
         </Box>

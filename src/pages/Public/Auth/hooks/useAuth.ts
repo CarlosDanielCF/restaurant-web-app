@@ -72,7 +72,8 @@ export const useRenewToken = () => {
   const { setRestaurant } = useRestaurantStore((state) => state);
   useEffect(() => {
     let running = false,
-      disposed = false;
+      disposed = false,
+      established = false;
     const renew = async (force = false) => {
       const previous = localStorage.getItem('token');
       if (!previous) {
@@ -80,7 +81,7 @@ export const useRenewToken = () => {
         return;
       }
       if (running) return;
-      if (!force) {
+      if (!force && established) {
         try {
           const { exp } = JSON.parse(
             atob(previous.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))
@@ -103,6 +104,7 @@ export const useRenewToken = () => {
             (r) => r.restaurant.id === data.currentRestaurant?.id
           )?.role || data.user.role;
         dispatch(onLogin({ ...data.user, role: currentRole }));
+        established = true;
         if (data.token !== previous)
           window.dispatchEvent(new Event('session-token-renewed'));
       } catch (e) {
@@ -119,7 +121,14 @@ export const useRenewToken = () => {
             onLogout('La sesión ya no es válida. Inicia sesión nuevamente.')
           );
         }
-        // Network failure is not credential revocation. Keep the current screen and retry.
+        // Network failure is not credential revocation. Keep the token and current screen.
+        if (
+          !disposed &&
+          localStorage.getItem('token') === previous &&
+          status !== 401 &&
+          status !== 403
+        )
+          window.dispatchEvent(new Event('session-check-failed'));
       } finally {
         running = false;
       }
@@ -133,6 +142,7 @@ export const useRenewToken = () => {
     window.addEventListener('online', resume);
     window.addEventListener('focus', resume);
     window.addEventListener('worker-access-changed', permissions);
+    window.addEventListener('session-renew-request', permissions);
     document.addEventListener('visibilitychange', resume);
     return () => {
       disposed = true;
@@ -140,6 +150,7 @@ export const useRenewToken = () => {
       window.removeEventListener('online', resume);
       window.removeEventListener('focus', resume);
       window.removeEventListener('worker-access-changed', permissions);
+      window.removeEventListener('session-renew-request', permissions);
       document.removeEventListener('visibilitychange', resume);
     };
   }, [dispatch, setRestaurant]);

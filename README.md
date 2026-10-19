@@ -35,3 +35,5 @@ El nuevo runner `tests/supplies.browser.cjs` exige backend aislado en 5019, Vite
 Demo: ejecutar `npm run seed:demo` en backend siguiendo su README. No inventar credenciales; DEMO_PASSWORD lo elige el operador. SMTP CONFIGURADO: NO; pendiente proveedor/credenciales. No bloquea login ni operación habitual. Backup/restore en documentación backend.
 
 Revisión operativa F10/Punto Mar: [flujos, validación y requisitos coordinados del backend](F10-OPERATIVE-REVIEW.md).
+
+Revisión operativa actual: [F10-OBSERVATIONS-REVIEW.md](F10-OBSERVATIONS-REVIEW.md); rendimiento y limpieza verificable: [PERFORMANCE-OBSERVATIONS.md](PERFORMANCE-OBSERVATIONS.md).

@@ -3,6 +3,8 @@ import { restauranteApi } from '../../../../api';
 import { RegisterUserDto } from '../dto/register-user.dto';
 
 export const registerUser = async ({
+  // Confirmation is local-only and deliberately excluded from the API payload.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   samePassword,
   ...data
 }: RegisterUserDto) => {
@@ -27,8 +29,10 @@ export const login = async (loginData: IFormLogin) => {
 };
 
 export const renewToken = async () => {
-  const response =
-    await restauranteApi.get<LoginResponseDto>('/auth/auth-renew');
+  const response = await restauranteApi.get<LoginResponseDto>(
+    '/auth/auth-renew',
+    { timeout: 15000 }
+  );
 
   return response.data;
 };

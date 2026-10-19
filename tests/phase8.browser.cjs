@@ -1,3 +1,5 @@
+/* eslint-env node */
+/* eslint-disable @typescript-eslint/no-var-requires */
 const path = require('path');
 const backend =
   process.env.RESTAURANT_BACKEND_PATH ||
@@ -203,10 +205,6 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
     console.log('RESOURCE_DIAGNOSTICS', JSON.stringify(resources));
     const unexpected = resources.filter(
       (r) =>
-        !(
-          r.failure === 'net::ERR_ABORTED' &&
-          r.url.endsWith('/static/sounds/bell-ding.wav')
-        ) &&
         !r.url.startsWith('https://fonts.googleapis.com/') &&
         !r.url.startsWith('https://images.unsplash.com/') &&
         !(r.status === 401 && r.url.endsWith('/auth/auth-renew')) &&

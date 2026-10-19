@@ -13,11 +13,19 @@ export interface Stock {
   controlStock: boolean;
   quantity: string;
   version: number;
+  hasMovements: boolean;
 }
 export interface SupplyProduct {
   id: string;
   name: string;
   kind: string;
+  productionRouting: 'DIRECT' | 'PRODUCTION';
+  stockControls: {
+    id: string;
+    optionId: number;
+    controlStock: boolean;
+    version: number;
+  }[];
   options: { id: number; name: string }[];
 }
 export interface StockMovement {

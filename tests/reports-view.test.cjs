@@ -119,3 +119,26 @@ test('report errors preserve interceptor response and validation-array messages'
   );
   assert.equal(reportError(new Error('network'), 'Reintentar'), 'Reintentar');
 });
+test('operating dates remain calendar dates rather than moving five hours into yesterday', () => {
+  const { displayOperatingDate } = scope.exports;
+  assert.equal(displayOperatingDate('2026-10-19'), '19/10/2026');
+  assert.equal(displayOperatingDate('2026-10-19T00:00:00.000Z'), '19/10/2026');
+  assert.equal(displayOperatingDate('2024-02-29T00:00:00Z'), '29/02/2024');
+  for (const value of [null, '', '2026-02-30', '2026-10-19T15:45:00Z'])
+    assert.equal(displayOperatingDate(value), '—');
+});
+test('unit display strips storage zeros while preserving meaningful decimal precision', () => {
+  const { displayUnits } = scope.exports;
+  for (const [raw, expected] of [
+    ['1.000', '1'],
+    ['0.000', '0'],
+    ['-3.000', '-3'],
+    ['2.500', '2.5'],
+    ['0.125', '0.125'],
+    ['-0.000', '0'],
+    ['9007199254740993.125', '9007199254740993.125']
+  ])
+    assert.equal(displayUnits(raw), expected);
+  for (const value of [null, undefined, '', '1e3', 'NaN'])
+    assert.equal(displayUnits(value), '—');
+});

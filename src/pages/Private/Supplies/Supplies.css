@@ -90,6 +90,10 @@
   width: 100%;
   justify-content: space-between !important;
   text-align: left;
+  align-items: flex-start !important;
+  flex-direction: column;
+  gap: 3px;
+  overflow-wrap: anywhere;
   min-height: 48px;
 }
 @media (max-width: 599px) {

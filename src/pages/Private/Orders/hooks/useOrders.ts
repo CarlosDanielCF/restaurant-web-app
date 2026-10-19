@@ -99,10 +99,6 @@ export const useActiveOrders = () => {
     }
   }, [activeOrdersQuery.data, activeOrdersQuery.isSuccess, dispatch]);
 
-  useEffect(() => {
-    activeOrdersQuery.refetch();
-  }, [dateFilter.startDate, dateFilter.endDate, dateFilter.period]);
-
   return {
     activeOrdersQuery,
     ...pagination

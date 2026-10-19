@@ -75,6 +75,7 @@ export interface Operator {
   lastName: string;
 }
 export interface Line {
+  requiresKitchen: boolean | number;
   sourceType: 'PRODUCT' | 'DAILY_MENU';
   sourceId: string;
   hasDeliveredUnits?: boolean;

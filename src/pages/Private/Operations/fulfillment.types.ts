@@ -1,5 +1,6 @@
 export interface KitchenSnapshot {
   takeawayQuantity?: number;
+  reclassifiedCourtesyQuantity?: number;
   consumptionKind?: string;
   beneficiaryUserId?: string;
   quantity?: number | string;
@@ -22,6 +23,8 @@ export interface DispatchItem {
   itemSnapshot: KitchenSnapshot;
 }
 export interface ExitEvent {
+  eventKind?: string | null;
+  occurredAt?: string | null;
   id: string;
   dispatchItemId: string;
   quantityDelta: string;
@@ -34,6 +37,9 @@ export interface Dispatch {
   id: string;
   accountId: string;
   sequenceNumber: number;
+  commandNumber?: number | null;
+  operatingDate?: string | null;
+  operatingTimeZone?: string | null;
   confirmedAt: string;
   accountVersion: number;
   modality: string;

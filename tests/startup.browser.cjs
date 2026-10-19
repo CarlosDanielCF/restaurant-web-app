@@ -1,6 +1,12 @@
+/* eslint-env node */
+/* eslint-disable @typescript-eslint/no-var-requires */
 const assert = require('node:assert/strict');
 const { spawnSync } = require('node:child_process');
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
+const frontend = process.env.STARTUP_FRONTEND || 'http://127.0.0.1:3030';
+const port = new URL(frontend).port;
+assert.ok(['127.0.0.1', 'localhost'].includes(new URL(frontend).hostname));
+assert.match(port, /^\d+$/);
 (async () => {
   const browser = await chromium.launch({
     executablePath: process.env.CHROMIUM_PATH || '/usr/bin/chromium',
@@ -13,7 +19,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
     page.on('request', (r) => {
       if (r.url().includes('/src/')) modules.add(r.url());
     });
-    await page.goto('http://127.0.0.1:3030/auth/login');
+    await page.goto(frontend + '/auth/login');
     await page.locator('input[name=username]').waitFor();
     assert.ok(
       modules.size < 150,
@@ -33,7 +39,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
       await gate;
       await route.continue();
     });
-    await delayed.goto('http://127.0.0.1:3030/auth/login', {
+    await delayed.goto(frontend + '/auth/login', {
       waitUntil: 'commit'
     });
     await delayed.locator('#startup-status').waitFor();
@@ -47,7 +53,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
     assert.equal(await delayed.locator('#startup-status').count(), 0);
     const occupied = spawnSync(
       process.execPath,
-      ['node_modules/vite/bin/vite.js', '--host'],
+      ['node_modules/vite/bin/vite.js', '--host', '--port', port],
       {
         cwd: require('node:path').resolve(__dirname, '..'),
         encoding: 'utf8',
@@ -57,10 +63,10 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
     assert.equal(occupied.status, 1);
     assert.match(
       occupied.stdout + occupied.stderr,
-      /Port 3030 is already in use/
+      new RegExp(`Port ${port} is already in use`)
     );
     console.log(
-      `Startup passed: ${modules.size} source modules, no private router at login; delayed bootstrap visible and recovers; occupied 3030 fails without drifting to 3031.`
+      `Startup passed: ${modules.size} source modules, no private router at login; delayed bootstrap visible and recovers; occupied ${port} fails without drifting to another port.`
     );
   } finally {
     await browser.close();

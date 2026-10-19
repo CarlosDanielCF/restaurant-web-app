@@ -34,6 +34,8 @@ import { ReportPeriodControls } from './ReportPeriodControls';
 import { monetaryColumns, reportColumns } from './reportColumns';
 import {
   periodRange,
+  displayOperatingDate,
+  displayUnits,
   reportAmount,
   reportError,
   reportGroups,
@@ -375,6 +377,13 @@ export function ReportsPage() {
       );
     if (monetaryColumns.has(key))
       return reportAmount(value, String(row.currency || 'PEN'));
+    if (key === 'operatingDate') return displayOperatingDate(value);
+    if (
+      /quantity|units/i.test(key) ||
+      key === 'stockBefore' ||
+      key === 'stockAfter'
+    )
+      return displayUnits(value);
     if (key.endsWith('At') && typeof value === 'string') {
       const date = new Date(value);
       return Number.isFinite(date.getTime())

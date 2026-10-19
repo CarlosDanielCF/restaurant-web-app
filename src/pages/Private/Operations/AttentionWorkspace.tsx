@@ -19,6 +19,7 @@ import {
   Alert,
   Dialog,
   DialogContent,
+  DialogActions,
   DialogTitle,
   Box,
   Chip,
@@ -165,7 +166,7 @@ export function OperatorSelect({
     <TextField
       select
       fullWidth
-      label='Mozo responsable'
+      label='Responsable de atención'
       value={value}
       onChange={(e) => onChange(e.target.value)}
     >
@@ -221,7 +222,8 @@ export function AttentionWorkspace({
     'attention.cancel-draft': 'Cancelación de borrador',
     'attention.pending-split': 'Separación auditada de unidades pendientes',
     'attention.return-consumption': 'Devolución excepcional de consumo',
-    'attention.draft.configure': 'Personalización de borrador'
+    'attention.draft.configure': 'Personalización de borrador',
+    'attention.courtesy': 'Cortesía de cliente'
   };
   const [openAttention, setOpenAttention] = useState(false);
   const [modality, setModality] = useState<Account['modality']>('TABLE');
@@ -242,10 +244,18 @@ export function AttentionWorkspace({
   }, [searchParams, accounts]);
   const [customizing, setCustomizing] = useState(false);
   const [cancelLine, setCancelLine] = useState('');
+  const [courtesyLineId, setCourtesyLineId] = useState('');
+  const [courtesyQuantity, setCourtesyQuantity] = useState(1);
+  const [courtesyReason, setCourtesyReason] = useState('');
+  const [courtesyBusy, setCourtesyBusy] = useState(false);
+  const [courtesyError, setCourtesyError] = useState('');
   const [returnConsumption, setReturnConsumption] = useState(false);
   const account = accounts.find((a) => a.id === selected);
+  const courtesyLine = account?.lines.find(
+    (line) => line.id === courtesyLineId
+  );
   const [tableIds, setTableIds] = useState<string[]>([]);
-  const [responsible, setResponsible] = useState(waiter ? user.id : '');
+  const [responsible, setResponsible] = useState(user?.id || '');
   const [client, setClient] = useState('');
   const [reason, setReason] = useState('');
   const [sourceAccount, setSourceAccount] = useState('');
@@ -275,6 +285,18 @@ export function AttentionWorkspace({
   );
   const [presentationId, setPresentationId] = useState('');
   const [presentationBusy, setPresentationBusy] = useState(false);
+  const [captureResets, setCaptureResets] = useState<Record<string, number>>(
+    {}
+  );
+  function resetCapture(id: string) {
+    if (id)
+      setCaptureResets((current) => ({
+        ...current,
+        [id]: (current[id] || 0) + 1
+      }));
+    setNotes('');
+    setQuantity(1);
+  }
   const presentationProduct = products.find((p) => p.id === presentationId);
   const product = products.find((p) => p.id === sourceId);
   const menu = menus.find((m) => m.id === sourceId);
@@ -284,7 +306,7 @@ export function AttentionWorkspace({
     setReplaceLine('');
     const next = accounts.find((a) => a.id === id);
     setTableIds(next?.tables.map((t) => t.id) || []);
-    setResponsible(next?.responsibleUserId || (waiter ? user.id : ''));
+    setResponsible(next?.responsibleUserId || user?.id || '');
     setReason('');
   }
   function selectSource(id: string) {
@@ -353,6 +375,8 @@ export function AttentionWorkspace({
         body
       )
     ) {
+      if (!editDraft && !replaceLine)
+        resetCapture(sourceType === 'PRODUCT' ? sourceId : '');
       setNotes('');
       setQuantity(1);
       setReplaceLine('');
@@ -382,7 +406,7 @@ export function AttentionWorkspace({
     selectedNotes = ''
   ) {
     const item = products.find((p) => p.id === id);
-    if (!account || !item) return;
+    if (!account || !item) return false;
     setSourceType('PRODUCT');
     selectSource(id);
     setQuantity(selectedQuantity);
@@ -409,7 +433,7 @@ export function AttentionWorkspace({
       setCustomizing(true);
       return;
     }
-    await run(`/attention-accounts/${account.id}/lines`, {
+    const added = await run(`/attention-accounts/${account.id}/lines`, {
       expectedVersion: account.version,
       sourceType: 'PRODUCT',
       sourceId: id,
@@ -419,6 +443,8 @@ export function AttentionWorkspace({
       modifierIds: [],
       ...(options[0] ? { productOptionId: options[0].id } : {})
     });
+    if (added) resetCapture(id);
+    return added;
   }
   const openingForm = (
     <Stack
@@ -471,7 +497,7 @@ export function AttentionWorkspace({
       )}
       {!operators.length && (
         <Typography>
-          Administración debe crear o activar un trabajador con rol Mozo antes
+          No se pudo cargar la lista de responsables. Actualice los datos antes
           de abrir atención.
         </Typography>
       )}
@@ -650,6 +676,85 @@ export function AttentionWorkspace({
       data-mobile-pane={mobilePane}
     >
       <Dialog
+        open={!!courtesyLine}
+        onClose={() => !courtesyBusy && setCourtesyLineId('')}
+        maxWidth='xs'
+        fullWidth
+      >
+        <DialogTitle>Marcar como cortesía</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} pt={1}>
+            <Typography fontWeight={700}>
+              {courtesyLine?.productSnapshot.name}
+            </Typography>
+            <Typography variant='body2'>
+              El valor comercial queda registrado. Las unidades de cortesía no
+              se cobran; conservan su preparación y consumo de stock.
+            </Typography>
+            <TextField
+              label='Unidades de cortesía'
+              type='number'
+              value={courtesyQuantity}
+              inputProps={{
+                min: 0.001,
+                max: Number(courtesyLine?.quantity),
+                step: 0.001
+              }}
+              onChange={(event) =>
+                setCourtesyQuantity(Number(event.target.value))
+              }
+            />
+            <TextField
+              label='Motivo de cortesía'
+              value={courtesyReason}
+              onChange={(event) => setCourtesyReason(event.target.value)}
+              required
+            />
+            {courtesyError && <Alert severity='error'>{courtesyError}</Alert>}
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button disabled={courtesyBusy} onClick={() => setCourtesyLineId('')}>
+            Volver
+          </Button>
+          <Button
+            variant='contained'
+            disabled={
+              courtesyBusy ||
+              !Number.isFinite(courtesyQuantity) ||
+              courtesyQuantity <= 0 ||
+              courtesyQuantity > Number(courtesyLine?.quantity) ||
+              courtesyReason.trim().length < 2
+            }
+            onClick={async () => {
+              if (!account || !courtesyLine || courtesyBusy) return;
+              setCourtesyBusy(true);
+              setCourtesyError('');
+              try {
+                if (
+                  await run(
+                    `/attention-accounts/${account.id}/lines/${courtesyLine.id}/courtesy`,
+                    {
+                      expectedVersion: account.version,
+                      quantity: courtesyQuantity,
+                      reason: courtesyReason
+                    },
+                    'post',
+                    undefined,
+                    setCourtesyError
+                  )
+                )
+                  setCourtesyLineId('');
+              } finally {
+                setCourtesyBusy(false);
+              }
+            }}
+          >
+            {courtesyBusy ? 'Guardando…' : 'Confirmar cortesía'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
         open={!!presentationProduct && !!account}
         onClose={() => !presentationBusy && setPresentationId('')}
         fullWidth
@@ -683,8 +788,10 @@ export function AttentionWorkspace({
                           mergeDraft: true,
                           modifierIds: []
                         })
-                      )
+                      ) {
+                        resetCapture(presentationProduct.id);
                         setPresentationId('');
+                      }
                     } finally {
                       setPresentationBusy(false);
                     }
@@ -981,7 +1088,9 @@ export function AttentionWorkspace({
                   </Typography>
                   <ServiceCatalog
                     products={products}
-                    onSelect={(id, q, n) => void chooseProduct(id, q, n)}
+                    key={account.id}
+                    captureResets={captureResets}
+                    onSelect={chooseProduct}
                   />
                   <Typography variant='h6' mt={2} mb={1}>
                     Menú compuesto · precio conjunto
@@ -1164,6 +1273,23 @@ export function AttentionWorkspace({
                           {line.kind === 'COURTESY' && (
                             <Typography>Cortesía de cliente</Typography>
                           )}
+                          {account.attentionStatus === 'OPEN' &&
+                            line.status === 'ACTIVE' &&
+                            (!line.kind || line.kind === 'SALE') &&
+                            can('attention') && (
+                              <MoreOptions title='Más opciones del producto'>
+                                <Button
+                                  onClick={() => {
+                                    setCourtesyLineId(line.id);
+                                    setCourtesyQuantity(Number(line.quantity));
+                                    setCourtesyReason('');
+                                    setCourtesyError('');
+                                  }}
+                                >
+                                  Marcar como cortesía
+                                </Button>
+                              </MoreOptions>
+                            )}
                           {account.attentionStatus === 'OPEN' &&
                             line.status === 'ACTIVE' &&
                             !Number(line.confirmedQuantity) && (

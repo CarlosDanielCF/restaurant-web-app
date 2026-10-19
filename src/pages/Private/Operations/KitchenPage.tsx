@@ -1,3 +1,4 @@
+import { commandLabel } from './operationFeedback';
 import VolumeUpOutlined from '@mui/icons-material/VolumeUpOutlined';
 import VolumeOffOutlined from '@mui/icons-material/VolumeOffOutlined';
 import { presentationLabel } from './presentationLabel';
@@ -9,6 +10,7 @@ import { useRestaurantStore } from '../Common/store/restaurantStore';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import {
   Alert,
+  Skeleton,
   Chip,
   Button,
   Card,
@@ -64,7 +66,9 @@ export function KitchenPage() {
     inFlight.current = true;
     const epoch = connectionEpoch.current;
     try {
-      const { data } = await restauranteApi.get<Board>('/kitchen/board');
+      const { data } = await restauranteApi.get<Board>('/kitchen/board', {
+        timeout: 15000
+      });
       if (epoch !== connectionEpoch.current) return;
       const fresh = tracker.current.observeChanges(
         data.dispatches.map((d) => d.id),
@@ -99,8 +103,6 @@ export function KitchenPage() {
   }, []);
   useLiveRefresh(refresh, ['kitchen.changed', 'attention.changed']);
   useEffect(() => {
-    void refresh();
-
     const resetSoundBaseline = () => {
       connectionEpoch.current++;
       tracker.current.reset();
@@ -108,7 +110,6 @@ export function KitchenPage() {
     const watch = () => {
       resetSoundBaseline();
       socket?.emit('kitchen.watch', true);
-      void refresh();
     };
 
     socket?.on('connect', watch);
@@ -125,6 +126,18 @@ export function KitchenPage() {
       socket?.emit('kitchen.watch', false);
     };
   }, [socket, refresh]);
+  useEffect(
+    () => () => {
+      soundEnabled.current = false;
+      if (typeof speechSynthesis !== 'undefined') speechSynthesis.cancel();
+      if (audio.current) {
+        audio.current.onstatechange = null;
+        void audio.current.close().catch(() => undefined);
+        audio.current = null;
+      }
+    },
+    []
+  );
   useEffect(() => {
     const timer = setInterval(() => setTick(Date.now()), 1000);
     return () => clearInterval(timer);
@@ -180,7 +193,7 @@ export function KitchenPage() {
       await restauranteApi.post(
         `/kitchen/notices/${id}/acknowledge`,
         {},
-        { headers: { 'Idempotency-Key': `notice-read-${id}` } }
+        { headers: { 'Idempotency-Key': `notice-read-${id}` }, timeout: 15000 }
       );
       await refresh();
     } catch {
@@ -251,12 +264,27 @@ export function KitchenPage() {
             {sound ? 'Sonido activado' : 'Sonido desactivado · Activar sonido'}
           </Button>
         </Stack>
-        {stale && (
+        {stale && (board || failed) && (
           <Alert severity='error'>
-            Cocina desconectada o información desactualizada. Compruebe la
-            conexión; los tiempos mostrados pueden no reflejar salidas
-            recientes.
+            {board
+              ? 'Cocina desconectada o información desactualizada. Los tiempos pueden no reflejar salidas recientes.'
+              : 'No se pudieron recuperar las comandas. Compruebe la conexión y pulse Reintentar conexión; los pedidos se conservan en el servidor.'}
           </Alert>
+        )}
+        {!board && !failed && (
+          <Stack spacing={1} role='status' aria-label='Recuperando comandas'>
+            <Typography>Recuperando comandas guardadas…</Typography>
+            <Stack direction={wide ? 'row' : 'column'} spacing={2}>
+              {[1, 2, 3].map((id) => (
+                <Skeleton
+                  key={id}
+                  variant='rounded'
+                  height={240}
+                  sx={{ flex: 1, width: '100%' }}
+                />
+              ))}
+            </Stack>
+          </Stack>
         )}
         <Typography variant='h5' className='kitchen-counts'>
           {total} pendientes · {visible.length} visibles ·{' '}
@@ -320,15 +348,18 @@ export function KitchenPage() {
                         {d.tables.map((t) => t.name).join(' + ') ||
                           modalityLabel[d.modality]}{' '}
                       </Typography>
-                      <Chip size='small' label={`Envío #${d.sequenceNumber}`} />
+                      <Chip size='small' label={commandLabel(d)} />
                     </div>
                     <Typography>
                       Mozo: {d.firstName} {d.lastName}
                     </Typography>
                     <Typography>
-                      Envío #{d.sequenceNumber} ·{' '}
+                      {d.operatingDate
+                        ? d.operatingDate.split('-').reverse().join('/')
+                        : 'Comanda histórica'}{' '}
+                      ·{' '}
                       {new Date(d.confirmedAt).toLocaleTimeString('es-PE', {
-                        timeZone: zone
+                        timeZone: d.operatingTimeZone || zone
                       })}
                     </Typography>
                     <Typography
@@ -394,7 +425,7 @@ export function KitchenPage() {
         <Typography className='pos-kds-footer'>
           Cocina toca timbre · El mozo marca la salida
         </Typography>
-        {!total && (
+        {board && !total && (
           <Card className='kitchen-empty'>
             <CardContent>
               <RestaurantMenuOutlined />

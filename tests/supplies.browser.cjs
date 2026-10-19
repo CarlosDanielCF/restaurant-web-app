@@ -96,6 +96,12 @@ fs.mkdirSync(output, { recursive: true });
       .getByRole('button', { name: 'Confirmar', exact: true })
       .click();
     await dialog.waitFor({ state: 'hidden' });
+    await page
+      .getByText(
+        'Control de stock activado correctamente. No se añadieron unidades ni gastos.',
+        { exact: true }
+      )
+      .waitFor();
     await page.getByLabel('Buscar bebida', { exact: true }).fill(name);
     const card = page.locator('.supplies-stock').filter({ hasText: name });
     await card.waitFor();
@@ -120,8 +126,34 @@ fs.mkdirSync(output, { recursive: true });
       () =>
         document.querySelector('.supplies-stock-count')?.textContent === '10'
     );
+    assert.equal(
+      await card
+        .getByRole('button', {
+          name: 'Stock inicial (sin movimientos previos)',
+          exact: true
+        })
+        .isDisabled(),
+      true
+    );
+    await page
+      .getByRole('button', { name: 'Configurar bebida', exact: true })
+      .click();
+    dialog = page.getByRole('dialog');
+    await dialog.getByLabel('Buscar producto de la carta').fill(name);
+    await dialog.getByRole('button', { name, exact: true }).click();
+    await dialog
+      .getByText('Ruteo configurado: entrega directa', { exact: true })
+      .waitFor();
+    await dialog.getByText(/Ya tiene control activo/).waitFor();
+    assert.equal(
+      await dialog
+        .getByRole('button', { name: 'Confirmar', exact: true })
+        .isDisabled(),
+      true
+    );
+    await dialog.getByRole('button', { name: 'Volver', exact: true }).click();
     checks.push(
-      'explicit configuration and audited opening; no fabricated units'
+      'explicit SKU configuration; existing control visible; opening disabled after its audited movement'
     );
     const keys = [];
     let loseResponse = true;
@@ -237,6 +269,15 @@ fs.mkdirSync(output, { recursive: true });
       await dialog.waitFor({ state: 'hidden' });
       await page.getByRole('heading', { name: concept, exact: true }).waitFor();
     }
+    const operatingDates = await page
+      .locator('.supplies-list-card dl > div')
+      .filter({ has: page.locator('dt', { hasText: 'Fecha operativa' }) })
+      .locator('dd')
+      .allTextContents();
+    assert.ok(operatingDates.length >= 2);
+    assert.ok(
+      operatingDates.every((value) => /^\d{2}\/\d{2}\/\d{4}$/.test(value))
+    );
     assert.equal(marketPosts.length, 2);
     assert.ok(marketPosts.every((body) => body.category === 'MARKET'));
     checks.push(
