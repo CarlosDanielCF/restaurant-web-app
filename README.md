@@ -2,6 +2,8 @@
 
 Ampliación de compras, bebidas y centro de reportes en `codex/phase-10`, sobre `698b1d3aad6747cfcf5ddc8a1ea2662dadeea359`. Requiere backend coordinado `codex/operational-ux` y su migración aditiva 21. Sin push ni merge. Operación, permisos, pruebas y límites en [SUPPLIES-REPORTS.md](SUPPLIES-REPORTS.md).
 
+Los únicos egresos de esta ampliación son **compras de mercado** registradas manualmente y **compras de bebidas** generadas una sola vez por ingreso de stock. Resultado operativo sobre cobranzas = cobranzas netas − compras de mercado − compras de bebidas.
+
 ## Arranque
 
 Node LTS compatible; pnpm **8.15.0** (packageManager/lockfile). No mezclar npm install con pnpm.

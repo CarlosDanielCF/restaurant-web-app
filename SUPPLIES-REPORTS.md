@@ -10,7 +10,7 @@ Ampliación descriptiva sobre las ramas de revisión existentes. No cambia la ma
 - Cada SKU se configura exactamente: producto sin variante (`optionId=0`) o una presentación. La configuración base no se hereda automáticamente a todas las variantes. Los nombres comerciales pendientes conservan el fallback neutral existente.
 - Activar control no inventa existencias ni costos históricos. El administrador registra el conteo inicial real o una compra. El stock inicial está protegido por el servidor cuando existen movimientos previos.
 - El costo total de compra se previsualiza con enteros de centavos (`BigInt`); el servidor vuelve a calcularlo. La compra genera un egreso de bebidas una sola vez.
-- **Compras del día** admite múltiples gastos de mercado u otros egresos. No ofrece una categoría manual de compra de bebidas para evitar duplicar el ingreso automático. Fecha operativa y observación quedan en detalle opcional.
+- **Compras del día** admite múltiples compras de mercado. No ofrece una categoría manual de compra de bebidas para evitar duplicar el ingreso automático. Fecha operativa y observación quedan en detalle opcional.
 - Conteo/ajuste requieren motivo. Si el conteo coincide, la pantalla informa que no hay diferencia y evita un ajuste vacío. Recuperación selecciona un consumo cancelado permitido por el servidor; no solicita UUID al trabajador.
 - Las peticiones usan la identidad de operación existente de `restauranteApi`: un reintento con los mismos datos conserva la clave; la respuesta confirmada la libera. Un bloqueo síncrono evita doble pulsación. La reconexión revalida; no reproduce mutaciones.
 - `catalog.changed`, `finance.changed` y `attention.changed` invalidan la vista usando la infraestructura de Socket.IO existente. Los formularios abiertos se conservan durante la actualización.
@@ -18,7 +18,7 @@ Ampliación descriptiva sobre las ramas de revisión existentes. No cambia la ma
 ## Resumen y reportes
 
 - `/operational-overview` consulta un resumen acotado y calculado en servidor. Presenta ventas, cobranzas netas, métodos, egresos y resultado operativo por moneda, además de incidencias y actividad; no vuelve a cargar todas las cuentas/turnos para calcular totales en React.
-- **Resultado operativo sobre cobranzas** = cobranzas netas del período − compras mercado − compras bebidas − otros egresos. No se presenta como ganancia neta. Las ventas aparecen separadas.
+- **Resultado operativo sobre cobranzas** = cobranzas netas del período − compras mercado − compras bebidas. No se presenta como ganancia neta. Las ventas aparecen separadas.
 - `/operational-reports` obtiene del backend el catálogo autorizado de reportes y filtros aplicables. Agrupa reportes por área y conserva los existentes. Las restricciones individuales continúan restándose del rol.
 - Atajos **Hoy, Ayer, Esta semana, Este mes, Personalizado** calculan días en la zona horaria del restaurante; el servidor valida el rango y sus límites.
 - Filtros de usuario/cobrador, responsable, método, modalidad, producto/categoría/mesa/estado aparecen únicamente donde el contrato los admite. El importe se muestra con precisión decimal, sin sumar cobros como ventas.
@@ -32,7 +32,7 @@ No se cargaron stock, costos, nombres de trabajadores, fotos ni presentaciones f
 
 La captura de cantidades comerciales es entera. La recuperación permite hasta tres decimales del consumo cancelado cuando se trata de un combo; el servidor convierte la referencia de ese consumo y exige unidades comerciales enteras de la bebida seleccionada. La UI envía `stockId` explícito para que recuperar un componente no recupere otras bebidas del mismo combo. No hay ingredientes, recetas, conversión de almacenes, proveedores complejos ni costo de receta. Las compras son egresos simples, no contabilidad completa. El conteo físico necesita verificación humana.
 
-## Verificación de este ciclo
+## Verificación de la ampliación original
 
 Resultados de este ciclo:
 
@@ -77,3 +77,20 @@ Creados:
 - `tests/supplies.browser.cjs`
 
 Eliminados: ninguno.
+
+## Corrección de alcance: mercado y bebidas
+
+La captura manual corresponde exclusivamente a compras de mercado (`MARKET`). El formulario no solicita elegir categoría: utiliza el tipo conocido del flujo. El ingreso de bebidas produce automáticamente la compra `BEVERAGE`, una sola vez. Se retiraron los otros egresos introducidos por esta ampliación de tipos, formulario, dashboard y etiquetas de reportes.
+
+La fórmula vigente es **cobranzas netas − compras de mercado − compras de bebidas**. El frontend muestra los importes autoritativos del servidor y no calcula un resultado alternativo. Los filtros y CSV continúan utilizando los contratos de reportes, con estas dos categorías permitidas.
+
+Las coincidencias de `OTHER` en la configuración histórica de métodos de pago pertenecen a otro contrato y se conservan; no representan egresos de esta ampliación. No se cambian pagos, reembolsos, auditoría, permisos, idempotencia ni stock.
+
+Validación de esta corrección:
+
+- Typecheck, build y lint focalizado aprobados. Permanecen las advertencias heredadas de dependencias/chunks y de versión React en ESLint.
+- Las 29 pruebas unitarias existentes pasan, incluidas las seis de idempotencia y las de precisión monetaria.
+- Siete grupos browser aprobados contra backend real aislado en 5019 y frontend en 3039: configuración/saldo inicial, compra con respuesta perdida y reintento sin duplicado, conteo con motivo, dos compras manuales `MARKET`, historial y CSV, categorías limitadas a `MARKET`/`BEVERAGE`, y accesos OWNER frente a WAITER/COOK.
+- El formulario no ofrece categoría alternativa; los dos POST manuales usan `MARKET`. El resumen no muestra otros egresos y el CSV descargado contiene compras de mercado y de bebidas, sin `OTHER`.
+- Sin overflow global en 390×844, 900×1100 y 1440×900; Cocina conservó el límite de tres comandas a 1920×1080. Cero excepciones JS y cero respuestas API 404 en el recorrido ejecutado.
+- Solo se usó la fixture de prueba desechable. No se ejecutaron seeds ni migraciones desde el frontend y no se accedió a bases existentes del usuario.

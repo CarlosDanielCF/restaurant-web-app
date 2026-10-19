@@ -20,7 +20,6 @@ const labels: Record<string, string> = {
   DRINK: 'Bebidas',
   MARKET: 'Compra de mercado',
   BEVERAGE: 'Compra de bebidas',
-  OTHER: 'Otro egreso',
   EXPENSE: 'Egreso',
   OPENING: 'Stock inicial',
   PURCHASE: 'Compra',

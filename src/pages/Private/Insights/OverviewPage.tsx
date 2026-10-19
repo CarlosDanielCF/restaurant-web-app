@@ -41,7 +41,6 @@ interface FinancialSummary {
   card: string;
   marketPurchases: string;
   beveragePurchases: string;
-  otherExpenses: string;
   totalExpenses: string;
   operatingResult: string;
 }
@@ -280,7 +279,7 @@ export function OverviewPage() {
                       {reportAmount(f.totalExpenses, f.currency)}
                     </Typography>
                     <Typography variant='caption'>
-                      Mercado + bebidas + otros egresos.
+                      Compras de mercado + compras de bebidas.
                     </Typography>
                     <div>{details('expenses')}</div>
                   </Card>
@@ -334,7 +333,6 @@ export function OverviewPage() {
                       f.beveragePurchases,
                       f.currency
                     )}
-                    {breakdown('Otros egresos', f.otherExpenses, f.currency)}
                     {can('configuration') && (
                       <Button
                         component={Link}
@@ -347,11 +345,10 @@ export function OverviewPage() {
                       <Typography variant='body2'>
                         Resultado operativo sobre cobranzas = cobranzas del
                         período (pagos y abonos) − reembolsos del período −
-                        compras de mercado − compras de bebidas − otros egresos.
-                        Las propinas y la entrega de efectivo del courier no son
-                        ventas ni un segundo cobro. Las ventas fiadas se
-                        reconocen como venta; sus abonos son cobranzas
-                        posteriores.
+                        compras de mercado − compras de bebidas. Las propinas y
+                        la entrega de efectivo del courier no son ventas ni un
+                        segundo cobro. Las ventas fiadas se reconocen como
+                        venta; sus abonos son cobranzas posteriores.
                       </Typography>
                     </MoreOptions>
                   </Card>

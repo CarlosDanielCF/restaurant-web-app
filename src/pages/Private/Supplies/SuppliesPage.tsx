@@ -65,8 +65,7 @@ const labels: Record<string, string> = {
   MANUAL_ADJUSTMENT: 'Ajuste manual',
   PHYSICAL_COUNT: 'Conteo físico',
   MARKET: 'Compra de mercado',
-  BEVERAGE: 'Compra de bebidas',
-  OTHER: 'Otro egreso'
+  BEVERAGE: 'Compra de bebidas'
 };
 const titles: Record<Action, string> = {
   configure: 'Configurar control de bebidas',
@@ -75,7 +74,7 @@ const titles: Record<Action, string> = {
   adjust: 'Ajustar unidades',
   count: 'Registrar conteo físico',
   recover: 'Recuperar bebida cancelada',
-  expense: 'Registrar gasto'
+  expense: 'Registrar compra de mercado'
 };
 const stockLabel = (stock: Pick<Stock, 'productName' | 'optionName'>) =>
   `${stock.productName}${stock.optionName ? ` · ${presentationLabel(stock.optionName)}` : ''}`;
@@ -258,7 +257,6 @@ export function SuppliesPage() {
     setValues({
       quantity: '',
       unitCost: '',
-      category: 'MARKET',
       operatingDate: today
     });
     setFormError('');
@@ -327,7 +325,7 @@ export function SuppliesPage() {
     } else if (action === 'expense') {
       path = '/supplies/expenses';
       body = {
-        category: values.category,
+        category: 'MARKET',
         amount: values.amount,
         concept: values.concept.trim(),
         ...(values.operatingDate
@@ -663,7 +661,7 @@ export function SuppliesPage() {
                   startIcon={<AddOutlined />}
                   onClick={() => open('expense')}
                 >
-                  Registrar gasto
+                  Registrar compra de mercado
                 </Button>
               )}
             </div>
@@ -671,7 +669,7 @@ export function SuppliesPage() {
               <>
                 <Alert severity='info'>
                   El ingreso de bebidas registra su compra una sola vez. Aquí
-                  registra mercado u otros egresos; no repitas el costo de las
+                  registra las compras de mercado; no repitas el costo de las
                   bebidas.
                 </Alert>
                 {!busy && !expenses.rows.length && (
@@ -905,15 +903,10 @@ export function SuppliesPage() {
                   value={values.concept || ''}
                   onChange={(e) => update('concept', e.target.value)}
                 />
-                <TextField
-                  select
-                  label='Tipo de egreso'
-                  value={values.category || 'MARKET'}
-                  onChange={(e) => update('category', e.target.value)}
-                >
-                  <MenuItem value='MARKET'>Compra de mercado</MenuItem>
-                  <MenuItem value='OTHER'>Otro egreso operativo</MenuItem>
-                </TextField>
+                <Typography color='text.secondary'>
+                  Compra de mercado · el ingreso de bebidas se registra por
+                  separado.
+                </Typography>
               </>
             ) : (
               <>
@@ -1078,7 +1071,7 @@ export function SuppliesPage() {
               : action === 'purchase'
                 ? 'Registrar ingreso'
                 : action === 'expense'
-                  ? 'Guardar gasto'
+                  ? 'Guardar compra'
                   : 'Confirmar'}
           </Button>
         </DialogActions>

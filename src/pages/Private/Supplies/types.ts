@@ -36,7 +36,7 @@ export interface StockMovement {
 }
 export interface Expense {
   id: string;
-  category: 'MARKET' | 'BEVERAGE' | 'OTHER';
+  category: 'MARKET' | 'BEVERAGE';
   amount: string;
   currency: string;
   concept: string;

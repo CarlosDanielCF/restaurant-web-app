@@ -67,6 +67,14 @@ fs.mkdirSync(output, { recursive: true });
       fixture.owner.token
     );
     const page = await context.newPage();
+    const marketPosts = [];
+    page.on('request', (request) => {
+      if (
+        request.method() === 'POST' &&
+        new URL(request.url()).pathname === '/api/supplies/expenses'
+      )
+        marketPosts.push(request.postDataJSON());
+    });
     page.setDefaultTimeout(25000);
     page.on('pageerror', (e) => errors.push(e.message));
     page.on('response', (r) => {
@@ -205,19 +213,34 @@ fs.mkdirSync(output, { recursive: true });
       ['80.00', 'Adicional browser ' + suffix]
     ]) {
       await page
-        .getByRole('button', { name: 'Registrar gasto', exact: true })
+        .getByRole('button', {
+          name: 'Registrar compra de mercado',
+          exact: true
+        })
         .click();
       dialog = page.getByRole('dialog');
+      assert.equal(
+        await dialog.getByLabel('Tipo de egreso', { exact: true }).count(),
+        0
+      );
+      assert.equal(
+        await dialog
+          .getByText('Otro egreso operativo', { exact: true })
+          .count(),
+        0
+      );
       await dialog.getByLabel('Monto', { exact: true }).fill(amount);
       await dialog.getByLabel('Concepto', { exact: true }).fill(concept);
       await dialog
-        .getByRole('button', { name: 'Guardar gasto', exact: true })
+        .getByRole('button', { name: 'Guardar compra', exact: true })
         .click();
       await dialog.waitFor({ state: 'hidden' });
       await page.getByRole('heading', { name: concept, exact: true }).waitFor();
     }
+    assert.equal(marketPosts.length, 2);
+    assert.ok(marketPosts.every((body) => body.category === 'MARKET'));
     checks.push(
-      'multiple same-day market entries, beverage expense is automatic only once'
+      'multiple same-day MARKET-only entries, beverage expense is automatic only once'
     );
     await page.getByRole('button', { name: 'Kardex', exact: true }).click();
     await page
@@ -252,6 +275,10 @@ fs.mkdirSync(output, { recursive: true });
       await page.goto(front + route);
       await page.getByRole('heading', { name: heading, exact: true }).waitFor();
       await page.waitForTimeout(600);
+      assert.equal(
+        await page.getByText('Otros egresos', { exact: true }).count(),
+        0
+      );
       assert.equal(
         await page
           .getByRole('alert')
@@ -303,6 +330,21 @@ fs.mkdirSync(output, { recursive: true });
     await download.saveAs(output + '/accounts.csv');
     assert.ok(fs.statSync(output + '/accounts.csv').size > 20);
     checks.push('account history and full filtered CSV download');
+    await page.goto(front + '/operational-reports?kind=expenses');
+    const expensesDownloadEvent = page.waitForEvent('download');
+    await page
+      .getByRole('button', { name: 'Exportar CSV completo', exact: true })
+      .click();
+    const expensesDownload = await expensesDownloadEvent;
+    await expensesDownload.saveAs(output + '/expenses.csv');
+    const expenseCsv = fs.readFileSync(output + '/expenses.csv', 'utf8');
+    assert.ok(expenseCsv.includes('MARKET'));
+    assert.ok(expenseCsv.includes('BEVERAGE'));
+    assert.equal(expenseCsv.includes('OTHER'), false);
+    checks.push(
+      'expense form, overview and filtered CSV expose only MARKET/BEVERAGE'
+    );
+
     await page.setViewportSize({ width: 1920, height: 1080 });
     await page.goto(front + '/kitchen');
     await page

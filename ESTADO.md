@@ -1,3 +1,13 @@
+# Corrección de alcance — compras de mercado y bebidas (19 octubre 2026)
+
+Base exacta `d97b320638278b9dce3430d55e7110048a23821a`, rama `codex/phase-10`. Se retira el tercer tipo genérico de egreso del formulario manual, tipos, etiquetas, dashboard y fórmula. Registrar compra de mercado envía MARKET; la compra de bebidas sigue generando su egreso BEVERAGE al ingresar stock. Resultado = cobranzas netas − compras de mercado − compras de bebidas.
+
+Se mantienen stock, Kardex, reportes/historial y toda operación previa. No cambian categorías legacy de medios de pago ajenas a este módulo. Backend y migración21 corregidos coordinadamente; pruebas aisladas, sin seeds ni cambios a la base del usuario. Main intacta, sin push/merge/force-push. Evidencia: [SUPPLIES-REPORTS.md](SUPPLIES-REPORTS.md).
+
+Validación de esta corrección: typecheck/build/lint focalizado,29 unitarias y7 grupos navegador aprobados;0 excepciones JS/API404 en390×844,900×1100,1440×900 y cocina1920×1080. Backend:156 unitarias,23 grupos HTTP/MySQL y esquema1→21 aislado con0pendientes al repetir.
+
+---
+
 # Estado vigente — compras, bebidas y reportes (19 octubre 2026)
 
 Rama `codex/phase-10`, base exacta `698b1d3aad6747cfcf5ddc8a1ea2662dadeea359`. Main permanece en `b6fc55edb2a7cecc4c5180b56377c1b3316c8b71`. Sin push/merge/force-push; revisión local pendiente.
