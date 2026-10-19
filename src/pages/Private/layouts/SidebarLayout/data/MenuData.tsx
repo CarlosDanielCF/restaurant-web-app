@@ -9,6 +9,7 @@ import {
   Groups3Outlined,
   ReceiptLongOutlined,
   AssessmentOutlined,
+  Inventory2Outlined,
   PaymentsOutlined
 } from '@mui/icons-material';
 import { Roles } from '@/models/roles';
@@ -79,6 +80,12 @@ export const menuSections: MenuSection[] = [
         title: 'Resumen operativo',
         icon: <AssessmentOutlined />,
         to: '/operational-overview',
+        allowedRoles: managers
+      },
+      {
+        title: 'Compras y bebidas',
+        icon: <Inventory2Outlined />,
+        to: '/supplies',
         allowedRoles: managers
       },
       {

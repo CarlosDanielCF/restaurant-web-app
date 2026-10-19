@@ -1,3 +1,14 @@
+# Estado vigente — compras, bebidas y reportes (19 octubre 2026)
+
+Rama `codex/phase-10`, base exacta `698b1d3aad6747cfcf5ddc8a1ea2662dadeea359`. Main permanece en `b6fc55edb2a7cecc4c5180b56377c1b3316c8b71`. Sin push/merge/force-push; revisión local pendiente.
+
+Nuevo módulo lazy Compras y bebidas: configuración explícita por SKU, ingresos, apertura/conteo/ajuste/recuperación con motivo, Kardex y gastos. Resumen autoritativo de ventas/cobranzas/egresos/resultado por moneda, reportes agrupados con filtros, CSV completo y cronología de cuenta. Costos/compras reservados a Dueño/Admin y restricciones existentes, también validados por backend. Se conserva Point Restaurant como software, restaurante configurable y operación previa.
+
+Requiere backend coordinado y migración 21. No hay seeds ni migraciones desde frontend ni carga de datos ficticios del cliente. Validación: typecheck/build/lint focalizado, 29 unitarias y 6 grupos de navegador real contra backend MySQL aislado; 390×844, 900×1100, 1440×900 y cocina 1920×1080. Cero excepciones JS/API404 en el recorrido. Evidencia, límites y procedimiento: [SUPPLIES-REPORTS.md](SUPPLIES-REPORTS.md). No se afirma nueva validación física ni repetición de todas las combinaciones históricas.
+
+---
+## Registro histórico — estados previos
+
 # Revisión post-manual — 19 octubre 2026
 
 Correcciones frontend de carga por rutas, retirada del consumidor de caja legacy, apertura contextual, Delivery integrado, pedido más ancho, presentaciones neutras y timbre seguido de voz. Backend sin cambios;20 migraciones conservadas, sin seeds. Evidencia y límites: [F10-POST-MANUAL.md](F10-POST-MANUAL.md). Pendiente revisión local; sin push/merge.

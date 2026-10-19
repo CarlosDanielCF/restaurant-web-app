@@ -1,10 +1,7 @@
 import { MoreOptions } from '@/components/operational/MoreOptions';
-import {
-  FilterAltOutlined,
-  TodayOutlined,
-  RestartAltOutlined,
-  AssessmentOutlined
-} from '@mui/icons-material';
+import FilterAltOutlined from '@mui/icons-material/FilterAltOutlined';
+import FileDownloadOutlined from '@mui/icons-material/FileDownloadOutlined';
+import AssessmentOutlined from '@mui/icons-material/AssessmentOutlined';
 import { WorkspaceEmpty } from '@/components/operational/WorkspaceEmpty';
 import { operationalLabel } from './labels';
 import { useEffect, useState } from 'react';
@@ -23,75 +20,35 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Paper
+  Paper,
+  Chip
 } from '@mui/material';
 import { useSelector } from 'react-redux';
+import { Link, useSearchParams } from 'react-router-dom';
 import { selectAuth } from '@/redux';
 import { restauranteApi } from '@/api';
+import { useWorkerAccess } from '@/hooks/useWorkerAccess';
 import { useRestaurantStore } from '../Common/store/restaurantStore';
-const kinds: Record<string, string> = {
-  sales: 'Ventas confirmadas',
-  collections: 'Cobros y métodos',
-  settlements: 'Rendiciones',
-  'top-products': 'Productos más vendidos',
-  slow: 'Comandas >15 minutos',
-  discounts: 'Descuentos',
-  portions: 'Porciones especiales',
-  cancellations: 'Cancelaciones / sustituciones',
-  refunds: 'Reembolsos',
-  courtesies: 'Cortesías',
-  tips: 'Propinas',
-  staff: 'Consumo de personal',
-  debts: 'Deudas',
-  installments: 'Cuotas',
-  audit: 'Historial operativo',
-  delivery: 'Delivery / para llevar',
-  custody: 'Recepción de efectivo courier'
-};
-const columns: Record<string, string> = {
-  occurredAt: 'Fecha',
-  userName: 'Usuario',
-  userId: 'Usuario ID',
-  accountId: 'Atención',
-  resourceId: 'Recurso',
-  product: 'Producto',
-  quantity: 'Cantidad',
-  amount: 'Importe',
-  currency: 'Moneda',
-  method: 'Método',
-  modality: 'Modalidad',
-  status: 'Estado',
-  movementType: 'Movimiento',
-  reason: 'Motivo',
-  originalUnitPrice: 'Precio original',
-  appliedUnitPrice: 'Precio aplicado',
-  availabilityUnitsPerItem: 'Consumo de disponibilidad',
-  beneficiaryName: 'Beneficiario',
-  historicalValue: 'Valor histórico (no venta)',
-  initialPayments: 'Pagos iniciales',
-  installments: 'Cuotas cobradas',
-  remainingPrincipal: 'Principal pendiente',
-  outstanding: 'Deuda exigible',
-  pendingFoodUnits: 'Comida pendiente de salida',
-  dispatchedAt: 'Último despacho registrado',
-  deliveredAt: 'Última entrega registrada',
-  accountOutstanding: 'Saldo de cuenta',
-  pendingDigital: 'Pendiente digital',
-  liveExpectedCash: 'Efectivo esperado actual',
-  recordedExpectedCash: 'Esperado al rendir',
-  deliveredCash: 'Entregado',
-  shortage: 'Faltante',
-  overage: 'Sobrante',
-  seconds: 'Segundos',
-  courierCash: 'Efectivo courier',
-  courierReceived: 'Efectivo recibido del courier',
-  clientName: 'Cliente',
-  paymentStatus: 'Estado de pago',
-  differenceReason: 'Motivo de diferencia',
-  courierName: 'Courier',
-  beforeData: 'Antes',
-  afterData: 'Después'
-};
+import { AccountHistoryDialog } from './AccountHistoryDialog';
+import { ReportPeriodControls } from './ReportPeriodControls';
+import { monetaryColumns, reportColumns } from './reportColumns';
+import {
+  periodRange,
+  reportAmount,
+  reportError,
+  reportGroups,
+  reportNames,
+  ReportPeriod,
+  validReportRange
+} from './reportView';
+import './insights.css';
+interface CatalogEntry {
+  kind: string;
+  description: string;
+  filters: string[];
+  states?: string[];
+  types?: string[];
+}
 interface Result {
   kind: string;
   description: string;
@@ -108,79 +65,169 @@ interface Result {
   limit: number;
   capturedAt: string;
 }
+interface Option {
+  id: string;
+  name: string;
+}
+interface Options {
+  truncated?: boolean;
+  products: Option[];
+  categories: Option[];
+  tables: Option[];
+}
+const extraFilters = [
+  'userId',
+  'responsibleUserId',
+  'method',
+  'modality',
+  'status',
+  'movementType',
+  'productId',
+  'categoryId',
+  'tableId',
+  'productKind',
+  'accountId'
+] as const;
+type Filters = { from: string; to: string } & Record<
+  (typeof extraFilters)[number],
+  string
+>;
+const cleanExtras = Object.fromEntries(
+  extraFilters.map((key) => [key, ''])
+) as Record<(typeof extraFilters)[number], string>;
 export function ReportsPage() {
   const user = useSelector(selectAuth).user,
     restaurant = useRestaurantStore((s) => s.restaurant),
     role = user?.role.name;
-  const available = Object.keys(kinds).filter((k) =>
-    role === 'MOZO'
-      ? ['settlements', 'tips', 'audit'].includes(k)
-      : role === 'COCINERO'
-        ? k === 'slow'
-        : true
-  );
+  const administrative = role === 'DUENO' || role === 'ADMINISTRADOR',
+    timeZone = restaurant?.timeZone || 'America/Lima';
+  const can = useWorkerAccess();
+  const [params, setParams] = useSearchParams();
+  const initialRange =
+    params.get('from') && params.get('to')
+      ? { from: params.get('from')!, to: params.get('to')! }
+      : periodRange('today', timeZone);
+  const [catalog, setCatalog] = useState<CatalogEntry[]>([]),
+    [catalogError, setCatalogError] = useState(''),
+    [catalogRevision, setCatalogRevision] = useState(0);
   const [workers, setWorkers] = useState<
-    { id: string; name: string; role: string; isActive: boolean }[]
-  >([]);
-  useEffect(() => {
-    let active = true;
-    restauranteApi
-      .get<typeof workers>('/operational-reports/directory')
-      .then((r) => {
-        if (active) setWorkers(r.data);
-      })
-      .catch(() => {
-        if (active) setWorkers([]);
-      });
-    return () => {
-      active = false;
-    };
-  }, [restaurant?.id]);
-  const today = new Intl.DateTimeFormat('en-CA', {
-    timeZone: restaurant?.timeZone || 'America/Lima'
-  }).format(new Date());
-  const [kind, setKind] = useState(available[0] || 'sales'),
-    [filters, setFilters] = useState({
-      from: today.slice(0, 8) + '01',
-      to: today,
-      userId: '',
-      responsibleUserId: '',
-      method: '',
-      modality: '',
-      status: '',
-      movementType: ''
-    }),
+      (Option & { role: string; isActive: boolean })[]
+    >([]),
+    [options, setOptions] = useState<Options>({
+      products: [],
+      categories: [],
+      tables: []
+    });
+  const [kind, setKind] = useState(''),
+    [period, setPeriod] = useState<ReportPeriod>(
+      params.get('from') ? 'custom' : 'today'
+    );
+  const [filters, setFilters] = useState<Filters>(() => ({
+    ...initialRange,
+    ...cleanExtras,
+    ...Object.fromEntries(
+      extraFilters
+        .filter((key) => params.has(key))
+        .map((key) => [key, params.get(key)!])
+    )
+  }));
+  const [appliedFilters, setAppliedFilters] = useState(filters),
     [page, setPage] = useState(1),
     [revision, setRevision] = useState(0),
     [result, setResult] = useState<Result>(),
     [busy, setBusy] = useState(false),
-    [error, setError] = useState('');
-  const [appliedFilters, setAppliedFilters] = useState(filters);
+    [error, setError] = useState(''),
+    [filterError, setFilterError] = useState(''),
+    [exporting, setExporting] = useState(false),
+    [historyAccount, setHistoryAccount] = useState<string | null>(null);
   useEffect(() => {
+    let active = true;
+    setCatalog([]);
+    setKind('');
+    setResult(undefined);
+    setCatalogError('');
+    setFilterError('');
+    setWorkers([]);
+    setOptions({ products: [], categories: [], tables: [] });
+    setHistoryAccount(null);
+    restauranteApi
+      .get<CatalogEntry[]>('/operational-reports/catalog')
+      .then((r) => {
+        if (!active) return;
+        setCatalog(r.data);
+        const requested = params.get('kind'),
+          selected = r.data.find((c) => c.kind === requested) || r.data[0];
+        if (selected) {
+          setKind(selected.kind);
+          const next = { ...filters };
+          extraFilters.forEach((key) => {
+            if (!selected.filters.includes(key)) next[key] = '';
+          });
+          setFilters(next);
+          setAppliedFilters(next);
+        }
+      })
+      .catch((e) => {
+        if (active)
+          setCatalogError(
+            reportError(e, 'No se pudieron cargar los reportes autorizados.')
+          );
+      });
+    restauranteApi
+      .get<(Option & { role: string; isActive: boolean })[]>(
+        '/operational-reports/directory'
+      )
+      .then((r) => {
+        if (active) setWorkers(r.data);
+      })
+      .catch(() => {
+        if (active) {
+          setWorkers([]);
+          setFilterError(
+            'No se pudo cargar alguna lista de filtros. Puedes consultar sin ese filtro o reintentar.'
+          );
+        }
+      });
+    if (administrative)
+      restauranteApi
+        .get<Options>('/operational-reports/options')
+        .then((r) => {
+          if (active) setOptions(r.data);
+        })
+        .catch(() => {
+          if (active) {
+            setOptions({ products: [], categories: [], tables: [] });
+            setFilterError(
+              'No se pudo cargar alguna lista de filtros. Puedes consultar sin ese filtro o reintentar.'
+            );
+          }
+        });
+    return () => {
+      active = false;
+    };
+    // URL filters initialize this workspace; changing a report keeps its local input state.
+  }, [restaurant?.id, user?.id, role, administrative, catalogRevision]);
+  const definition = catalog.find((c) => c.kind === kind),
+    allowed = (key: string) => definition?.filters.includes(key);
+  useEffect(() => {
+    if (!kind || !definition) return;
     let active = true;
     setBusy(true);
     setResult(undefined);
     setError('');
+    const query = Object.fromEntries(
+      Object.entries(appliedFilters).filter(([, v]) => v)
+    );
     restauranteApi
       .get<Result>(`/operational-reports/${kind}`, {
-        params: {
-          ...Object.fromEntries(
-            Object.entries(appliedFilters).filter(([, v]) => v)
-          ),
-          page,
-          limit: 25
-        }
+        params: { ...query, page, limit: 25 }
       })
       .then((r) => {
         if (active) setResult(r.data);
       })
       .catch((e) => {
         if (active)
-          setError(
-            String(
-              e.response?.data?.message || 'No se pudo consultar el reporte'
-            )
-          );
+          setError(reportError(e, 'No se pudo consultar el reporte.'));
       })
       .finally(() => {
         if (active) setBusy(false);
@@ -188,310 +235,500 @@ export function ReportsPage() {
     return () => {
       active = false;
     };
-  }, [kind, page, revision, restaurant?.id, appliedFilters]);
-  const methodKinds = ['collections', 'refunds', 'tips', 'installments'],
-    noModality = ['settlements', 'audit'],
-    states: Record<string, string[]> = {
-      settlements: ['OPEN', 'SUBMITTED', 'CLOSED'],
-      slow: ['CONFIRMED', 'VOIDED'],
-      discounts: ['APPLIED', 'INACTIVE'],
-      portions: ['ACTIVE', 'CANCELLED'],
-      courtesies: ['ACTIVE', 'CANCELLED'],
-      staff: ['ACTIVE', 'CANCELLED'],
-      debts: ['OUTSTANDING', 'PAID'],
-      delivery: [
-        'PREPARING',
-        'READY',
-        'DISPATCHED',
-        'IN_TRANSIT',
-        'DELIVERED',
-        'CANCELLED'
-      ]
-    };
-  const types: Record<string, string[]> = {
-    collections: ['COLLECTION', 'INSTALLMENT'],
-    tips: ['DIRECT', 'DIGITAL_RECEIPT', 'DIGITAL_PAYOUT'],
-    cancellations: [
-      'attention.cancel',
-      'attention.cancel-draft',
-      'attention.replace',
-      'attention.return-consumption'
-    ]
-  };
-  const update = (key: keyof typeof filters, value: string) =>
-    setFilters((f) => ({ ...f, [key]: value }));
-  const visibleColumns = result?.rows.length
-    ? Object.keys(result.rows[0]).filter(
-        (k) =>
-          !['restaurantId', 'id', 'userId', 'responsibleUserId'].includes(k)
-      )
-    : [];
-  const cell = (key: string, value: unknown) =>
-    value === null ? (
-      '—'
-    ) : typeof value === 'object' ? (
-      <details>
-        <summary>Ver detalle</summary>
-        <pre style={{ whiteSpace: 'pre-wrap', maxWidth: 480 }}>
-          {JSON.stringify(value, null, 2)}
-        </pre>
-      </details>
-    ) : key.endsWith('At') && typeof value === 'string' ? (
-      new Date(value).toLocaleString('es-PE', { timeZone: result?.timeZone })
-    ) : (
-      operationalLabel(String(value))
+  }, [kind, page, revision, restaurant?.id, appliedFilters, definition]);
+  const apply = (next = filters) => {
+    if (!validReportRange(next)) {
+      setError('Selecciona un rango válido de hasta 366 días.');
+      return;
+    }
+    setAppliedFilters({ ...next });
+    setPage(1);
+    setRevision((n) => n + 1);
+    setParams(
+      {
+        kind,
+        ...Object.fromEntries(Object.entries(next).filter(([, v]) => v))
+      },
+      { replace: true }
     );
-  const selectReport = (nextKind: string) => {
+  };
+  const selectReport = (nextKind: string, extra: Partial<Filters> = {}) => {
+    const nextDefinition = catalog.find((c) => c.kind === nextKind);
+    if (!nextDefinition) return;
+    const next = { ...filters, ...cleanExtras, ...extra };
+    extraFilters.forEach((key) => {
+      if (!nextDefinition.filters.includes(key)) next[key] = '';
+    });
     setKind(nextKind);
     setPage(1);
-    const next = {
-      ...filters,
-      method: '',
-      modality: '',
-      status: '',
-      movementType: '',
-      userId: '',
-      responsibleUserId: ''
-    };
     setFilters(next);
     setAppliedFilters(next);
+    setResult(undefined);
+    setParams(
+      {
+        kind: nextKind,
+        ...Object.fromEntries(Object.entries(next).filter(([, v]) => v))
+      },
+      { replace: true }
+    );
   };
-  return (
-    <Container maxWidth='xl' className='final-page pos-reports'>
-      <nav className='pos-report-nav' aria-label='Reportes disponibles'>
-        <Typography variant='overline'>Reportes</Typography>
-        {available.map((k) => (
-          <Button
-            key={k}
-            aria-current={kind === k ? 'page' : undefined}
-            onClick={() => selectReport(k)}
-          >
-            {kinds[k]}
-          </Button>
-        ))}
-      </nav>
-      <Stack spacing={2} className='pos-report-content'>
-        <Typography variant='h4'>Reportes operativos</Typography>
-        <Typography variant='h6'>
-          <AssessmentOutlined sx={{ verticalAlign: 'middle', mr: 1 }} />
-          {kinds[kind]}
-        </Typography>
-        <Alert severity='info'>
-          Venta, cobro, deuda, cuota, reembolso, propina y custodia son
-          conceptos distintos. Los importes se calculan en servidor. Zona
-          horaria: {restaurant?.timeZone}.
-        </Alert>
-        <TextField
-          select
-          label='Reporte'
-          className='pos-report-select'
-          value={kind}
-          onChange={(e) => selectReport(e.target.value)}
-        >
-          {available.map((k) => (
-            <MenuItem key={k} value={k}>
-              {kinds[k]}
-            </MenuItem>
-          ))}
-        </TextField>
-        <Stack direction='row' gap={1} flexWrap='wrap'>
-          <Button
-            startIcon={<TodayOutlined />}
-            disabled={busy}
-            onClick={() => {
-              const next = { ...filters, from: today, to: today };
-              setFilters(next);
-              setAppliedFilters(next);
-              setPage(1);
-              setRevision((n) => n + 1);
+  const update = (key: keyof Filters, value: string) =>
+    setFilters((f) => ({ ...f, [key]: value }));
+  const exportCsv = async () => {
+    setExporting(true);
+    setError('');
+    try {
+      const response = await restauranteApi.get<Blob>(
+        `/operational-reports/${kind}/export`,
+        {
+          params: Object.fromEntries(
+            Object.entries(appliedFilters).filter(([, v]) => v)
+          ),
+          responseType: 'blob'
+        }
+      );
+      const url = URL.createObjectURL(response.data),
+        anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = `point-${kind}-${appliedFilters.from}-${appliedFilters.to}.csv`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (e) {
+      const failure = e as { data?: Blob; response?: { data?: Blob } };
+      const payload = failure.data ?? failure.response?.data;
+      let message =
+        'No se pudo exportar. Reduce el período o los filtros; la exportación admite hasta 10.000 filas completas.';
+      if (payload instanceof Blob) {
+        try {
+          message = String(JSON.parse(await payload.text()).message || message);
+        } catch {
+          /* Keep the useful fallback if a proxy returned non-JSON. */
+        }
+      }
+      setError(reportError(e, message));
+    } finally {
+      setExporting(false);
+    }
+  };
+  const moneyReport = [
+    'sales',
+    'collections',
+    'refunds',
+    'tips',
+    'debts',
+    'installments',
+    'top-products',
+    'least-products',
+    'products',
+    'product-activity',
+    'expenses',
+    'waiter-results',
+    'discounts'
+  ].includes(kind);
+  const columns = result?.rows.length
+    ? Object.keys(result.rows[0]).filter(
+        (k) =>
+          (k !== 'amount' || moneyReport) &&
+          ![
+            'restaurantId',
+            'id',
+            'userId',
+            'responsibleUserId',
+            'productId',
+            'categoryId',
+            'tableId',
+            'actorId'
+          ].includes(k)
+      )
+    : [];
+  const cell = (key: string, value: unknown, row: Record<string, unknown>) => {
+    if (value == null) return '—';
+    if (key === 'paymentMethods')
+      return String(value)
+        .split(',')
+        .map((method) => operationalLabel(method.trim()))
+        .join(' · ');
+    if (key === 'accountId')
+      return administrative ? (
+        <Button size='small' onClick={() => setHistoryAccount(String(value))}>
+          Ver historial
+        </Button>
+      ) : (
+        'Atención asociada'
+      );
+    if (typeof value === 'object')
+      return (
+        <details>
+          <summary>Ver detalle</summary>
+          <pre
+            style={{
+              whiteSpace: 'pre-wrap',
+              maxWidth: 480,
+              overflowWrap: 'anywhere'
             }}
           >
-            Hoy
-          </Button>
-          <Button
-            startIcon={<RestartAltOutlined />}
-            disabled={busy}
-            onClick={() => {
-              const next = {
-                from: today.slice(0, 8) + '01',
-                to: today,
-                userId: '',
-                responsibleUserId: '',
-                method: '',
-                modality: '',
-                status: '',
-                movementType: ''
-              };
-              setFilters(next);
-              setAppliedFilters(next);
-              setPage(1);
-              setRevision((n) => n + 1);
-            }}
-          >
-            Este mes · limpiar filtros
-          </Button>
+            {JSON.stringify(value, null, 2)}
+          </pre>
+        </details>
+      );
+    if (monetaryColumns.has(key))
+      return reportAmount(value, String(row.currency || 'PEN'));
+    if (key.endsWith('At') && typeof value === 'string') {
+      const date = new Date(value);
+      return Number.isFinite(date.getTime())
+        ? date.toLocaleString('es-PE', { timeZone: result?.timeZone })
+        : value;
+    }
+    return operationalLabel(String(value));
+  };
+  const workerActions = (row: Record<string, unknown>) =>
+    kind === 'waiter-results' && (
+      <MoreOptions title='Ver detalle del trabajador'>
+        <Stack direction='row' flexWrap='wrap' gap={0.5}>
+          {[
+            'collections',
+            'accounts',
+            'dispatches',
+            'settlements',
+            'tips',
+            'cancellations',
+            'substitutions',
+            'audit'
+          ]
+            .filter((k) => catalog.some((c) => c.kind === k))
+            .map((k) => (
+              <Button
+                key={k}
+                onClick={() =>
+                  selectReport(k, {
+                    [k === 'accounts' ? 'responsibleUserId' : 'userId']: String(
+                      row.userId || row.id
+                    )
+                  })
+                }
+              >
+                {k === 'accounts'
+                  ? 'Cuentas como responsable'
+                  : k === 'dispatches'
+                    ? 'Envíos confirmados'
+                    : reportNames[k]}
+              </Button>
+            ))}
         </Stack>
-        <Stack
-          className='report-filters'
-          direction={{ xs: 'column', md: 'row' }}
-          spacing={1}
-          flexWrap='wrap'
-        >
-          <TextField
-            type='date'
-            label='Desde'
-            InputLabelProps={{ shrink: true }}
-            value={filters.from}
-            onChange={(e) => update('from', e.target.value)}
+      </MoreOptions>
+    );
+  const selectFilter = (
+    key: keyof Filters,
+    label: string,
+    values: { value: string; label: string }[]
+  ) =>
+    allowed(key) && (
+      <TextField
+        key={key}
+        size='small'
+        select
+        label={label}
+        value={filters[key]}
+        onChange={(e) => update(key, e.target.value)}
+      >
+        <MenuItem value=''>Todos</MenuItem>
+        {values.map((v) => (
+          <MenuItem key={v.value} value={v.value}>
+            {v.label}
+          </MenuItem>
+        ))}
+      </TextField>
+    );
+  return (
+    <Container
+      maxWidth='xl'
+      className='final-page pos-reports point-report-center'
+    >
+      <nav className='pos-report-nav' aria-label='Reportes disponibles'>
+        <Typography variant='overline'>Centro de reportes</Typography>
+        {administrative && (
+          <Button component={Link} to='/operational-overview'>
+            Resumen operativo
+          </Button>
+        )}
+        {reportGroups.map((group) => {
+          const available = group.kinds.filter((k) =>
+            catalog.some((c) => c.kind === k)
+          );
+          return (
+            available.length > 0 && (
+              <details
+                key={group.label}
+                open={available.includes(kind) || undefined}
+              >
+                <summary>{group.label}</summary>
+                {available.map((k) => (
+                  <Button
+                    key={k}
+                    aria-current={kind === k ? 'page' : undefined}
+                    onClick={() => selectReport(k)}
+                  >
+                    {reportNames[k] || k}
+                  </Button>
+                ))}
+              </details>
+            )
+          );
+        })}
+        {administrative && can('configuration') && (
+          <Button component={Link} to='/supplies?view=stock'>
+            Gestionar bebidas / compras
+          </Button>
+        )}
+      </nav>
+      <Stack spacing={1.5} className='pos-report-content'>
+        <Typography variant='h4' component='h1'>
+          Centro de reportes
+        </Typography>
+        {catalogError && (
+          <Alert
+            severity='error'
+            action={
+              <Button onClick={() => setCatalogRevision((n) => n + 1)}>
+                Reintentar
+              </Button>
+            }
+          >
+            {catalogError}
+          </Alert>
+        )}
+        {!catalog.length && !catalogError && (
+          <CircularProgress
+            size={24}
+            aria-label='Cargando reportes autorizados'
           />
-          <TextField
-            type='date'
-            label='Hasta'
-            InputLabelProps={{ shrink: true }}
-            value={filters.to}
-            onChange={(e) => update('to', e.target.value)}
-          />
-          <MoreOptions title='Filtros adicionales: usuario, método, modalidad y estado'>
+        )}
+        {!!catalog.length && (
+          <>
+            <TextField
+              select
+              label='Reporte'
+              className='pos-report-select'
+              value={kind}
+              onChange={(e) => selectReport(e.target.value)}
+            >
+              {catalog.map((c) => (
+                <MenuItem key={c.kind} value={c.kind}>
+                  {reportNames[c.kind] || c.kind}
+                </MenuItem>
+              ))}
+            </TextField>
             <Stack
-              direction={{ xs: 'column', md: 'row' }}
+              direction='row'
+              justifyContent='space-between'
               gap={1}
               flexWrap='wrap'
+              alignItems='center'
             >
-              {role !== 'MOZO' && (
-                <TextField
-                  select
-                  label='Usuario (opcional)'
-                  value={filters.userId}
-                  onChange={(e) => update('userId', e.target.value)}
+              <Typography variant='h5' component='h2'>
+                <AssessmentOutlined sx={{ verticalAlign: 'middle', mr: 1 }} />
+                {reportNames[kind] || kind}
+              </Typography>
+              <Button
+                startIcon={<FileDownloadOutlined />}
+                disabled={busy || exporting || !result?.total}
+                onClick={() => void exportCsv()}
+              >
+                {exporting ? 'Exportando…' : 'Exportar CSV completo'}
+              </Button>
+            </Stack>
+            <Typography className='report-description'>
+              {definition?.description} · Zona horaria: {timeZone}
+            </Typography>
+            <ReportPeriodControls
+              period={period}
+              range={filters}
+              timeZone={timeZone}
+              onChange={(p, range) => {
+                const next = { ...filters, ...range };
+                setPeriod(p);
+                setFilters(next);
+                if (p !== 'custom') apply(next);
+              }}
+            />
+            <MoreOptions title='Filtros adicionales'>
+              {filterError && (
+                <Alert
+                  severity='warning'
+                  action={
+                    <Button onClick={() => setCatalogRevision((n) => n + 1)}>
+                      Reintentar
+                    </Button>
+                  }
                 >
-                  <MenuItem value=''>Todos</MenuItem>
-                  {workers.map((w) => (
-                    <MenuItem key={w.id} value={w.id}>
-                      {w.name}
-                      {!w.isActive ? ' (inactivo)' : ''}
-                    </MenuItem>
-                  ))}
-                </TextField>
+                  {filterError}
+                </Alert>
               )}
-              {!noModality.includes(kind) && role !== 'MOZO' && (
-                <TextField
-                  select
-                  label='Responsable (opcional)'
-                  value={filters.responsibleUserId}
-                  onChange={(e) => update('responsibleUserId', e.target.value)}
-                >
-                  <MenuItem value=''>Todos</MenuItem>
-                  {workers.map((w) => (
-                    <MenuItem key={w.id} value={w.id}>
-                      {w.name}
-                    </MenuItem>
-                  ))}
-                </TextField>
+              {options.truncated && (
+                <Typography variant='caption' color='text.secondary'>
+                  Se muestran las primeras 1.000 opciones por lista. El reporte
+                  sin ese filtro sigue incluyendo todos los resultados.
+                </Typography>
               )}
-              {methodKinds.includes(kind) && (
-                <TextField
-                  select
-                  label='Método'
-                  value={filters.method}
-                  onChange={(e) => update('method', e.target.value)}
-                >
-                  <MenuItem value=''>Todos</MenuItem>
-                  {['CASH', 'YAPE', 'CARD'].map((m) => (
-                    <MenuItem key={m} value={m}>
-                      {operationalLabel(m)}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              )}
-              {!noModality.includes(kind) && (
-                <TextField
-                  select
-                  label='Modalidad'
-                  value={filters.modality}
-                  onChange={(e) => update('modality', e.target.value)}
-                >
-                  <MenuItem value=''>Todas</MenuItem>
-                  {[
+              <div className='report-filter-grid'>
+                {role !== 'MOZO' &&
+                  selectFilter(
+                    'userId',
+                    kind === 'waiter-results' ? 'Cobrador' : 'Usuario / actor',
+                    workers.map((w) => ({
+                      value: w.id,
+                      label: `${w.name}${!w.isActive ? ' (inactivo)' : ''}`
+                    }))
+                  )}
+                {selectFilter(
+                  'responsibleUserId',
+                  'Responsable',
+                  workers.map((w) => ({ value: w.id, label: w.name }))
+                )}
+                {selectFilter(
+                  'method',
+                  'Método',
+                  ['CASH', 'YAPE', 'CARD'].map((m) => ({
+                    value: m,
+                    label: operationalLabel(m)
+                  }))
+                )}
+                {selectFilter(
+                  'modality',
+                  'Modalidad',
+                  [
                     'TABLE',
                     'TAKE_AWAY',
                     'OWN_DELIVERY',
                     'EXTERNAL_COURIER'
-                  ].map((m) => (
-                    <MenuItem key={m} value={m}>
-                      {operationalLabel(m)}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              )}
-              {states[kind] && (
-                <TextField
-                  select
-                  label='Estado'
-                  value={filters.status}
-                  onChange={(e) => update('status', e.target.value)}
-                >
-                  <MenuItem value=''>Todos</MenuItem>
-                  {states[kind].map((s) => (
-                    <MenuItem key={s} value={s}>
-                      {operationalLabel(s)}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              )}
-              {types[kind] && (
-                <TextField
-                  select
-                  label='Tipo de movimiento'
-                  value={filters.movementType}
-                  onChange={(e) => update('movementType', e.target.value)}
-                >
-                  <MenuItem value=''>Todos</MenuItem>
-                  {types[kind].map((s) => (
-                    <MenuItem key={s} value={s}>
-                      {operationalLabel(s)}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              )}
-              {kind === 'audit' && (
-                <TextField
-                  label='Acción (opcional)'
-                  value={filters.movementType}
-                  onChange={(e) => update('movementType', e.target.value)}
+                  ].map((m) => ({ value: m, label: operationalLabel(m) }))
+                )}
+                {definition?.states &&
+                  selectFilter(
+                    'status',
+                    'Estado',
+                    definition.states.map((s) => ({
+                      value: s,
+                      label: operationalLabel(s)
+                    }))
+                  )}
+                {definition?.types
+                  ? selectFilter(
+                      'movementType',
+                      'Movimiento',
+                      definition.types.map((s) => ({
+                        value: s,
+                        label: operationalLabel(s)
+                      }))
+                    )
+                  : allowed('movementType') && (
+                      <TextField
+                        size='small'
+                        label='Acción / movimiento'
+                        value={filters.movementType}
+                        onChange={(e) => update('movementType', e.target.value)}
+                      />
+                    )}
+                {selectFilter(
+                  'productId',
+                  'Producto',
+                  options.products.map((p) => ({ value: p.id, label: p.name }))
+                )}
+                {selectFilter(
+                  'categoryId',
+                  'Categoría',
+                  options.categories.map((p) => ({
+                    value: p.id,
+                    label: p.name
+                  }))
+                )}
+                {selectFilter(
+                  'tableId',
+                  'Mesa',
+                  options.tables.map((p) => ({ value: p.id, label: p.name }))
+                )}
+                {selectFilter('productKind', 'Tipo de producto', [
+                  { value: 'FOOD', label: 'Platos' },
+                  { value: 'DRINK', label: 'Bebidas' }
+                ])}
+              </div>
+            </MoreOptions>
+            <Stack direction='row' flexWrap='wrap' gap={1} alignItems='center'>
+              <Button
+                startIcon={<FilterAltOutlined />}
+                variant='contained'
+                disabled={busy || !validReportRange(filters)}
+                onClick={() => apply()}
+              >
+                Aplicar filtros
+              </Button>
+              <Button
+                onClick={() => {
+                  const next = { ...filters, ...cleanExtras };
+                  setFilters(next);
+                  apply(next);
+                }}
+              >
+                Limpiar filtros adicionales
+              </Button>
+              {filters.accountId && (
+                <Chip
+                  label='Filtrado por cuenta'
+                  onDelete={() => {
+                    const next = { ...filters, accountId: '' };
+                    setFilters(next);
+                    apply(next);
+                  }}
                 />
               )}
             </Stack>
-          </MoreOptions>
-          <Button
-            startIcon={<FilterAltOutlined />}
-            variant='contained'
-            disabled={busy}
-            onClick={() => {
-              setPage(1);
-              setAppliedFilters({ ...filters });
-              setRevision((n) => n + 1);
-            }}
+            {!validReportRange(filters) && (
+              <Alert severity='warning'>
+                Elige un rango de fechas válido de hasta 366 días.
+              </Alert>
+            )}
+          </>
+        )}
+        {busy && (
+          <CircularProgress size={24} aria-label='Consultando reporte' />
+        )}
+        {error && (
+          <Alert
+            severity='error'
+            action={
+              <Button disabled={busy} onClick={() => setRevision((n) => n + 1)}>
+                Reintentar
+              </Button>
+            }
           >
-            Aplicar filtros
-          </Button>
-        </Stack>
-        {busy && <CircularProgress size={24} />}{' '}
-        {error && <Alert severity='error'>{error}</Alert>}
+            {error}
+          </Alert>
+        )}
         {result && (
           <>
-            <Alert severity='info'>{result.description}</Alert>
-            <Typography>
-              {result.total} resultados · consulta{' '}
+            <Typography variant='body2' color='text.secondary'>
+              {result.total} resultados · {appliedFilters.from} —{' '}
+              {appliedFilters.to} · consultado{' '}
               {new Date(result.capturedAt).toLocaleString('es-PE', {
                 timeZone: result.timeZone
               })}
             </Typography>
-            {result.totals.map((t, i) => (
-              <Typography key={i} className='report-total'>
-                {operationalLabel(t.movementType)}: {t.amount} {t.currency} ·{' '}
-                {t.records} registros
-              </Typography>
-            ))}
+            <Stack direction='row' flexWrap='wrap' gap={1}>
+              {result.totals.map((t, i) => (
+                <Paper key={i} variant='outlined' sx={{ p: 1.5 }}>
+                  <Typography variant='caption'>
+                    {operationalLabel(t.movementType)} · {t.records} registros
+                  </Typography>
+                  <Typography fontWeight={700}>
+                    {moneyReport
+                      ? reportAmount(t.amount, t.currency)
+                      : `${t.records} movimientos`}
+                  </Typography>
+                </Paper>
+              ))}
+            </Stack>
             {!result.rows.length ? (
               <WorkspaceEmpty
                 title='Sin movimientos para estos filtros'
@@ -501,31 +738,44 @@ export function ReportsPage() {
               <>
                 <TableContainer
                   component={Paper}
-                  sx={{ display: { xs: 'none', sm: 'block' } }}
+                  sx={{
+                    display: { xs: 'none', sm: 'block' },
+                    maxWidth: '100%'
+                  }}
                 >
                   <Table size='small'>
                     <TableHead>
                       <TableRow>
-                        {visibleColumns.map((k) => (
-                          <TableCell key={k}>{columns[k] || k}</TableCell>
+                        {columns.map((k) => (
+                          <TableCell key={k}>
+                            {reportColumns[k] || operationalLabel(k)}
+                          </TableCell>
                         ))}
+                        {kind === 'waiter-results' && (
+                          <TableCell>Detalle</TableCell>
+                        )}
                       </TableRow>
                     </TableHead>
                     <TableBody>
                       {result.rows.map((r, i) => (
-                        <TableRow key={String(r.id || r.productId || i)}>
-                          {visibleColumns.map((k) => (
+                        <TableRow
+                          key={`${String(r.id || r.productId || i)}-${String(r.currency || '')}`}
+                        >
+                          {columns.map((k) => (
                             <TableCell
                               key={k}
                               sx={{
                                 minWidth: 100,
-                                maxWidth: 480,
+                                maxWidth: 400,
                                 overflowWrap: 'anywhere'
                               }}
                             >
-                              {cell(k, r[k])}
+                              {cell(k, r[k], r)}
                             </TableCell>
                           ))}
+                          {kind === 'waiter-results' && (
+                            <TableCell>{workerActions(r)}</TableCell>
+                          )}
                         </TableRow>
                       ))}
                     </TableBody>
@@ -538,51 +788,67 @@ export function ReportsPage() {
                 >
                   {result.rows.map((r, i) => (
                     <Paper
-                      key={String(r.id || r.productId || i)}
+                      key={`${String(r.id || r.productId || i)}-${String(r.currency || '')}`}
                       className='report-mobile-card'
                     >
                       <dl>
-                        {visibleColumns.slice(0, 4).map((k) => (
+                        {columns.slice(0, 4).map((k) => (
                           <div key={k}>
-                            <dt>{columns[k] || k}</dt>
-                            <dd>{cell(k, r[k])}</dd>
+                            <dt>{reportColumns[k] || operationalLabel(k)}</dt>
+                            <dd>{cell(k, r[k], r)}</dd>
                           </div>
                         ))}
                       </dl>
-                      {visibleColumns.length > 4 && (
+                      {columns.length > 4 && (
                         <MoreOptions title='Ver todos los datos del movimiento'>
                           <dl>
-                            {visibleColumns.slice(4).map((k) => (
+                            {columns.slice(4).map((k) => (
                               <div key={k}>
-                                <dt>{columns[k] || k}</dt>
-                                <dd>{cell(k, r[k])}</dd>
+                                <dt>
+                                  {reportColumns[k] || operationalLabel(k)}
+                                </dt>
+                                <dd>{cell(k, r[k], r)}</dd>
                               </div>
                             ))}
                           </dl>
                         </MoreOptions>
                       )}
+                      {workerActions(r)}
                     </Paper>
                   ))}
                 </Stack>
               </>
             )}
-            <Stack direction='row'>
-              <Button
-                disabled={busy || page === 1}
-                onClick={() => setPage((p) => p - 1)}
+            {result.total > 0 && (
+              <Stack
+                direction='row'
+                alignItems='center'
+                justifyContent='space-between'
               >
-                Anterior
-              </Button>
-              <Typography>Página {page}</Typography>
-              <Button
-                disabled={busy || page * 25 >= result.total}
-                onClick={() => setPage((p) => p + 1)}
-              >
-                Siguiente
-              </Button>
-            </Stack>
+                <Button
+                  disabled={busy || page === 1}
+                  onClick={() => setPage((p) => p - 1)}
+                >
+                  Anterior
+                </Button>
+                <Typography>
+                  Página {page} de {Math.ceil(result.total / result.limit)}
+                </Typography>
+                <Button
+                  disabled={busy || page * result.limit >= result.total}
+                  onClick={() => setPage((p) => p + 1)}
+                >
+                  Siguiente
+                </Button>
+              </Stack>
+            )}
           </>
         )}
+        <AccountHistoryDialog
+          key={historyAccount || 'no-account'}
+          accountId={historyAccount}
+          onClose={() => setHistoryAccount(null)}
+        />
       </Stack>
     </Container>
   );

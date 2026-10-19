@@ -31,6 +31,7 @@ export function routePermission(path: string): string | undefined {
       'operational-reports': 'reports',
       'operational-overview': 'reports',
       restaurant: 'configuration',
+      supplies: 'configuration',
       users: 'workers',
       tables: 'tables.manage',
       clients: 'clients',

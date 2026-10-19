@@ -1,4 +1,7 @@
 import { lazy } from 'react';
+const SuppliesPage = lazy(() =>
+  import('../Supplies/SuppliesPage').then((m) => ({ default: m.SuppliesPage }))
+);
 const OverviewPage = lazy(() =>
   import('../Insights/OverviewPage').then((m) => ({ default: m.OverviewPage }))
 );
@@ -55,6 +58,11 @@ export const PrivateRouter: RouteObject[] = [
         children: [{ index: true, element: <DocumentsPage /> }]
       },
       { path: 'operational-reports', element: <ReportsPage /> },
+      {
+        path: 'supplies',
+        element: <Auth allowedRoles={[Roles.OWNER, Roles.ADMIN]} />,
+        children: [{ index: true, element: <SuppliesPage /> }]
+      },
       {
         path: 'finance',
         element: (
