@@ -1277,8 +1277,11 @@ export function AttentionWorkspace({
                             line.status === 'ACTIVE' &&
                             (!line.kind || line.kind === 'SALE') &&
                             can('attention') && (
-                              <MoreOptions title='Más opciones del producto'>
+                              <>
                                 <Button
+                                  size='small'
+                                  variant='outlined'
+                                  color='secondary'
                                   onClick={() => {
                                     setCourtesyLineId(line.id);
                                     setCourtesyQuantity(Number(line.quantity));
@@ -1288,7 +1291,19 @@ export function AttentionWorkspace({
                                 >
                                   Marcar como cortesía
                                 </Button>
-                              </MoreOptions>
+                                <MoreOptions title='MÃ¡s opciones del producto'>
+                                  <Button
+                                    onClick={() => {
+                                      setCourtesyLineId(line.id);
+                                      setCourtesyQuantity(Number(line.quantity));
+                                      setCourtesyReason('');
+                                      setCourtesyError('');
+                                    }}
+                                  >
+                                    Marcar como cortesía
+                                  </Button>
+                                </MoreOptions>
+                              </>
                             )}
                           {account.attentionStatus === 'OPEN' &&
                             line.status === 'ACTIVE' &&

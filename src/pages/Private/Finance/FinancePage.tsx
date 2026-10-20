@@ -388,7 +388,7 @@ export function FinancePage() {
           </Button>
         </Stack>
         <Alert severity='info'>
-          Cobros manuales · pagar no libera la mesa. Yape y POS se verifican
+          Cobros manuales · al completar el pago total se libera la mesa automáticamente. Yape y POS se verifican
           externamente.
         </Alert>
         {!online && (
@@ -546,8 +546,8 @@ export function FinancePage() {
             <div className='finance-actions'>
               <Typography variant='h6'>Registrar pago</Typography>
               <Typography variant='body2'>
-                El saldo se valida nuevamente al confirmar. Pagar no libera la
-                mesa.
+                El saldo se valida nuevamente al confirmar. Si el pago queda en
+                saldo 0, la mesa se libera automáticamente.
               </Typography>
               <Stack direction='row' spacing={1} flexWrap='wrap'>
                 <Button
