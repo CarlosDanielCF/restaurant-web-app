@@ -1,6 +1,13 @@
 import { useContext, useEffect } from 'react';
 import { SocketContext } from '@/context';
 /** Socket invalidations are coalesced. Reconciliation never clears rendered data or replays writes. */
+/**
+ * Returning to the window only reconciles after a meaningful absence. Returning
+ * from another application or tab for a few seconds must not fire the whole
+ * read model again; the socket already delivers live changes and the bounded
+ * 60s fallback covers missed events and sleep/network changes.
+ */
+const AWAY_REFRESH_MS = 30000;
 export function useLiveRefresh(
   refresh: () => Promise<unknown> | void,
   events: string[],
@@ -12,6 +19,7 @@ export function useLiveRefresh(
     let disposed = false,
       running = false,
       dirty = false;
+    let awaySince = 0;
     let scheduled: ReturnType<typeof setTimeout> | undefined;
     const update = async () => {
       if (disposed) return;
@@ -39,14 +47,23 @@ export function useLiveRefresh(
         void update();
       }, 120);
     };
+    const away = () => {
+      if (!awaySince) awaySince = Date.now();
+    };
     const visible = () => {
-      if (document.visibilityState === 'visible') schedule();
+      if (document.visibilityState !== 'visible') {
+        away();
+        return;
+      }
+      if (awaySince && Date.now() - awaySince >= AWAY_REFRESH_MS) schedule();
+      awaySince = 0;
     };
     const names = [
       ...new Set([...eventKey.split('|').filter(Boolean), 'connect'])
     ];
     names.forEach((event) => socket?.on(event, schedule));
     window.addEventListener('online', schedule);
+    window.addEventListener('blur', away);
     window.addEventListener('focus', visible);
     document.addEventListener('visibilitychange', visible);
     // Bounded fallback for missed events and sleep/network changes; no global second polling.
@@ -60,6 +77,7 @@ export function useLiveRefresh(
       clearTimeout(scheduled);
       names.forEach((event) => socket?.off(event, schedule));
       window.removeEventListener('online', schedule);
+      window.removeEventListener('blur', away);
       window.removeEventListener('focus', visible);
       document.removeEventListener('visibilitychange', visible);
     };

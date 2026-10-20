@@ -73,7 +73,8 @@ export const useRenewToken = () => {
   useEffect(() => {
     let running = false,
       disposed = false,
-      established = false;
+      established = false,
+      lastRenewAt = 0;
     const renew = async (force = false) => {
       const previous = localStorage.getItem('token');
       if (!previous) {
@@ -105,6 +106,7 @@ export const useRenewToken = () => {
           )?.role || data.user.role;
         dispatch(onLogin({ ...data.user, role: currentRole }));
         established = true;
+        lastRenewAt = Date.now();
         if (data.token !== previous)
           window.dispatchEvent(new Event('session-token-renewed'));
       } catch (e) {
@@ -134,7 +136,9 @@ export const useRenewToken = () => {
       }
     };
     const resume = () => {
-      if (document.visibilityState === 'visible') void renew(true);
+      // Coalesce passive resume events, never explicit permission changes or retries.
+      if (document.visibilityState === 'visible' && Date.now() - lastRenewAt >= 30000)
+        void renew(true);
     };
     const permissions = () => void renew(true);
     void renew(true);

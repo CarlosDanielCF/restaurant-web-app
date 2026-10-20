@@ -697,7 +697,7 @@ export function AttentionWorkspace({
               value={courtesyQuantity}
               inputProps={{
                 min: 0.001,
-                max: Number(courtesyLine?.quantity),
+                max: courtesyLine ? Number(courtesyLine.quantity) : undefined,
                 step: 0.001
               }}
               onChange={(event) =>

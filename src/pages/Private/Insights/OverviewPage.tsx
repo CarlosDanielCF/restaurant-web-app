@@ -30,6 +30,13 @@ import {
 } from './reportView';
 import { ReportPeriodControls } from './ReportPeriodControls';
 import './insights.css';
+const resultLabels: Record<ReportPeriod, string> = {
+  today: 'Resultado operativo del día',
+  yesterday: 'Resultado operativo del día anterior',
+  week: 'Resultado operativo de la semana',
+  month: 'Resultado operativo del mes',
+  custom: 'Resultado operativo del período'
+};
 interface FinancialSummary {
   currency: string;
   netSales: string;
@@ -287,13 +294,14 @@ export function OverviewPage() {
                     className={`insights-stat insights-stat--result${f.operatingResult.startsWith('-') ? ' insights-stat--negative' : ''}`}
                   >
                     <Typography color='text.secondary'>
-                      Resultado sobre cobranzas
+                      {resultLabels[period]}
                     </Typography>
                     <Typography component='h3' variant='h4'>
                       {reportAmount(f.operatingResult, f.currency)}
                     </Typography>
                     <Typography variant='caption'>
-                      Cobranzas netas menos egresos operativos.
+                      Cobranzas netas menos egresos operativos del período. No es
+                      utilidad contable.
                     </Typography>
                   </Card>
                 </div>

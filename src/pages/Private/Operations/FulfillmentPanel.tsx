@@ -284,9 +284,11 @@ export function FulfillmentPanel({
       <CardContent>
         <Stack spacing={2}>
           <Typography variant='h6'>Comandas y salida por mozo</Typography>
-          {confirmationContainer
-            ? createPortal(confirmation, confirmationContainer)
-            : confirmation}
+          {confirmationContainer ? (
+            <>{createPortal(confirmation, confirmationContainer)}</>
+          ) : (
+            confirmation
+          )}
           <details className='service-details' open>
             <summary>Comandas ({dispatches.length})</summary>
             {dispatches.map((d) => (
