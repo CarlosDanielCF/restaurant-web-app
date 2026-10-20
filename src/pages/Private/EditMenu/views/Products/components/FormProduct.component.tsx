@@ -106,7 +106,15 @@ export const FormProduct: FC<Props> = ({ product }) => {
   });
 
   const onSubmit = (data: UpdateProductDto) => {
-    mutateAsync(data)
+  const productData: UpdateProductDto = {
+    ...data,
+    productionAreaId:
+      data.productionAreaId && Number(data.productionAreaId) > 0
+        ? Number(data.productionAreaId)
+        : undefined
+  };
+
+  mutateAsync(productData)
       .then((updatedProduct) => {
         reset(getUpdateProductDto(updatedProduct));
         dispatch(updateProduct(updatedProduct));

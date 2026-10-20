@@ -1291,7 +1291,7 @@ export function AttentionWorkspace({
                                 >
                                   Marcar como cortesía
                                 </Button>
-                                <MoreOptions title='MÃ¡s opciones del producto'>
+                                <MoreOptions title='Más opciones del producto'>
                                   <Button
                                     onClick={() => {
                                       setCourtesyLineId(line.id);

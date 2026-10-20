@@ -50,6 +50,18 @@
   border-top: 1px solid #dbe7e7;
   padding: 12px 0;
 }
+.ticket-line--delivered {
+  background: #009dff;
+  color: #ffffff;
+  border: 2px solid #0077cc;
+  border-radius: 8px;
+  padding: 12px 10px;
+  box-shadow: 0 0 12px rgba(0, 157, 255, 0.45);
+}
+
+.ticket-line--delivered .MuiTypography-root {
+  color: #ffffff;
+}
 .ticket-line > .MuiTypography-root:first-child {
   font-size: 1.3rem;
 }

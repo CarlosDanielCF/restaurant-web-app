@@ -380,9 +380,12 @@ export function KitchenPage() {
                       .filter((n) => n.dispatchId === d.id)
                       .map(renderNotice)}
                     {d.items
-                      .filter((i) => i.status === 'ACTIVE' && i.pending > 0)
+                      .filter((i) => i.status === 'ACTIVE')
                       .map((i) => (
-                        <Stack key={i.id} className='ticket-line'>
+                        <Stack
+  key={i.id}
+  className={'ticket-line' + (Number(i.delivered) > 0 ? ' ticket-line--delivered' : '')}
+>
                           <Typography fontWeight='bold'>
                             {i.pending} × {i.itemSnapshot.name}
                           </Typography>
@@ -405,7 +408,9 @@ export function KitchenPage() {
                             <Typography>Cortesía</Typography>
                           )}
                           <Typography variant='caption'>
-                            {i.delivered} unidades salieron
+                            {Number(i.delivered) === 1
+  ? '1 unidad entregada'
+  : `${Number(i.delivered)} unidades entregadas`}
                           </Typography>
                         </Stack>
                       ))}
