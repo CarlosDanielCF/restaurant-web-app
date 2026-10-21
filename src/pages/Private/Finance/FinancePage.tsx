@@ -591,7 +591,7 @@ export function FinancePage() {
                     Descuento
                   </Button>
                   <Button
-                    disabled={disabled || !own}
+                    disabled={disabled}
                     onClick={() =>
                       accountAction(
                         'Devolución manual',
@@ -601,10 +601,15 @@ export function FinancePage() {
                             key: 'paymentId',
                             label: 'Pago original',
                             options: data.payments
-                              .filter((p) => p.collectorId === user?.id)
+                              .filter((p) => {
+                                const isCollector = p.collectorId === user?.id;
+                                const isManager = ['DUENO', 'ADMINISTRADOR'].includes(user?.role.name || '');
+                                if (isManager) return true;
+                                return isCollector;
+                              })
                               .map((p) => ({
                                 id: p.id,
-                                name: `${p.method} S/${p.appliedAmount} · devuelto S/${p.refunded}`
+                                name: `${p.method} S/${p.appliedAmount} · devuelto S/${p.refunded} · cobrado por ${p.collectorId === user?.id ? 'yo' : workerNames[p.collectorId] || p.collectorId}`
                               }))
                           },
                           amount,
@@ -615,8 +620,17 @@ export function FinancePage() {
                           },
                           reason
                         ],
-                        { shiftId: own?.shift.id },
-                        'Solo se permite devolver saldo a favor. No ejecuta una reversión externa.'
+                        own ? { shiftId: own.shift.id } : undefined,
+                        !own
+                          ? 'Requiere turno abierto válido del usuario que ejecuta el reembolso. Abra su turno antes de registrar la devolución.'
+                          : data.payments.filter((p) => {
+                                const isCollector = p.collectorId === user?.id;
+                                const isManager = ['DUENO', 'ADMINISTRADOR'].includes(user?.role.name || '');
+                                if (isManager) return true;
+                                return isCollector;
+                              }).length === 0
+                            ? 'No hay pagos reembolsables para este usuario.'
+                            : 'Solo se permite devolver hasta el saldo reembolsable del pago original. No ejecuta una reversión externa.'
                       )
                     }
                     color='error'
