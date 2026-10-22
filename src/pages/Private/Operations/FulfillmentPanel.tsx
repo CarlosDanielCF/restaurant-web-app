@@ -105,6 +105,38 @@ export function FulfillmentPanel({
       method
     );
   }
+  const confirmOrder = async () => {
+    if (confirmationLock.current) return;
+    confirmationLock.current = true;
+    setConfirming(true);
+    setConfirmationResult(null);
+    try {
+      const ok = await run(
+        `/attention-accounts/${account.id}/confirm`,
+        {
+          expectedVersion: account.version,
+          takeaway: drafts.map((l) => ({
+            lineId: l.id,
+            quantity:
+              takeaway[l.id] ??
+              (account.modality === 'TAKE_AWAY' ? Number(l.quantity) : 0)
+          }))
+        },
+        'post',
+        (data) =>
+          setConfirmationResult({
+            error: false,
+            message:
+              (data as { warning?: string }).warning || 'Pedido confirmado'
+          }),
+        (message) => setConfirmationResult({ error: true, message })
+      );
+      if (ok) setTakeaway({});
+    } finally {
+      confirmationLock.current = false;
+      setConfirming(false);
+    }
+  };
   const confirmation = (
     <Stack spacing={0.5}>
       {production && (!online || error) && (
@@ -199,6 +231,8 @@ export function FulfillmentPanel({
         </>
       )}
       <Button
+        className='desktop-confirm-order'
+        sx={{ display: { xs: 'none', md: 'inline-flex' } }}
         variant='contained'
         aria-label={
           production
@@ -219,41 +253,7 @@ export function FulfillmentPanel({
             (l) => l.status === 'ACTIVE' && !Number(l.confirmedQuantity)
           )
         }
-        onClick={async () => {
-          if (confirmationLock.current) return;
-          confirmationLock.current = true;
-          setConfirming(true);
-          setConfirmationResult(null);
-          try {
-            const ok = await run(
-              `/attention-accounts/${account.id}/confirm`,
-              {
-                expectedVersion: account.version,
-                takeaway: drafts.map((l) => ({
-                  lineId: l.id,
-                  quantity:
-                    takeaway[l.id] ??
-                    (account.modality === 'TAKE_AWAY' ? Number(l.quantity) : 0)
-                }))
-              },
-              'post',
-              (data) =>
-                setConfirmationResult({
-                  error: false,
-                  message:
-                    (data as { warning?: string }).warning ||
-                    'Pedido confirmado'
-                }),
-              (message) => setConfirmationResult({ error: true, message })
-            );
-            if (ok) {
-              setTakeaway({});
-            }
-          } finally {
-            confirmationLock.current = false;
-            setConfirming(false);
-          }
-        }}
+        onClick={() => void confirmOrder()}
       >
         {confirming
           ? 'Enviando…'
@@ -262,6 +262,35 @@ export function FulfillmentPanel({
             : production
               ? 'Confirmar pedido · producción'
               : 'Confirmar pedido'}
+      </Button>
+      <Button
+        className='mobile-order-send'
+        sx={{ display: { md: 'none' } }}
+        variant='contained'
+        aria-label={production ? 'Enviar pedido · producción' : 'Enviar pedido'}
+        aria-busy={confirming}
+        disabled={
+          confirming ||
+          drafts.some(
+            (l) =>
+              !Number.isFinite(takeaway[l.id] ?? 0) ||
+              (takeaway[l.id] ?? 0) < 0 ||
+              (takeaway[l.id] ?? 0) > Number(l.quantity)
+          ) ||
+          account.attentionStatus !== 'OPEN' ||
+          !account.lines.some(
+            (l) => l.status === 'ACTIVE' && !Number(l.confirmedQuantity)
+          )
+        }
+        onClick={() => void confirmOrder()}
+      >
+        {confirming
+          ? 'Enviando…'
+          : confirmationResult?.error && drafts.length
+            ? 'Reintentar envío'
+            : production
+              ? 'Enviar pedido · producción'
+              : 'Enviar pedido'}
       </Button>
       {confirmationResult && (
         <Alert

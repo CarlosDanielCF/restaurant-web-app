@@ -251,6 +251,24 @@ export function AttentionWorkspace({
   const [courtesyError, setCourtesyError] = useState('');
   const [returnConsumption, setReturnConsumption] = useState(false);
   const account = accounts.find((a) => a.id === selected);
+  const pendingLines = (account?.lines || []).filter(
+    (line) =>
+      line.status === 'ACTIVE' &&
+      Number(line.quantity) > Number(line.confirmedQuantity || 0)
+  );
+  const pendingUnitCount = pendingLines.reduce(
+    (total, line) =>
+      total + Number(line.quantity) - Number(line.confirmedQuantity || 0),
+    0
+  );
+  const pendingAmount = pendingLines.every(
+    (line) => Number(line.confirmedQuantity || 0) === 0
+  )
+    ? pendingLines.reduce(
+        (total, line) => total + Number(line.subtotal || 0),
+        0
+      )
+    : null;
   const courtesyLine = account?.lines.find(
     (line) => line.id === courtesyLineId
   );
@@ -818,6 +836,34 @@ export function AttentionWorkspace({
           </Stack>
         </DialogContent>
       </Dialog>
+      {waiter &&
+        account &&
+        pendingUnitCount > 0 &&
+        mobilePane === 'products' && (
+          <Box
+            className='mobile-order-bar'
+            role='region'
+            aria-label='Pedido pendiente'
+          >
+            <Box className='mobile-order-bar-summary'>
+              <Typography fontWeight={700}>Pedido</Typography>
+              <Typography variant='body2'>
+                {pendingUnitCount}{' '}
+                {pendingUnitCount === 1 ? 'unidad' : 'unidades'} pendientes
+                {pendingAmount !== null &&
+                  Number.isFinite(pendingAmount) &&
+                  ` · S/ ${pendingAmount.toFixed(2)}`}
+              </Typography>
+            </Box>
+            <Button
+              variant='contained'
+              onClick={() => setMobilePane('order')}
+              aria-label={`Ver pedido, ${pendingUnitCount} unidades pendientes`}
+            >
+              Ver pedido
+            </Button>
+          </Box>
+        )}
       <Stack direction='row' justifyContent='space-between' alignItems='center'>
         <Typography variant='h5' component='h2'>
           {account ? 'Tomar pedido' : 'Mesas y cuentas'}
@@ -828,24 +874,7 @@ export function AttentionWorkspace({
           </Button>
         )}
       </Stack>
-      {account && (
-        <Stack className='mobile-order-tabs' direction='row' gap={1}>
-          <Button
-            aria-pressed={mobilePane === 'products'}
-            variant={mobilePane === 'products' ? 'contained' : 'outlined'}
-            onClick={() => setMobilePane('products')}
-          >
-            Productos
-          </Button>
-          <Button
-            aria-pressed={mobilePane === 'order'}
-            variant={mobilePane === 'order' ? 'contained' : 'outlined'}
-            onClick={() => setMobilePane('order')}
-          >
-            Pedido actual · S/ {account.total}
-          </Button>
-        </Stack>
-      )}
+
       {!account && can('delivery') && (
         <Stack
           direction='row'
@@ -1075,12 +1104,6 @@ export function AttentionWorkspace({
         <>
           <Box className='order-workbench'>
             <Box className='order-catalog' id='service-catalog'>
-              <Button
-                sx={{ display: { md: 'none' } }}
-                onClick={() => setMobilePane('order')}
-              >
-                Ver pedido actual
-              </Button>
               {account.attentionStatus === 'OPEN' ? (
                 <>
                   <Typography variant='h6' mb={1}>
@@ -1134,12 +1157,17 @@ export function AttentionWorkspace({
                 </Typography>
               )}
             </Box>
-            <Box className='current-order' id='current-order'>
+            <Box
+              className='current-order'
+              id='current-order'
+              aria-label='Pedido actual'
+            >
               <Button
+                className='mobile-order-close'
                 sx={{ display: { md: 'none' } }}
                 onClick={() => setMobilePane('products')}
               >
-                Volver a productos
+                Cerrar pedido y seguir en productos
               </Button>
               <Card className='current-order-card'>
                 <CardContent>
@@ -1295,7 +1323,9 @@ export function AttentionWorkspace({
                                   <Button
                                     onClick={() => {
                                       setCourtesyLineId(line.id);
-                                      setCourtesyQuantity(Number(line.quantity));
+                                      setCourtesyQuantity(
+                                        Number(line.quantity)
+                                      );
                                       setCourtesyReason('');
                                       setCourtesyError('');
                                     }}

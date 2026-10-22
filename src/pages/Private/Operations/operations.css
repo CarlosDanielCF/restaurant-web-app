@@ -455,9 +455,6 @@
   background: #fef2f2;
   color: #991b1b;
 }
-.mobile-order-tabs {
-  display: none;
-}
 @media (min-width: 900px) {
   .attention-service .order-workbench {
     height: calc(100dvh - 410px);
@@ -487,16 +484,56 @@
   }
 }
 @media (max-width: 899px) {
-  .mobile-order-tabs {
+  .attention-service {
+    padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+  }
+  .mobile-order-bar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1200;
     display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+    background: #fff;
+    border-top: 1px solid #d7e6e2;
+    box-shadow: 0 -4px 16px #173d3218;
+  }
+  .mobile-order-bar-summary {
+    min-width: 0;
+  }
+  .mobile-order-bar .MuiButton-root {
+    min-height: 48px;
+    flex: 0 0 auto;
+  }
+  .attention-service[data-mobile-pane='order'] .mobile-order-bar {
+    display: none;
+  }
+  .attention-service[data-mobile-pane='order'] .mobile-order-send {
+    display: block;
+    position: sticky;
+    bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    z-index: 2;
+    width: 100%;
+    min-height: 52px;
+    margin-top: 8px;
+  }
+  .attention-service .current-order .mobile-order-close {
+    min-height: 48px;
     position: sticky;
     top: 56px;
-    z-index: 3;
-    background: white;
-    padding: 4px;
-    gap: 8px;
+    z-index: 2;
+    background: #fff;
   }
-  .attention-service[data-mobile-pane='products'] .current-order,
+  .attention-service[data-mobile-pane='order'] .current-order {
+    padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  }
+  .attention-service[data-mobile-pane='products'] .current-order {
+    display: none;
+  }
   .attention-service[data-mobile-pane='order'] .order-catalog {
     display: none;
   }
@@ -553,14 +590,6 @@
 .service-product .product-quantity .MuiTypography-root {
   white-space: nowrap;
   text-align: center;
-}
-.mobile-order-tabs .MuiButton-root[aria-pressed='true'] {
-  background: #0f766e;
-  color: white;
-}
-.mobile-order-tabs .MuiButton-root[aria-pressed='false'] {
-  background: #f1f5f9;
-  color: #334155;
 }
 .operations-workspace:has(.has-account) .operations-metrics {
   display: flex;
