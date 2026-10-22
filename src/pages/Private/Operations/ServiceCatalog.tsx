@@ -201,6 +201,7 @@ export function ServiceCatalog({
           direction='row'
           gap={0.75}
           flexWrap='wrap'
+          role='group'
           aria-label='Categorías de carta'
         >
           <Chip

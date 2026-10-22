@@ -468,6 +468,12 @@
     overflow-y: auto;
     overscroll-behavior: contain;
   }
+  .attention-service .point-catalog-search {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    background: #fff;
+  }
   .attention-service .current-order {
     display: block;
     position: static;
@@ -479,13 +485,19 @@
   }
   .attention-service .point-category-rail {
     position: sticky;
-    top: 0;
+    top: 54px;
     align-self: start;
   }
 }
 @media (max-width: 899px) {
+  body [data-testid='app-content'] .point-catalog-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
   .attention-service {
     padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+  }
+  .attention-service.has-account {
+    padding-bottom: 0;
   }
   .mobile-order-bar {
     position: fixed;
@@ -530,6 +542,220 @@
   }
   .attention-service[data-mobile-pane='order'] .current-order {
     padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  }
+  .attention-service.has-account .order-catalog {
+    overflow: visible;
+  }
+  .attention-service.has-account .point-catalog {
+    gap: 8px;
+    min-width: 0;
+    padding-bottom: calc(190px + env(safe-area-inset-bottom, 0px));
+  }
+  .attention-service.has-account .point-catalog > .MuiTypography-h5 {
+    font-size: 1.125rem;
+    line-height: 1.25;
+  }
+  body [data-testid='app-content'] .point-catalog .point-catalog-search {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    padding: 3px 0;
+    background: #fff;
+  }
+  body [data-testid='app-content'] .point-catalog .point-category-rail {
+    flex-direction: row !important;
+    position: sticky;
+    top: 54px;
+    z-index: 4;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 4px 2px 8px;
+    border-radius: 99px;
+    background: #fff;
+    scrollbar-width: thin;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+  body
+    [data-testid='app-content']
+    .point-catalog
+    .point-category-rail
+    .MuiChip-root {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-height: 36px;
+    justify-content: center;
+    border-radius: 99px !important;
+    flex-shrink: 0 !important;
+  }
+  body
+    [data-testid='app-content']
+    .point-catalog
+    .point-category-rail
+    .MuiChip-label {
+    white-space: nowrap !important;
+    padding: 0 10px;
+  }
+  body
+    [data-testid='app-content']
+    .point-catalog
+    .point-category-rail
+    + .service-product-grid {
+    gap: 8px;
+    grid-auto-flow: row;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+  body
+    [data-testid='app-content']
+    .point-catalog
+    .point-category-rail
+    + .service-product-grid
+    .service-product {
+    min-width: 0;
+    border-radius: 10px;
+    overflow: hidden;
+    padding: 0;
+  }
+  body
+    [data-testid='app-content']
+    .point-catalog
+    .point-category-rail
+    + .service-product-grid
+    .service-product
+    > img,
+  body
+    [data-testid='app-content']
+    .point-catalog
+    .point-category-rail
+    + .service-product-grid
+    .service-product
+    > .product-symbol {
+    height: 64px;
+  }
+  body
+    [data-testid='app-content']
+    .point-catalog
+    .point-category-rail
+    + .service-product-grid
+    .service-product
+    > .product-symbol
+    svg {
+    font-size: 26px;
+  }
+  body
+    [data-testid='app-content']
+    .point-catalog
+    .point-category-rail
+    + .service-product-grid
+    .product-info {
+    padding: 7px;
+    gap: 3px;
+  }
+  body
+    [data-testid='app-content']
+    .point-catalog
+    .point-category-rail
+    + .service-product-grid
+    .product-info
+    .product-quantity {
+    grid-template-columns: 36px minmax(20px, 1fr) 36px;
+    gap: 2px;
+  }
+  body
+    [data-testid='app-content']
+    .point-catalog
+    .point-category-rail
+    + .service-product-grid
+    .product-info
+    .product-quantity
+    .MuiButton-root {
+    width: 36px;
+    min-width: 36px;
+    min-height: 36px;
+    padding: 4px;
+  }
+  body
+    [data-testid='app-content']
+    .point-catalog
+    .point-category-rail
+    + .service-product-grid
+    .product-info
+    > .MuiButton-root {
+    min-height: 36px;
+  }
+  body
+    [data-testid='app-content']
+    .point-catalog
+    .point-category-rail
+    + .service-product-grid
+    .product-info
+    > .MuiButton-root.MuiButton-outlined {
+    min-height: 36px;
+  }
+  body
+    [data-testid='app-content']
+    .point-catalog
+    .point-category-rail
+    + .service-product-grid
+    .product-info
+    > .MuiTypography-root:first-child {
+    font-size: 0.9rem;
+    line-height: 1.2;
+  }
+  body
+    [data-testid='app-content']
+    .point-catalog
+    .point-category-rail
+    + .service-product-grid
+    .service-product
+    .product-info
+    > .MuiTypography-caption {
+    font-size: 0.68rem;
+    line-height: 1.2;
+  }
+  body
+    [data-testid='app-content']
+    .point-catalog
+    .point-category-rail
+    + .service-product-grid
+    .service-product
+    .product-info
+    > .MuiChip-root {
+    height: 22px;
+  }
+  body
+    [data-testid='app-content']
+    .point-catalog
+    .point-category-rail
+    + .service-product-grid
+    .service-product
+    .product-info
+    > .MuiChip-root
+    .MuiChip-label {
+    padding-inline: 7px;
+  }
+  body
+    [data-testid='app-content']
+    .point-catalog
+    .point-category-rail
+    + .service-product-grid
+    .service-product
+    .product-info
+    > .MuiButton-root:last-child {
+    min-height: 36px;
+  }
+  body
+    [data-testid='app-content']
+    .point-catalog
+    .service-product
+    > .product-symbol
+    .MuiTypography-root {
+    font-size: 0.65rem;
   }
   .attention-service[data-mobile-pane='products'] .current-order {
     display: none;
