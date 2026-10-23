@@ -22,6 +22,18 @@ const service = [...managers, Roles.WAITER];
 export const menuSections: MenuSection[] = [
   {
     title: 'Operación',
+    allowedRoles: [Roles.HOST],
+    items: [
+      {
+        title: 'Registrar llegada',
+        icon: <TableRestaurantOutlined />,
+        to: '/jalador',
+        allowedRoles: [Roles.HOST]
+      }
+    ]
+  },
+  {
+    title: 'Operación',
     items: [
       {
         title: 'Atención y pedidos',

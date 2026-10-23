@@ -19,6 +19,9 @@ const FinancePage = lazy(() =>
 const KitchenPage = lazy(() =>
   import('../Operations/KitchenPage').then((m) => ({ default: m.KitchenPage }))
 );
+const JaladorPage = lazy(() =>
+  import('../Jalador/JaladorPage').then((m) => ({ default: m.JaladorPage }))
+);
 const OperationsPage = lazy(() =>
   import('../Operations/Operations.page').then((m) => ({
     default: m.OperationsPage
@@ -76,6 +79,15 @@ export const PrivateRouter: RouteObject[] = [
         element: <Auth allowedRoles={[Roles.OWNER, Roles.ADMIN, Roles.COOK]} />,
         children: [{ index: true, element: <KitchenPage /> }]
       },
+      {
+        path: 'jalador',
+        element: <Auth allowedRoles={[Roles.HOST]} />,
+        children: [{ index: true, element: <JaladorPage /> }]
+      },
+      {
+        path: 'unauthorized',
+        element: <UnauthorizedPage />
+      },
       // MenuRouter,
       OrderRouter,
 
@@ -96,10 +108,6 @@ export const PrivateRouter: RouteObject[] = [
         path: 'operational-overview',
         element: <Auth allowedRoles={[Roles.OWNER, Roles.ADMIN]} />,
         children: [{ index: true, element: <OverviewPage /> }]
-      },
-      {
-        path: 'unauthorized',
-        element: <UnauthorizedPage />
       },
       {
         path: '/auth/login',

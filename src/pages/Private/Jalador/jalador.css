@@ -1,0 +1,160 @@
+.jalador-page {
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 4px 0 32px;
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+}
+.jalador-heading,
+.jalador-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+.jalador-heading h1 {
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  line-height: 1.2;
+  margin-bottom: 4px;
+}
+.jalador-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.jalador-stat {
+  border-color: #dce9e6 !important;
+  border-radius: 16px !important;
+  background: #fff;
+}
+.jalador-stat .MuiCardContent-root {
+  padding: 14px 16px;
+}
+.jalador-stat .MuiCardContent-root:last-child {
+  padding-bottom: 14px;
+}
+.jalador-stat h4 {
+  margin-top: 4px;
+  color: #134e4a;
+}
+.jalador-section-heading {
+  margin-bottom: 12px;
+}
+.jalador-table-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+  gap: 12px;
+}
+.jalador-table-card {
+  min-height: 116px;
+  border-radius: 16px !important;
+  border-color: #dce9e6 !important;
+  background: #fff;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease;
+}
+.jalador-table-card .MuiCardActionArea-root {
+  min-height: 116px;
+}
+.jalador-table-card .MuiCardContent-root {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  min-height: 116px;
+  gap: 12px;
+  padding: 16px;
+}
+.jalador-table-card.is-selected {
+  border: 2px solid #107e76 !important;
+  box-shadow: 0 0 0 3px #107e761c;
+}
+.jalador-table-card.is-occupied {
+  background: #f7f8fa;
+  border-style: dashed;
+}
+.jalador-table-name {
+  color: #173b37;
+  font-weight: 800 !important;
+  overflow-wrap: anywhere;
+}
+.jalador-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 28px;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  border: 1px solid currentColor;
+}
+.jalador-status.available {
+  color: #17624e;
+  background: #e8f4ef;
+}
+.jalador-status.occupied {
+  color: #5f6670;
+  background: #eceff2;
+}
+.jalador-capture-card {
+  position: sticky;
+  bottom: 12px;
+  z-index: 2;
+  border-radius: 18px !important;
+  border-color: #badbd4 !important;
+  box-shadow: 0 8px 28px #163e3520 !important;
+  background: #fff;
+}
+.jalador-capture-card .MuiCardContent-root {
+  padding: 18px;
+}
+.jalador-loading {
+  min-height: 150px;
+  display: grid;
+  place-items: center;
+}
+@media (max-width: 599px) {
+  .jalador-page {
+    gap: 16px;
+    padding: 0 0 24px;
+  }
+  .jalador-heading {
+    align-items: flex-start;
+  }
+  .jalador-heading > div {
+    min-width: 0;
+  }
+  .jalador-heading .MuiButton-root {
+    flex-shrink: 0;
+    padding-inline: 10px;
+  }
+  .jalador-summary {
+    gap: 8px;
+  }
+  .jalador-stat .MuiCardContent-root {
+    padding: 12px;
+  }
+  .jalador-stat .MuiTypography-h4 {
+    font-size: 1.75rem;
+  }
+  .jalador-table-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+  }
+  .jalador-table-card,
+  .jalador-table-card .MuiCardActionArea-root,
+  .jalador-table-card .MuiCardContent-root {
+    min-height: 102px;
+  }
+  .jalador-table-card .MuiCardContent-root {
+    padding: 12px;
+  }
+  .jalador-capture-card {
+    bottom: max(8px, env(safe-area-inset-bottom));
+  }
+}

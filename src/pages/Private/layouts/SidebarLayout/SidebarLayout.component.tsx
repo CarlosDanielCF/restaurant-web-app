@@ -118,7 +118,12 @@ const SidebarLayout: FC<SidebarLayoutProps> = () => {
                 edge='start'
                 aria-label='Abrir menú de navegación'
                 size='medium'
-                sx={{ display: { xs: 'inline-flex', lg: 'none' } }}
+                sx={{
+                  display: {
+                    xs: user?.role.name === Roles.HOST ? 'none' : 'inline-flex',
+                    lg: 'none'
+                  }
+                }}
               >
                 <MenuTwoToneIcon />
               </IconButton>
@@ -140,7 +145,7 @@ const SidebarLayout: FC<SidebarLayoutProps> = () => {
               </Typography>
             </Box>
             <Box className='pos-header-team'>
-              <OperationalHeaderMeta />
+              {user?.role.name !== Roles.HOST && <OperationalHeaderMeta />}
               {user && <HeaderUserbox showDetails />}
             </Box>
           </Box>

@@ -30,6 +30,7 @@ import { Label } from '../../../../../../components/ui';
 import { Restaurant } from '@/pages/Private/Common/models/restaurant.model';
 import { useRestaurantStore } from '@/pages/Private/Common/store/restaurantStore';
 import { switchRestaurantMutation } from '@/pages/Private/Restaurant/hooks/useRestaurant';
+import { Roles } from '@/models/roles';
 
 // background: ${grey[900]};
 
@@ -215,75 +216,80 @@ export const Userbox = ({ showDetails = false }: UserboxProps) => {
             </UserBoxDescription>
           </UserBoxText>
         </MenuUserBox>
-        <Divider sx={{ mb: 0 }} />
-        <List
-          sx={{ p: 1 }}
-          component='nav'
-          subheader={
-            <ListSubheader
-              component='div'
-              id='nested-list-subheader'
-              sx={{ fontSize: 12 }}
+        {userState?.role.name !== Roles.HOST && (
+          <>
+            <Divider sx={{ mb: 0 }} />
+            <List
+              sx={{ p: 1 }}
+              component='nav'
+              subheader={
+                <ListSubheader
+                  component='div'
+                  id='nested-list-subheader'
+                  sx={{ fontSize: 12 }}
+                >
+                  Restaurantes
+                </ListSubheader>
+              }
             >
-              Restaurantes
-            </ListSubheader>
-          }
-        >
-          {user?.restaurantRoles.map((restaurantRole) => (
-            <ListItemButton
-              key={restaurantRole.id}
-              onClick={() => changeRestaurant(restaurantRole.restaurant)}
-            >
-              <ListItemText
-                primaryTypographyProps={{ variant: 'body1' }}
-                secondaryTypographyProps={{ variant: 'subtitle2' }}
-                primary={restaurantRole.restaurant.name}
-              />
-              {restaurant?.id === restaurantRole.restaurant.id && (
-                <ListItemIcon sx={{ minWidth: '30px' }}>
-                  <Done fontSize='small' color='secondary' />
-                </ListItemIcon>
-              )}
-            </ListItemButton>
-          ))}
-        </List>
-        <Divider sx={{ mb: 0 }} />
+              {user?.restaurantRoles.map((restaurantRole) => (
+                <ListItemButton
+                  key={restaurantRole.id}
+                  onClick={() => changeRestaurant(restaurantRole.restaurant)}
+                >
+                  <ListItemText
+                    primaryTypographyProps={{ variant: 'body1' }}
+                    secondaryTypographyProps={{ variant: 'subtitle2' }}
+                    primary={restaurantRole.restaurant.name}
+                  />
+                  {restaurant?.id === restaurantRole.restaurant.id && (
+                    <ListItemIcon sx={{ minWidth: '30px' }}>
+                      <Done fontSize='small' color='secondary' />
+                    </ListItemIcon>
+                  )}
+                </ListItemButton>
+              ))}
+            </List>
+          </>
+        )}
+        {userState?.role.name !== Roles.HOST && (
+          <>
+            <Divider sx={{ mb: 0 }} />
+            <List sx={{ p: 1 }} component='nav'>
+              <ListItemButton
+                to='/users/profile'
+                component={NavLink}
+                onClick={handleClose}
+              >
+                <ListItemText primary='Mi perfil' />
+                <ListItemSecondaryAction>
+                  <Label color='info'>Nuevo</Label>
+                </ListItemSecondaryAction>
+              </ListItemButton>
 
-        <List sx={{ p: 1 }} component='nav'>
-          <ListItemButton
-            to='/users/profile'
-            component={NavLink}
-            onClick={handleClose}
-          >
-            <ListItemText primary='Mi perfil' />
-            <ListItemSecondaryAction>
-              <Label color='info'>Nuevo</Label>
-            </ListItemSecondaryAction>
-          </ListItemButton>
-
-          <ListItemButton
-            to='/users/account'
-            component={NavLink}
-            onClick={handleClose}
-          >
-            {/* <ListItemIcon>
+              <ListItemButton
+                to='/users/account'
+                component={NavLink}
+                onClick={handleClose}
+              >
+                {/* <ListItemIcon>
                 <AccountBoxTwoToneIcon fontSize="small" />
 
               </ListItemIcon> */}
-            <ListItemText primary='Mi cuenta' />
-            <ListItemSecondaryAction>
-              {/* <Label color="info">Nuevo</Label> */}
-            </ListItemSecondaryAction>
-          </ListItemButton>
+                <ListItemText primary='Mi cuenta' />
+                <ListItemSecondaryAction>
+                  {/* <Label color="info">Nuevo</Label> */}
+                </ListItemSecondaryAction>
+              </ListItemButton>
 
-          {/* <ListItemButton onClick={() => !online && conectarSocket()}>
+              {/* <ListItemButton onClick={() => !online && conectarSocket()}>
             <ListItemText primary={online ? "Conectado" : "Conectar"} />
       
           </ListItemButton> */}
 
-          {/* <ButtonTheme /> */}
+              {/* <ButtonTheme /> */}
 
-          {/* 
+              {/*
           <ListItem
             button
             to="/dashboards/messenger"
@@ -293,7 +299,7 @@ export const Userbox = ({ showDetails = false }: UserboxProps) => {
             <ListItemText primary="Messenger" />
           </ListItem>
         */}
-          {/* <ListItem
+              {/* <ListItem
             
             to="/management/profile/settings"
             component={NavLink}
@@ -302,8 +308,10 @@ export const Userbox = ({ showDetails = false }: UserboxProps) => {
             <AccountTreeTwoToneIcon fontSize="small" />
             <ListItemText primary="Ver perfil" />
           </ListItem>  */}
-        </List>
-        <Divider />
+            </List>
+            <Divider />
+          </>
+        )}
         <Box sx={{ m: 1 }}>
           <Button color='primary' fullWidth onClick={() => handleLogout()}>
             <LockOpenTwoToneIcon sx={{ mr: 1 }} />

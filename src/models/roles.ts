@@ -2,5 +2,6 @@ export enum Roles {
   OWNER = 'DUENO',
   ADMIN = 'ADMINISTRADOR',
   COOK = 'COCINERO',
-  WAITER = 'MOZO'
+  WAITER = 'MOZO',
+  HOST = 'JALADOR'
 }

@@ -26,7 +26,11 @@ import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
-import { DoneOutlineRounded, ExpandMore } from '@mui/icons-material';
+import {
+  DoneOutlineRounded,
+  ExpandMore,
+  TableRestaurantOutlined
+} from '@mui/icons-material';
 
 import { useSelector } from 'react-redux';
 import { selectAuth } from '../../../../../redux';
@@ -295,7 +299,7 @@ function Sidebar() {
       {/* Desktop Collapsible Drawer */}
       <DrawerPersistent
         variant='permanent'
-        isCollapsed={isCollapsed}
+        isCollapsed={userState?.role.name === Roles.HOST ? false : isCollapsed}
         sx={{
           display: { xs: 'none', lg: 'block' }
         }}
@@ -376,9 +380,24 @@ function Sidebar() {
 
         {/* Navigation Items */}
         <Box sx={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', py: 1 }}>
-          <Scrollbar height='100%'>
-            <SidebarMenu />
-          </Scrollbar>
+          {userState?.role.name === Roles.HOST ? (
+            <List component='nav' disablePadding>
+              <ListItemButton
+                selected={location.pathname === '/jalador'}
+                onClick={() => navigate('/jalador')}
+                sx={{ borderRadius: 2, my: 0.5, mx: 1, minHeight: 48 }}
+              >
+                <ListItemIcon sx={{ minWidth: 38 }}>
+                  <TableRestaurantOutlined />
+                </ListItemIcon>
+                <ListItemText primary='Registrar llegada' />
+              </ListItemButton>
+            </List>
+          ) : (
+            <Scrollbar height='100%'>
+              <SidebarMenu />
+            </Scrollbar>
+          )}
         </Box>
 
         {/* Footer Area */}
@@ -445,7 +464,7 @@ function Sidebar() {
           }
         }}
         anchor={theme.direction === 'rtl' ? 'right' : 'left'}
-        open={sidebarToggle}
+        open={userState?.role.name === Roles.HOST ? false : sidebarToggle}
         onClose={closeSidebar}
         variant='temporary'
         elevation={6}
@@ -480,66 +499,92 @@ function Sidebar() {
           </Box>
 
           <Box sx={{ flex: 1, overflowY: 'auto', p: 1 }}>
-            <List component='nav' disablePadding>
-              {menuSections
-                .flatMap((section) => section.items)
-                .filter(
-                  (item) =>
-                    !routePermission(item.to || '') ||
-                    can(routePermission(item.to || '')!)
-                )
-                .map((item: NavItem, index: number) => {
-                  if (
-                    item.allowedRoles &&
-                    userState?.role.name &&
-                    !item.allowedRoles.includes(userState.role.name as Roles)
-                  ) {
-                    return null;
-                  }
+            {userState?.role.name === Roles.HOST ? (
+              <List component='nav' disablePadding>
+                <ListItemButton
+                  selected={location.pathname === '/jalador'}
+                  onClick={() => {
+                    closeSidebar();
+                    navigate('/jalador');
+                  }}
+                  sx={{ borderRadius: 2, mb: 0.5, py: 1, px: 2, minHeight: 48 }}
+                >
+                  <ListItemIcon sx={{ minWidth: 38 }}>
+                    <TableRestaurantOutlined />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary='Registrar llegada'
+                    primaryTypographyProps={{
+                      variant: 'body2',
+                      fontWeight: 600
+                    }}
+                  />
+                </ListItemButton>
+              </List>
+            ) : (
+              <List component='nav' disablePadding>
+                {menuSections
+                  .flatMap((section) => section.items)
+                  .filter(
+                    (item) =>
+                      !routePermission(item.to || '') ||
+                      can(routePermission(item.to || '')!)
+                  )
+                  .filter(
+                    (item) =>
+                      !item.allowedRoles ||
+                      item.allowedRoles.includes(userState?.role.name as Roles)
+                  )
+                  .map((item: NavItem, index: number) => {
+                    const isSelected =
+                      location.pathname === item.to ||
+                      (item.to !== '/' &&
+                        location.pathname.startsWith(item.to));
 
-                  const isSelected =
-                    location.pathname === item.to ||
-                    (item.to !== '/' && location.pathname.startsWith(item.to));
-
-                  return (
-                    <ListItemButton
-                      key={index}
-                      onClick={() => {
-                        closeSidebar();
-                        navigate(item.to);
-                      }}
-                      selected={isSelected}
-                      sx={{
-                        borderRadius: 2,
-                        mb: 0.5,
-                        py: 1,
-                        px: 2,
-                        color: isSelected ? 'primary.main' : 'text.primary',
-                        bgcolor: isSelected ? 'action.selected' : 'transparent',
-                        '&:hover': {
-                          bgcolor: 'action.hover'
-                        }
-                      }}
-                    >
-                      <ListItemIcon
+                    return (
+                      <ListItemButton
+                        key={index}
+                        onClick={() => {
+                          closeSidebar();
+                          navigate(item.to);
+                        }}
+                        selected={isSelected}
                         sx={{
-                          minWidth: 38,
-                          color: isSelected ? 'primary.main' : 'text.secondary'
+                          borderRadius: 2,
+                          mb: 0.5,
+                          py: 1,
+                          px: 2,
+                          color: isSelected ? 'primary.main' : 'text.primary',
+                          bgcolor: isSelected
+                            ? 'action.selected'
+                            : 'transparent',
+                          '&:hover': {
+                            bgcolor: 'action.hover'
+                          }
                         }}
                       >
-                        {item.icon}
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={item.title}
-                        primaryTypographyProps={{
-                          variant: 'body2',
-                          fontWeight: isSelected ? 600 : 500
-                        }}
-                      />
-                    </ListItemButton>
-                  );
-                })}
-            </List>
+                        <ListItemIcon
+                          sx={{
+                            minWidth: 38,
+                            color: isSelected
+                              ? 'primary.main'
+                              : 'text.secondary'
+                          }}
+                        >
+                          {item.icon}
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={item.title}
+                          primaryTypographyProps={{
+                            variant: 'body2',
+                            fontWeight: isSelected ? 600 : 500
+                          }}
+                        />
+                      </ListItemButton>
+                    );
+                  })}
+              </List>
+            )}
           </Box>
 
           <Box
