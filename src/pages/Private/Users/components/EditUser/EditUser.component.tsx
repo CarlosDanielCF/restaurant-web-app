@@ -1,10 +1,7 @@
 import { TypeIdentification } from '@/models/common.model';
 import { Navigate, useParams } from 'react-router-dom';
-import {
-  selectUsers,
-  updateUser
-} from '../../../../../redux/slices/users/users.slice';
-import { useSelector, useDispatch } from 'react-redux';
+import { updateUser } from '../../../../../redux/slices/users/users.slice';
+import { useDispatch } from 'react-redux';
 import {
   Container,
   Grid,
@@ -15,7 +12,12 @@ import {
   Stack,
   Switch,
   Box,
-  CardHeader
+  CardHeader,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField
 } from '@mui/material';
 import { CreateUser } from '../../models/create-user.model';
 import { FormUser } from '../FormUser.component';
@@ -31,9 +33,13 @@ import { IUser } from '../../../../../models';
 import { Label } from '../../../../../components/ui';
 import { TitlePage } from '../../../components/TitlePage.component';
 import { useRestaurantStore } from '@/pages/Private/Common/store/restaurantStore';
+import { useState } from 'react';
+import { Roles } from '@/models/roles';
 
 export const EditUser = () => {
-
+  const [resetDialogOpen, setResetDialogOpen] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const params = useParams();
 
   if (!params.id) {
@@ -42,8 +48,6 @@ export const EditUser = () => {
   // This update activeProduct in redux
   const { isPending, data: userToUpdate, refetch } = useUser(params.id);
   const { restaurant } = useRestaurantStore((state) => state);
-
-
 
   const { enqueueSnackbar } = useSnackbar();
 
@@ -71,18 +75,19 @@ export const EditUser = () => {
     email: userToUpdate?.person.email || '',
     numPhone: userToUpdate?.person.numPhone || '',
     identification: {
-      type: userToUpdate?.person.identification?.type || TypeIdentification.CEDULA,
+      type:
+        userToUpdate?.person.identification?.type || TypeIdentification.CEDULA,
       num: userToUpdate?.person.identification?.num || ''
     },
     username: userToUpdate?.username || '',
+    password: '',
     role: {
       name: currentRole?.role.name || ''
     }
   };
 
   async function onSubmit(form: CreateUser) {
-    console.log(form);
-    const { identification, role, ...dataUser } = form;
+    const { identification, role, password: _password, ...dataUser } = form;
 
     if (form.numPhone === '') {
       delete dataUser.numPhone;
@@ -91,11 +96,15 @@ export const EditUser = () => {
     const userUpdated = {
       ...dataUser,
       typeIdentification: identification.type,
-      numberIdentification: identification.num,
+      numberIdentification: identification.num
     };
 
     updateUserMutation
-      .mutateAsync({ id: userToUpdate!.id, expectedVersion: userToUpdate!.version, ...userUpdated })
+      .mutateAsync({
+        id: userToUpdate!.id,
+        expectedVersion: userToUpdate!.version,
+        ...userUpdated
+      })
       .then((data: IUser) => {
         dispatch(updateUser(data));
         refetch();
@@ -110,7 +119,11 @@ export const EditUser = () => {
 
   const submitChangeStatus = () => {
     updateUserMutation
-      .mutateAsync({ id: userToUpdate!.id, expectedVersion: userToUpdate!.version, isActive: !userToUpdate!.isActive })
+      .mutateAsync({
+        id: userToUpdate!.id,
+        expectedVersion: userToUpdate!.version,
+        isActive: !userToUpdate!.isActive
+      })
       .then((data: IUser) => {
         dispatch(updateUser(data));
         refetch();
@@ -121,18 +134,17 @@ export const EditUser = () => {
       });
   };
 
-  async function onReset() {
+  async function onReset(password: string) {
     const data: ResetPasswordUserDto = {
-      userId: userToUpdate!.id
+      userId: userToUpdate!.id,
+      password
     };
 
-    resetPasswordMutation
-      .mutateAsync(data)
-      .then((resp) => { window.prompt('Enlace de un solo uso. Compártalo de forma privada con el trabajador (30 minutos):', resp.recoveryUrl); })
-      .catch((err) => {
-        console.log(err);
-        enqueueSnackbar('Error al resetear contraseña', { variant: 'error' });
-      });
+    await resetPasswordMutation.mutateAsync(data);
+    enqueueSnackbar(
+      'Contraseña restablecida. El trabajador debe iniciar sesión nuevamente.',
+      { variant: 'success' }
+    );
   }
   //
   if (isPending) return <Typography>Cargando trabajador...</Typography>;
@@ -182,13 +194,15 @@ export const EditUser = () => {
                   />
                 </Box>
 
-                <LoadingButton
-                  variant='text'
-                  onClick={onReset}
-                  loading={resetPasswordMutation.isPending}
-                >
-                  Generar enlace de acceso
-                </LoadingButton>
+                {currentRole?.role.name !== Roles.OWNER && (
+                  <LoadingButton
+                    variant='outlined'
+                    onClick={() => setResetDialogOpen(true)}
+                    loading={resetPasswordMutation.isPending}
+                  >
+                    Restablecer contraseña
+                  </LoadingButton>
+                )}
               </Stack>
             </CardContent>
           </Card>
@@ -207,6 +221,64 @@ export const EditUser = () => {
           </Card>
         </Grid>
       </Grid>
+      <Dialog
+        open={resetDialogOpen}
+        onClose={() => setResetDialogOpen(false)}
+        fullWidth
+        maxWidth='xs'
+      >
+        <DialogTitle>Restablecer contraseña</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ pt: 1 }}>
+            <TextField
+              label='Nueva contraseña'
+              type='password'
+              autoComplete='new-password'
+              value={newPassword}
+              onChange={(event) => setNewPassword(event.target.value)}
+              inputProps={{ minLength: 12, maxLength: 72 }}
+              helperText='Mínimo 12 caracteres, con mayúscula, minúscula y número.'
+              fullWidth
+            />
+            <TextField
+              label='Confirmar contraseña'
+              type='password'
+              autoComplete='new-password'
+              value={confirmPassword}
+              onChange={(event) => setConfirmPassword(event.target.value)}
+              error={confirmPassword !== '' && confirmPassword !== newPassword}
+              helperText={
+                confirmPassword !== '' && confirmPassword !== newPassword
+                  ? 'Las contraseñas no coinciden.'
+                  : ' '
+              }
+              fullWidth
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setResetDialogOpen(false)}>Cancelar</Button>
+          <LoadingButton
+            loading={resetPasswordMutation.isPending}
+            disabled={
+              newPassword.length < 12 ||
+              newPassword.length > 72 ||
+              !/[a-z]/.test(newPassword) ||
+              !/[A-Z]/.test(newPassword) ||
+              !/\d/.test(newPassword) ||
+              confirmPassword !== newPassword
+            }
+            onClick={async () => {
+              await onReset(newPassword);
+              setResetDialogOpen(false);
+              setNewPassword('');
+              setConfirmPassword('');
+            }}
+          >
+            Confirmar restablecimiento
+          </LoadingButton>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };

@@ -23,6 +23,7 @@ import { useCreateUser } from '../../hooks/useUsers';
 
 const initialUser: CreateUser = {
   username: '',
+  password: '',
   firstName: '',
   lastName: '',
   email: '',
@@ -50,8 +51,6 @@ export const AddUser = () => {
   const navigate = useNavigate();
 
   async function onSubmit(form: CreateUser) {
-    console.log(form);
-
     const { identification, role, ...dataUser } = form;
 
     if (form.numPhone === '') {
@@ -68,7 +67,7 @@ export const AddUser = () => {
 
     const created = await mutateAsync(newUser);
     navigate(`/users/edit/${created.id}`);
-    enqueueSnackbar('Trabajador creado. Genere un enlace de acceso para que establezca su contraseña.', {variant:'info'});
+    enqueueSnackbar('Trabajador creado correctamente.', { variant: 'success' });
 
     // await callEndpoint(createUser(newUser))
     //   .then((res) => {

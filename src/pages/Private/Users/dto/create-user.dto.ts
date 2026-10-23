@@ -2,6 +2,7 @@ import { TypeIdentification } from '../../../../models/common.model';
 
 export interface CreateUserDto {
   username: string;
+  password: string;
   email: string;
   firstName: string;
   lastName: string;

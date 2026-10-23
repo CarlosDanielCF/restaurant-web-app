@@ -189,6 +189,30 @@ export const FormUser: FC<Props> = ({ user, onSubmit, loading, isNew }) => {
             />
           </Grid>
 
+          {isNew && (
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label='Contraseña inicial'
+                type='password'
+                autoComplete='new-password'
+                fullWidth
+                {...register('password', {
+                  required: 'Este campo es requerido',
+                  minLength: { value: 12, message: 'Mínimo 12 caracteres' },
+                  maxLength: { value: 72, message: 'Máximo 72 caracteres' },
+                  validate: {
+                    lower: (value) =>
+                      /[a-z]/.test(value) || 'Incluye una minúscula',
+                    upper: (value) =>
+                      /[A-Z]/.test(value) || 'Incluye una mayúscula',
+                    number: (value) => /\d/.test(value) || 'Incluye un número'
+                  }
+                })}
+                helperText={errors.password?.message}
+                error={!!errors.password}
+              />
+            </Grid>
+          )}
           <Grid item xs={12} sm={6}>
             <TextField
               label='Email'

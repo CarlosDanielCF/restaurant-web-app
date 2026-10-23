@@ -16,4 +16,5 @@ export interface UpdateUserDto {
 
 export interface ResetPasswordUserDto {
   userId: string;
+  password: string;
 }

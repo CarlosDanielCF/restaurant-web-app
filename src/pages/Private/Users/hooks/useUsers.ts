@@ -1,4 +1,3 @@
-import { RecoveryLink } from '../services/users.service';
 import { useEffect } from 'react';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -197,16 +196,21 @@ export const useChangePasswordUser = () => {
 };
 
 /**
- * Hook to reset user password to default
+ * Hook for authorized administrators to set a worker password
  * @version 2.0 - Migrated to React Query v5
  */
 export const useResetPasswordUser = () => {
   const { enqueueSnackbar } = useSnackbar();
+  const queryClient = useQueryClient();
 
-  return useMutation<RecoveryLink, unknown, ResetPasswordUserDto>({
+  return useMutation<void, unknown, ResetPasswordUserDto>({
     mutationFn: (data: ResetPasswordUserDto) => resetPasswordUser(data),
-    onSuccess: () => {
-      enqueueSnackbar('Enlace de acceso generado; vence en 30 minutos', {
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.users.detail(variables.userId)
+      });
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.lists() });
+      enqueueSnackbar('Contraseña del trabajador restablecida correctamente', {
         variant: 'success'
       });
     },
