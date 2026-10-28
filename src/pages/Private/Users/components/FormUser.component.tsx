@@ -165,6 +165,7 @@ export const FormUser: FC<Props> = ({ user, onSubmit, loading, isNew }) => {
                         <MenuItem value={Roles.ADMIN}>Administrador</MenuItem>
                         <MenuItem value={Roles.WAITER}>Mozo</MenuItem>
                         <MenuItem value={Roles.COOK}>Cocinero</MenuItem>
+                        <MenuItem value={Roles.HOST}>Jalador</MenuItem>
                       </Select>
                     </>
                   )}
