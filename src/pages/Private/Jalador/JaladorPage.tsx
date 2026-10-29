@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import {
   Alert,
   Box,
@@ -13,8 +13,8 @@ import {
 } from '@mui/material';
 import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlineRounded';
 import RefreshRoundedIcon from '@mui/icons-material/RefreshRounded';
-import { AxiosError } from 'axios';
 import { restauranteApi } from '@/api';
+import { useLiveRefresh } from '@/hooks/useLiveRefresh';
 import './jalador.css';
 
 interface CaptureTable {
@@ -29,8 +29,11 @@ interface CaptureMetrics {
 }
 
 function errorMessage(error: unknown): string {
-  const response = (error as AxiosError<{ message?: string | string[] }>)
-    .response;
+  const candidate = error as {
+    response?: { data?: { message?: string | string[] } };
+    data?: { message?: string | string[] };
+  };
+  const response = candidate.response ?? candidate;
   const message = response?.data?.message;
   if (Array.isArray(message)) return message.join('. ');
   if (message) {
@@ -72,6 +75,14 @@ export function JaladorPage() {
         })
       ]);
       setTables(tableResponse.data);
+      setSelected((current) =>
+        current &&
+        tableResponse.data.some(
+          (table) => table.id === current.id && table.status === 'libre'
+        )
+          ? current
+          : null
+      );
       setMetrics(metricsResponse.data);
       setError('');
     } catch (reason) {
@@ -82,9 +93,7 @@ export function JaladorPage() {
     }
   }, []);
 
-  useEffect(() => {
-    void refresh();
-  }, [refresh]);
+  useLiveRefresh(refresh, ['attention.changed']);
 
   const submit = async () => {
     const count = Number(partySize);
@@ -109,7 +118,9 @@ export function JaladorPage() {
       setPartySize('');
       await refresh(true);
     } catch (reason) {
-      setError(errorMessage(reason));
+      const message = errorMessage(reason);
+      await refresh(true);
+      setError(message);
     } finally {
       requestLock.current = false;
       setSubmitting(false);
@@ -218,7 +229,9 @@ export function JaladorPage() {
                   className={`jalador-table-card${active ? ' is-selected' : ''}${occupied ? ' is-occupied' : ''}`}
                 >
                   <CardActionArea
+                    disabled={occupied}
                     onClick={() => {
+                      if (occupied) return;
                       setSelected(table);
                       setPartySize('');
                       setError('');
