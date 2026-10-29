@@ -619,3 +619,381 @@
     align-self: flex-start;
   }
 }
+
+/* 2026 visual pass: shared restaurant workspace polish. */
+@media screen {
+  :root {
+    --pos-bg: #f3f7f7;
+    --pos-border: #dbe7e5;
+    --pos-shadow-sm: 0 1px 2px rgb(15 61 57 / 5%);
+    --pos-shadow-md: 0 8px 24px rgb(15 61 57 / 8%);
+    --pos-ring: 0 0 0 3px rgb(13 148 136 / 14%);
+  }
+
+  body [data-testid='app-content'] {
+    background:
+      radial-gradient(circle at 100% 0%, rgb(153 246 228 / 18%), transparent 26rem),
+      var(--pos-bg);
+  }
+
+  body [data-testid='app-content'] .pos-header {
+    min-height: 64px;
+    height: 64px;
+    background: rgb(255 255 255 / 88%);
+    border-bottom-color: rgb(15 118 110 / 14%);
+    box-shadow: 0 4px 18px rgb(15 61 57 / 6%);
+    backdrop-filter: blur(14px) saturate(140%);
+  }
+
+  body [data-testid='app-content'] .pos-header > div:first-child > .MuiTypography-root {
+    line-height: 1.2;
+  }
+
+  body [data-testid='app-content'] .pos-header .MuiIconButton-root,
+  .MuiDrawer-paper .MuiIconButton-root {
+    border: 1px solid transparent;
+  }
+
+  body [data-testid='app-content'] .pos-header .MuiIconButton-root:hover,
+  .MuiDrawer-paper .MuiIconButton-root:hover {
+    border-color: rgb(13 148 136 / 18%);
+    background: #f0fdfa;
+  }
+
+  .MuiDrawer-paper {
+    background: linear-gradient(180deg, #ffffff 0%, #fbfdfd 100%) !important;
+    box-shadow: 8px 0 28px rgb(15 61 57 / 5%) !important;
+  }
+
+  .sidebar-software-brand {
+    padding: 14px 16px 10px;
+  }
+
+  .MuiDrawer-paper .MuiListItemButton-root {
+    margin-block: 2px;
+    border: 1px solid transparent;
+    transition: background-color 140ms ease, border-color 140ms ease,
+      color 140ms ease;
+  }
+
+  .MuiDrawer-paper .MuiListItemButton-root:hover {
+    border-color: rgb(13 148 136 / 12%);
+    background: #f3fbf9;
+  }
+
+  .MuiDrawer-paper .MuiListItemButton-root.Mui-selected {
+    border-color: rgb(13 148 136 / 18%);
+    background: linear-gradient(90deg, #dff7f1, #effbf8);
+    box-shadow: inset 3px 0 var(--pos-primary), var(--pos-shadow-sm);
+  }
+
+  body [data-testid='app-content'] :is(.MuiCard-root, .MuiPaper-elevation1) {
+    border-color: var(--pos-border);
+    box-shadow: var(--pos-shadow-sm);
+  }
+
+  body [data-testid='app-content'] .MuiCard-root:has(.MuiCardActionArea-root) {
+    transition: border-color 140ms ease, box-shadow 140ms ease,
+      transform 140ms ease;
+  }
+
+  body [data-testid='app-content'] .MuiCard-root:has(.MuiCardActionArea-root):hover {
+    border-color: rgb(13 148 136 / 32%);
+    box-shadow: var(--pos-shadow-md);
+    transform: translateY(-1px);
+  }
+
+  body [data-testid='app-content'] .MuiButton-containedPrimary:not(.Mui-disabled) {
+    background: linear-gradient(135deg, #0d9488, #0f766e);
+    box-shadow: 0 5px 14px rgb(13 148 136 / 20%);
+  }
+
+  body [data-testid='app-content'] .MuiButton-containedPrimary:not(.Mui-disabled):hover {
+    background: linear-gradient(135deg, #0f8278, #115e59);
+    box-shadow: 0 7px 18px rgb(13 148 136 / 24%);
+  }
+
+  body [data-testid='app-content'] .MuiOutlinedInput-root {
+    transition: box-shadow 140ms ease, background-color 140ms ease;
+  }
+
+  body [data-testid='app-content'] .MuiOutlinedInput-root.Mui-focused {
+    background: #ffffff;
+    box-shadow: var(--pos-ring);
+  }
+
+  body [data-testid='app-content'] .MuiAlert-root {
+    align-items: center;
+    border-radius: 10px;
+    border: 1px solid currentColor;
+  }
+
+  body [data-testid='app-content'] :is(.MuiChip-colorSuccess, .MuiChip-colorWarning,
+    .MuiChip-colorError, .MuiChip-colorInfo) {
+    border: 1px solid currentColor;
+    font-weight: 700;
+  }
+
+  .MuiDialog-paper {
+    border: 1px solid var(--pos-border);
+    border-radius: 16px !important;
+    box-shadow: 0 24px 70px rgb(15 61 57 / 18%) !important;
+  }
+
+  .MuiDialog-paper .MuiDialogTitle-root {
+    padding-block: 18px;
+    background: linear-gradient(180deg, #ffffff, #fbfdfd);
+  }
+
+  .attention-service .quick-table[data-occupied='false'] {
+    border-color: #22a45a;
+    background: linear-gradient(145deg, #f3fdf6, #e9f9ef);
+    box-shadow: inset 0 0 0 1px rgb(34 164 90 / 8%);
+  }
+
+  .attention-service .quick-table[data-occupied='true'] {
+    border-color: #e05252;
+    background: linear-gradient(145deg, #fff8f8, #fceded);
+    box-shadow: inset 0 0 0 1px rgb(224 82 82 / 8%);
+  }
+
+  .attention-service .table-choice-grid .MuiFormControlLabel-root:has(.Mui-checked) {
+    border-color: var(--pos-primary);
+    box-shadow: var(--pos-ring);
+  }
+
+  @media (min-width: 600px) {
+    body [data-testid='app-content'] > div:last-child {
+      padding: 20px 24px;
+    }
+  }
+
+  @media (max-width: 599px) {
+    body [data-testid='app-content'] .pos-header {
+      min-height: 58px;
+      height: 58px;
+    }
+
+    body [data-testid='app-content'] > div:last-child {
+      padding: 12px;
+    }
+
+    body [data-testid='app-content'] .MuiCardContent-root {
+      padding: 14px;
+    }
+
+    .MuiDialog-paper {
+      width: calc(100% - 20px);
+      margin: 10px;
+      border-radius: 14px !important;
+    }
+
+    .MuiDialog-paper .MuiDialogActions-root {
+      gap: 8px;
+      padding: 12px 14px;
+    }
+
+    .MuiDialog-paper .MuiDialogActions-root .MuiButton-root {
+      flex: 1;
+    }
+  }
+}
+
+/* Product finish: compact, tactile POS surfaces without changing layout logic. */
+@media screen {
+  body [data-testid='app-content'] {
+    font-feature-settings: 'kern' 1, 'tnum' 1;
+  }
+
+  body [data-testid='app-content'] :is(.MuiTypography-h4, .MuiTypography-h5) {
+    line-height: 1.18;
+    text-wrap: balance;
+  }
+
+  body [data-testid='app-content'] .MuiTypography-body2,
+  body [data-testid='app-content'] .MuiTypography-caption {
+    line-height: 1.45;
+  }
+
+  .MuiDrawer-paper nav {
+    padding-inline: 6px;
+  }
+
+  .MuiDrawer-paper .MuiListSubheader-root {
+    margin-top: 8px;
+    padding-inline: 12px;
+    background: transparent;
+    color: #78908d;
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+
+  .MuiDrawer-paper .MuiListItemIcon-root {
+    color: #6b807d;
+    transition: color 140ms ease;
+  }
+
+  .MuiDrawer-paper .Mui-selected .MuiListItemIcon-root {
+    color: var(--pos-primary-dark);
+  }
+
+  .MuiDrawer-paper .MuiListItemText-primary {
+    font-size: 0.86rem;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+  }
+
+  body [data-testid='app-content'] .pos-header {
+    padding-inline: clamp(14px, 2vw, 28px);
+  }
+
+  .pos-header-team {
+    gap: 12px;
+  }
+
+  .pos-header-team > div:last-child {
+    padding: 3px 6px;
+    border: 1px solid var(--pos-border);
+    border-radius: 12px;
+    background: rgb(255 255 255 / 78%);
+  }
+
+  body [data-testid='app-content'] .operations-heading {
+    padding: 2px 2px 4px;
+  }
+
+  body [data-testid='app-content'] .operations-metrics > div {
+    background: linear-gradient(145deg, #ffffff, #f8fbfa);
+    border: 1px solid var(--pos-border);
+    box-shadow: var(--pos-shadow-sm);
+  }
+
+  body [data-testid='app-content'] .operations-tabs {
+    border: 1px solid #d9e6e3;
+    box-shadow: inset 0 1px 2px rgb(15 61 57 / 4%);
+  }
+
+  body [data-testid='app-content'] .operations-tabs .MuiTab-root {
+    min-height: 42px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 750;
+  }
+
+  .open-attention-card,
+  .attention-service .current-order-card {
+    overflow: hidden;
+    border-color: #d5e5e2 !important;
+    box-shadow: 0 10px 30px rgb(15 61 57 / 7%) !important;
+  }
+
+  .open-attention-map .table-choice-grid {
+    gap: 10px;
+  }
+
+  .open-attention-map .MuiFormControlLabel-root,
+  .attention-service .quick-table {
+    min-height: 68px;
+    border-width: 1px;
+    border-radius: 12px;
+    box-shadow: 0 2px 7px rgb(15 61 57 / 5%);
+    transition: border-color 140ms ease, box-shadow 140ms ease,
+      transform 140ms ease;
+  }
+
+  .open-attention-map .MuiFormControlLabel-root:not(.Mui-disabled):hover,
+  .attention-service .quick-table:not(:disabled):hover {
+    box-shadow: 0 8px 18px rgb(15 61 57 / 10%);
+    transform: translateY(-2px);
+  }
+
+  .open-attention-map .MuiFormControlLabel-label .MuiTypography-root,
+  .attention-service .quick-table {
+    font-weight: 750;
+  }
+
+  body [data-testid='app-content'] .MuiButton-root {
+    letter-spacing: -0.01em;
+  }
+
+  body [data-testid='app-content'] .MuiButton-outlined {
+    border-color: #bcd2ce;
+    background: rgb(255 255 255 / 72%);
+  }
+
+  body [data-testid='app-content'] .MuiButton-outlined:hover {
+    border-color: var(--pos-primary);
+    background: #f0fdfa;
+  }
+
+  body [data-testid='app-content'] .MuiButton-root.Mui-disabled {
+    border-color: #e1e8e7;
+    background-image: none;
+  }
+
+  body [data-testid='app-content'] :is(.MuiTextField-root, .MuiFormControl-root) .MuiInputLabel-root {
+    font-weight: 600;
+  }
+
+  body [data-testid='app-content'] .MuiOutlinedInput-root {
+    min-height: 44px;
+  }
+
+  body [data-testid='app-content'] .MuiFormHelperText-root {
+    margin-top: 5px;
+    font-size: 0.7rem;
+  }
+
+  .MuiDialog-paper .MuiDialogContent-root {
+    padding: 22px;
+    background: #ffffff;
+  }
+
+  .MuiDialog-paper .MuiDialogActions-root {
+    background: #f8fbfa;
+  }
+
+  @media (max-width: 899px) {
+    body [data-testid='app-content'] .operations-tabs {
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    body [data-testid='app-content'] .operations-tabs::-webkit-scrollbar {
+      display: none;
+    }
+
+    .open-attention-map .table-choice-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .open-attention-map .MuiFormControlLabel-root,
+    .attention-service .quick-table {
+      min-height: 62px;
+    }
+  }
+
+  @media (max-width: 599px) {
+    .pos-header-team > div:last-child {
+      padding: 2px;
+      border: 0;
+      background: transparent;
+    }
+
+    body [data-testid='app-content'] .operations-metrics {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .open-attention-map .table-choice-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .MuiDialog-paper .MuiDialogContent-root {
+      padding: 16px;
+    }
+  }
+}
