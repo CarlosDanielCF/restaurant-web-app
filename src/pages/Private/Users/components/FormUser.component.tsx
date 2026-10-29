@@ -1,5 +1,5 @@
 import { MoreOptions } from '@/components/operational/MoreOptions';
-import { FC } from 'react';
+import { FC, useState } from 'react';
 import { CreateUser } from '../models/create-user.model';
 import { useWatch, useForm, Controller } from 'react-hook-form';
 import { TypeIdentification } from '../../../../models/common.model';
@@ -11,11 +11,15 @@ import {
   TextField,
   Typography,
   FormControl,
-  InputLabel
+  InputLabel,
+  IconButton,
+  InputAdornment
 } from '@mui/material';
 import { Roles } from '@/models/roles';
 import SaveRoundedIcon from '@mui/icons-material/SaveRounded';
 import PersonAddRoundedIcon from '@mui/icons-material/PersonAddRounded';
+import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
+import VisibilityOffRoundedIcon from '@mui/icons-material/VisibilityOffRounded';
 
 interface Props {
   user: CreateUser;
@@ -26,6 +30,7 @@ interface Props {
 }
 
 export const FormUser: FC<Props> = ({ user, onSubmit, loading, isNew }) => {
+  const [showPassword, setShowPassword] = useState(false);
   const {
     register,
     handleSubmit,
@@ -122,10 +127,17 @@ export const FormUser: FC<Props> = ({ user, onSubmit, loading, isNew }) => {
             <TextField
               label='Número de identificación'
               fullWidth
-              type='number'
+              type='text'
+              inputProps={{
+                inputMode: 'numeric',
+                maxLength: lenghtIdentification
+              }}
               {...register('identification.num', {
                 required: 'Este campo es requerido',
-
+                pattern: {
+                  value: /^\d+$/,
+                  message: 'Ingrese solo dígitos'
+                },
                 minLength: {
                   value: lenghtIdentification,
                   message: `Minimo ${lenghtIdentification} caracteres`
@@ -194,7 +206,7 @@ export const FormUser: FC<Props> = ({ user, onSubmit, loading, isNew }) => {
             <Grid item xs={12} sm={6}>
               <TextField
                 label='Contraseña inicial'
-                type='password'
+                type={showPassword ? 'text' : 'password'}
                 autoComplete='new-password'
                 fullWidth
                 {...register('password', {
@@ -211,6 +223,27 @@ export const FormUser: FC<Props> = ({ user, onSubmit, loading, isNew }) => {
                 })}
                 helperText={errors.password?.message}
                 error={!!errors.password}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position='end'>
+                      <IconButton
+                        aria-label={
+                          showPassword
+                            ? 'Ocultar contraseña'
+                            : 'Mostrar contraseña'
+                        }
+                        edge='end'
+                        onClick={() => setShowPassword((visible) => !visible)}
+                      >
+                        {showPassword ? (
+                          <VisibilityOffRoundedIcon />
+                        ) : (
+                          <VisibilityRoundedIcon />
+                        )}
+                      </IconButton>
+                    </InputAdornment>
+                  )
+                }}
               />
             </Grid>
           )}

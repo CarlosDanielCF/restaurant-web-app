@@ -36,7 +36,6 @@ const userMutationErrorMessage = (error: unknown, fallback: string) => {
     : response.data?.message || '';
 
   if (
-    response.status === 409 ||
     /(dni|c[eé]dula|identificaci[oó]n|correo|email).*(existe|registrad|duplic)/i.test(
       rawMessage
     ) ||
@@ -46,6 +45,12 @@ const userMutationErrorMessage = (error: unknown, fallback: string) => {
   ) {
     return 'El DNI o correo ingresado ya está registrado.';
   }
+
+  if (/usuario.*(existe|registrad|duplic)/i.test(rawMessage)) {
+    return 'El nombre de usuario ya está registrado.';
+  }
+
+  if (rawMessage) return rawMessage;
 
   return fallback;
 };
@@ -137,10 +142,12 @@ export const useUser = (term: string, enabled = true) => {
  */
 export const useCreateUser = () => {
   const { enqueueSnackbar } = useSnackbar();
+  const queryClient = useQueryClient();
 
   return useMutation<IUser, unknown, CreateUserDto>({
     mutationFn: (data: CreateUserDto) => createUser(data),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.all });
       enqueueSnackbar('Usuario creado correctamente', { variant: 'success' });
     },
     onError: (error) => {
@@ -163,7 +170,9 @@ export const useUpdateUser = () => {
 
   const updateUserMutation = useMutation<IUser, unknown, UpdateUserDto>({
     mutationFn: (data: UpdateUserDto) => updateUser(data.id, data),
-    onSuccess: () => {
+    onSuccess: (data) => {
+      queryClient.setQueryData(queryKeys.users.detail(data.id), data);
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.all });
       enqueueSnackbar('Usuario actualizado correctamente', {
         variant: 'success'
       });
@@ -248,10 +257,6 @@ export const useResetPasswordUser = () => {
       });
     }
   });
-};
-
-export const useDeleteUser = () => {
-  return {};
 };
 
 /**

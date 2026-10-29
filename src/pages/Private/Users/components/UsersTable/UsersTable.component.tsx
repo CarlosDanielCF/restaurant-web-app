@@ -89,7 +89,7 @@ export const TableRowUser: FC<{ user: IUser }> = ({ user }) => {
       </TableCell>
       <TableCell>
         <Typography variant='body2' color='text.secondary' noWrap>
-          {user.person.email}
+          {user.person.email || '—'}
         </Typography>
       </TableCell>
       <TableCell>
@@ -200,7 +200,7 @@ export const UserMobileCard: FC<{ user: IUser }> = ({ user }) => {
         </Box>
 
         <Typography variant='body2' color='text.secondary'>
-          {user.person.email}
+          {user.person.email || '—'}
         </Typography>
 
         <Box

@@ -3,7 +3,6 @@ import { Navigate, useParams } from 'react-router-dom';
 import { updateUser } from '../../../../../redux/slices/users/users.slice';
 import { useDispatch } from 'react-redux';
 import {
-  Container,
   Grid,
   Button,
   Typography,
@@ -17,11 +16,12 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField
+  TextField,
+  IconButton,
+  InputAdornment
 } from '@mui/material';
 import { CreateUser } from '../../models/create-user.model';
 import { FormUser } from '../FormUser.component';
-import { useSnackbar } from 'notistack';
 import { ResetPasswordUserDto } from '../../dto/update-user.dto';
 import { LoadingButton } from '@mui/lab';
 import {
@@ -35,35 +35,44 @@ import { TitlePage } from '../../../components/TitlePage.component';
 import { useRestaurantStore } from '@/pages/Private/Common/store/restaurantStore';
 import { useState } from 'react';
 import { Roles } from '@/models/roles';
+import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
+import VisibilityOffRoundedIcon from '@mui/icons-material/VisibilityOffRounded';
 
 export const EditUser = () => {
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const passwordAdornment = (
+    <InputAdornment position='end'>
+      <IconButton
+        aria-label={
+          showResetPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'
+        }
+        edge='end'
+        onClick={() => setShowResetPassword((visible) => !visible)}
+      >
+        {showResetPassword ? (
+          <VisibilityOffRoundedIcon />
+        ) : (
+          <VisibilityRoundedIcon />
+        )}
+      </IconButton>
+    </InputAdornment>
+  );
   const params = useParams();
 
   if (!params.id) {
     return <Navigate to='/users' />;
   }
-  // This update activeProduct in redux
   const { isPending, data: userToUpdate, refetch } = useUser(params.id);
   const { restaurant } = useRestaurantStore((state) => state);
-
-  const { enqueueSnackbar } = useSnackbar();
 
   const dispatch = useDispatch();
 
   const resetPasswordMutation = useResetPasswordUser();
 
-  const { updateUserMutation, updateUserRole } = useUpdateUser();
-
-  // const { id, person, restaurantRoles, isActive, ...restUser } = userToUpdate!;
-  //
-  // const { id: idI, ...identification } = person.identification;
-  //
-  // const { id: idP, ...restPerson } = person;
-  //
-  // const { name } = role;
+  const { updateUserMutation } = useUpdateUser();
 
   const currentRole = userToUpdate?.restaurantRoles.find(
     (restaurantRole) => restaurantRole.restaurant.id === restaurant!.id
@@ -130,10 +139,6 @@ export const EditUser = () => {
       .then((data: IUser) => {
         dispatch(updateUser(data));
         refetch();
-      })
-      .catch((err: any) => {
-        console.log(err);
-        enqueueSnackbar('Error al actualizar usuario', { variant: 'error' });
       });
   };
 
@@ -144,10 +149,6 @@ export const EditUser = () => {
     };
 
     await resetPasswordMutation.mutateAsync(data);
-    enqueueSnackbar(
-      'Contraseña restablecida. El trabajador debe iniciar sesión nuevamente.',
-      { variant: 'success' }
-    );
   }
   //
   if (isPending) return <Typography>Cargando trabajador...</Typography>;
@@ -219,8 +220,6 @@ export const EditUser = () => {
               loading={updateUserMutation.isPending}
               isNew={false}
             />
-
-            {/* <FormClient onSubmit={onSubmit} client={client} loading={loading} msg={'Editar'} /> */}
           </Card>
         </Grid>
       </Grid>
@@ -235,17 +234,20 @@ export const EditUser = () => {
           <Stack spacing={2} sx={{ pt: 1 }}>
             <TextField
               label='Nueva contraseña'
-              type='password'
+              type={showResetPassword ? 'text' : 'password'}
               autoComplete='new-password'
               value={newPassword}
               onChange={(event) => setNewPassword(event.target.value)}
               inputProps={{ minLength: 12, maxLength: 72 }}
               helperText='Mínimo 12 caracteres, con mayúscula, minúscula y número.'
               fullWidth
+              InputProps={{
+                endAdornment: passwordAdornment
+              }}
             />
             <TextField
               label='Confirmar contraseña'
-              type='password'
+              type={showResetPassword ? 'text' : 'password'}
               autoComplete='new-password'
               value={confirmPassword}
               onChange={(event) => setConfirmPassword(event.target.value)}
@@ -256,6 +258,9 @@ export const EditUser = () => {
                   : ' '
               }
               fullWidth
+              InputProps={{
+                endAdornment: passwordAdornment
+              }}
             />
           </Stack>
         </DialogContent>

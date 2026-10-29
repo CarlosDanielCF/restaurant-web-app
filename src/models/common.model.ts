@@ -18,7 +18,7 @@ export interface IPerson {
   id: string;
   firstName: string;
   lastName: string;
-  email: string;
+  email?: string;
   identification?: Identification;
   numPhone?: string;
 }
