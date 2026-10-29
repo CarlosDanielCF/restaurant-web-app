@@ -11,9 +11,9 @@ import { OrderProvider } from './Orders/context/Order.context';
 
 export const Private = () => {
   const { user } = useAppSelector(selectAuth);
-  const content = useRoutes(PrivateRouter);
-  const navigate = useNavigate();
   const location = useLocation();
+  const content = useRoutes(PrivateRouter, location);
+  const navigate = useNavigate();
   useEffect(() => {
     if (
       user?.role.name === Roles.COOK &&
