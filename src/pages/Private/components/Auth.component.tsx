@@ -22,18 +22,6 @@ const Auth: FC<Props> = ({ allowedRoles }) => {
       allowedRoles.includes(user.role.name as Roles));
   const authorized = !!user && permissionAllowed && roleAllowed;
 
-  if (location.pathname === '/jalador')
-    console.log('[JALADOR-AUTH-DEBUG]', {
-      pathname: location.pathname,
-      username: user?.username,
-      role: user?.role?.name,
-      allowedRoles,
-      permission,
-      permissionAllowed,
-      roleAllowed,
-      authorized
-    });
-
   return authorized ? (
     <Outlet />
   ) : user?.username ? (

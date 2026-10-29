@@ -48,11 +48,7 @@ const NewRestaurant = lazy(() =>
 );
 import { Roles } from '@/models/roles';
 
-const UnauthorizedRoute = () => {
-  const pathname = window.location.pathname;
-  console.log('[JALADOR-WILDCARD-DEBUG]', { pathname });
-  return <Navigate to='/unauthorized' replace />;
-};
+const UnauthorizedRoute = () => <Navigate to='/unauthorized' replace />;
 
 export const PrivateRouter: RouteObject[] = [
   {
