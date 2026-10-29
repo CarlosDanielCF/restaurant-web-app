@@ -4,8 +4,6 @@ import { onLogin, onLogout } from '@/redux';
 import { useMutation } from '@tanstack/react-query';
 import { enqueueSnackbar } from 'notistack';
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Roles } from '@/models/roles';
 import { useDispatch } from 'react-redux';
 import { RegisterUserDto } from '../dto/register-user.dto';
 import { login, registerUser, renewToken } from '../services/auth.service';
@@ -45,7 +43,6 @@ export const useSignup = () => {
 export const useLogin = () => {
   const { setRestaurant } = useRestaurantStore((state) => state);
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   return useMutation<LoginResponseDto, unknown, IFormLogin>({
     mutationFn: (data: IFormLogin) => login(data),
     onSuccess: (data: LoginResponseDto) => {
@@ -63,14 +60,6 @@ export const useLogin = () => {
       );
       localStorage.setItem('token', data.token);
       localStorage.setItem('token-init-date', String(new Date().getTime()));
-      navigate(
-        currentRole.name === Roles.HOST
-          ? '/jalador'
-          : currentRole.name === Roles.COOK
-            ? '/kitchen'
-            : '/attention',
-        { replace: true }
-      );
     },
     onError: () => {
       dispatch(onLogout('Credenciales incorrectas'));

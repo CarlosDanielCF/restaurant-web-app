@@ -6,13 +6,14 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { selectAuth } from '../../../redux';
 import { Roles } from '@/models/roles';
+import { SessionCheckStatus } from '@/components/ui/SessionCheckStatus';
 
 interface Props {
   allowedRoles: Roles[];
 }
 
 const Auth: FC<Props> = ({ allowedRoles }) => {
-  const { user } = useSelector(selectAuth);
+  const { status, user } = useSelector(selectAuth);
   const location = useLocation();
   const can = useWorkerAccess(),
     permission = routePermission(location.pathname);
@@ -21,6 +22,8 @@ const Auth: FC<Props> = ({ allowedRoles }) => {
     (user.role.name === Roles.OWNER ||
       allowedRoles.includes(user.role.name as Roles));
   const authorized = !!user && permissionAllowed && roleAllowed;
+
+  if (status === 'checking') return <SessionCheckStatus />;
 
   return authorized ? (
     <Outlet />

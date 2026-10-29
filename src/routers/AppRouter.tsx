@@ -1,5 +1,5 @@
 import { lazy } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 
 import { selectAuth } from '../redux/slices/auth';
 import { useAppSelector } from '../hooks/useRedux';
@@ -13,6 +13,7 @@ const SetupRestaurant = lazy(() =>
 import { useRestaurantStore } from '@/pages/Private/Common/store/restaurantStore';
 import { useRenewToken } from '@/pages/Public/Auth/hooks/useAuth';
 import { SessionCheckStatus } from '@/components/ui/SessionCheckStatus';
+import { Roles } from '@/models/roles';
 
 const Private = lazy(() => import('../pages/Private/Private'));
 
@@ -21,12 +22,32 @@ const Private = lazy(() => import('../pages/Private/Private'));
  * @version v1.1 12-04-2025 Implement useRenewToken hook
  */
 export const AppRouter = () => {
-  const { status } = useAppSelector(selectAuth);
+  const { status, user } = useAppSelector(selectAuth);
   const { restaurant } = useRestaurantStore((state) => state);
+  const location = useLocation();
   useRenewToken();
 
   if (status === 'checking') {
     return <SessionCheckStatus />;
+  }
+
+  if (
+    status === 'authenticated' &&
+    restaurant &&
+    user?.role &&
+    location.pathname.startsWith('/auth')
+  ) {
+    const destination =
+      user.role.name === Roles.HOST
+        ? '/jalador'
+        : user.role.name === Roles.COOK
+          ? '/kitchen'
+          : user.role.name === Roles.OWNER ||
+              user.role.name === Roles.ADMIN ||
+              user.role.name === Roles.WAITER
+            ? '/attention'
+            : '/unauthorized';
+    return <Navigate to={destination} replace />;
   }
 
   return (
