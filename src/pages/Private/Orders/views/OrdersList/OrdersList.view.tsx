@@ -82,7 +82,7 @@ export const ListOrders = () => {
 
   const addOrder = () => {
     dispatch(resetActiveOrder());
-    navigate('/orders');
+    navigate('/attention');
   };
 
   const handleToggleRow = (orderId: string) => {
