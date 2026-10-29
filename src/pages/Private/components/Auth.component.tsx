@@ -16,11 +16,25 @@ const Auth: FC<Props> = ({ allowedRoles }) => {
   const location = useLocation();
   const can = useWorkerAccess(),
     permission = routePermission(location.pathname);
-
-  return !!user &&
-    (!permission || can(permission)) &&
+  const permissionAllowed = permission ? can(permission) : true;
+  const roleAllowed = !!user &&
     (user.role.name === Roles.OWNER ||
-      allowedRoles.includes(user.role.name as Roles)) ? (
+      allowedRoles.includes(user.role.name as Roles));
+  const authorized = !!user && permissionAllowed && roleAllowed;
+
+  if (location.pathname === '/jalador')
+    console.log('[JALADOR-AUTH-DEBUG]', {
+      pathname: location.pathname,
+      username: user?.username,
+      role: user?.role?.name,
+      allowedRoles,
+      permission,
+      permissionAllowed,
+      roleAllowed,
+      authorized
+    });
+
+  return authorized ? (
     <Outlet />
   ) : user?.username ? (
     <Navigate to='/unauthorized' state={{ from: location }} replace />
