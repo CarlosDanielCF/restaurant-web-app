@@ -60,7 +60,13 @@ export const PrivateRouter: RouteObject[] = [
         ),
         children: [{ index: true, element: <DocumentsPage /> }]
       },
-      { path: 'operational-reports', element: <ReportsPage /> },
+      {
+        path: 'operational-reports',
+        element: (
+          <Auth allowedRoles={[Roles.OWNER, Roles.ADMIN, Roles.WAITER]} />
+        ),
+        children: [{ index: true, element: <ReportsPage /> }]
+      },
       {
         path: 'supplies',
         element: <Auth allowedRoles={[Roles.OWNER, Roles.ADMIN]} />,
@@ -73,7 +79,13 @@ export const PrivateRouter: RouteObject[] = [
         ),
         children: [{ index: true, element: <FinancePage /> }]
       },
-      { path: 'attention', element: <OperationsPage /> },
+      {
+        path: 'attention',
+        element: (
+          <Auth allowedRoles={[Roles.OWNER, Roles.ADMIN, Roles.WAITER]} />
+        ),
+        children: [{ index: true, element: <OperationsPage /> }]
+      },
       {
         path: 'kitchen',
         element: <Auth allowedRoles={[Roles.OWNER, Roles.ADMIN, Roles.COOK]} />,
@@ -109,21 +121,14 @@ export const PrivateRouter: RouteObject[] = [
         element: <Auth allowedRoles={[Roles.OWNER, Roles.ADMIN]} />,
         children: [{ index: true, element: <OverviewPage /> }]
       },
-      {
-        path: '/auth/login',
-        element: <Navigate to='/attention' />
-      },
-      {
-        path: '',
-        element: <Navigate to='/attention' />
-      },
+
       {
         path: 'ORD.ORDERS',
-        element: <Navigate to='/attention' />
+        element: <Navigate to='/attention' replace />
       },
       {
         path: '*',
-        element: <Navigate to='/attention' />
+        element: <Navigate to='/unauthorized' replace />
       }
     ]
   },

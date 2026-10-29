@@ -38,7 +38,7 @@ export const FormUser: FC<Props> = ({ user, onSubmit, loading, isNew }) => {
   const identification = useWatch({ control, name: 'identification' });
 
   const lenghtIdentification =
-    identification.type === TypeIdentification.CEDULA ? 10 : 13;
+    identification.type === TypeIdentification.CEDULA ? 8 : 13;
 
   return (
     <>
@@ -219,12 +219,10 @@ export const FormUser: FC<Props> = ({ user, onSubmit, loading, isNew }) => {
               label='Email'
               fullWidth
               {...register('email', {
-                required: 'Este campo es requerido',
                 pattern: {
                   value: /\S+@\S+\.\S+/,
                   message: 'Email no válido'
-                },
-                minLength: { value: 2, message: 'Minimo 2 caracteres' }
+                }
               })}
               helperText={
                 <Typography component='span' color='red'>

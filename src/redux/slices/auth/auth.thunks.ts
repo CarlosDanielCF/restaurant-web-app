@@ -27,8 +27,6 @@ export const startLogin =
         (resRole) => resRole.restaurant.id === data.currentRestaurant?.id
       )!.role;
 
-      console.log({ currentRole });
-
       dispatch(
         onLogin({
           ...data.user,
@@ -67,8 +65,6 @@ export const checkAuthToken = (): AppThunk => async (dispatch, getState) => {
     const currentRole = data.user.restaurantRoles.find(
       (resRole) => resRole.restaurant.id === data.currentRestaurant?.id
     )!.role;
-
-    console.log({ currentRole });
 
     dispatch(
       onLogin({

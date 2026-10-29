@@ -56,13 +56,15 @@ export const AddUser = () => {
     if (form.numPhone === '') {
       delete dataUser.numPhone;
     }
+    if (form.email === '') {
+      delete dataUser.email;
+    }
 
     const newUser = {
       ...dataUser,
       typeIdentification: identification.type,
       numberIdentification: identification.num,
-      rol: form.role.name,
-      email: form.email!
+      rol: form.role.name
     };
 
     const created = await mutateAsync(newUser);

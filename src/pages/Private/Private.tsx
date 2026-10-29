@@ -10,16 +10,29 @@ import { SidebarProvider } from './Common/contexts/SidebarContext';
 import { OrderProvider } from './Orders/context/Order.context';
 
 export const Private = () => {
-  const content = useRoutes(PrivateRouter);
   const { user } = useAppSelector(selectAuth);
+  const content = useRoutes(PrivateRouter);
   const navigate = useNavigate();
   const location = useLocation();
   useEffect(() => {
     if (
       user?.role.name === Roles.COOK &&
       ['/', '/orders', '/orders/'].includes(location.pathname)
-    )
+    ) {
       navigate('/kitchen', { replace: true });
+    } else if (
+      user?.role.name === Roles.HOST &&
+      ['/', '/orders', '/orders/'].includes(location.pathname)
+    ) {
+      navigate('/jalador', { replace: true });
+    } else if (
+      (user?.role.name === Roles.OWNER ||
+        user?.role.name === Roles.ADMIN ||
+        user?.role.name === Roles.WAITER) &&
+      ['/', '/orders', '/orders/'].includes(location.pathname)
+    ) {
+      navigate('/attention', { replace: true });
+    }
   }, [user?.role.name, location.pathname, navigate]);
 
   // Operational routes own their reads and reconciliation. Historical menu/order

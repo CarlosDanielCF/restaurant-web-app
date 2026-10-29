@@ -92,6 +92,9 @@ export const EditUser = () => {
     if (form.numPhone === '') {
       delete dataUser.numPhone;
     }
+    if (form.email === '') {
+      delete dataUser.email;
+    }
 
     const userUpdated = {
       ...dataUser,

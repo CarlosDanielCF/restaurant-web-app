@@ -26,6 +26,30 @@ import { useSearch } from '../../../../hooks/useSearch';
 import { UpdateUserRoleDto } from '../dto/update-user-role.dto';
 import { queryKeys } from '@/api/query-keys';
 
+const userMutationErrorMessage = (error: unknown, fallback: string) => {
+  const response = error as {
+    status?: number;
+    data?: { message?: string | string[] };
+  };
+  const rawMessage = Array.isArray(response.data?.message)
+    ? response.data.message.join(' ')
+    : response.data?.message || '';
+
+  if (
+    response.status === 409 ||
+    /(dni|c[eé]dula|identificaci[oó]n|correo|email).*(existe|registrad|duplic)/i.test(
+      rawMessage
+    ) ||
+    /(existe|registrad|duplic).*(dni|c[eé]dula|identificaci[oó]n|correo|email)/i.test(
+      rawMessage
+    )
+  ) {
+    return 'El DNI o correo ingresado ya está registrado.';
+  }
+
+  return fallback;
+};
+
 /**
  * Hook to fetch and manage users list with pagination and search
  * @version 2.0 - Migrated to React Query v5
@@ -119,8 +143,11 @@ export const useCreateUser = () => {
     onSuccess: () => {
       enqueueSnackbar('Usuario creado correctamente', { variant: 'success' });
     },
-    onError: () => {
-      enqueueSnackbar('No se pudo crear el usuario', { variant: 'error' });
+    onError: (error) => {
+      enqueueSnackbar(
+        userMutationErrorMessage(error, 'No se pudo crear el usuario'),
+        { variant: 'error' }
+      );
     }
   });
 };
@@ -141,10 +168,11 @@ export const useUpdateUser = () => {
         variant: 'success'
       });
     },
-    onError: () => {
-      enqueueSnackbar('No se pudo actualizar el usuario', {
-        variant: 'error'
-      });
+    onError: (error) => {
+      enqueueSnackbar(
+        userMutationErrorMessage(error, 'No se pudo actualizar el usuario'),
+        { variant: 'error' }
+      );
     }
   });
 
