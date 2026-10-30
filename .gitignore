@@ -18,6 +18,7 @@ node_modules
 dist
 dist-ssr
 *.local
+.tmp-chrome-management/
 
 # Editor directories and files
 .vscode/*

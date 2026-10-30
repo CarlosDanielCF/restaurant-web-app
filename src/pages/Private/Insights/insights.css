@@ -136,3 +136,847 @@
     gap: 8px;
   }
 }
+
+
+/* ==========================================================================
+   ROLE-BASED PROFESSIONAL DASHBOARDS (MOBILE-FIRST POINT RESTAURANT UI)
+   ========================================================================== */
+
+.pos-overview {
+  padding-top: 14px;
+  padding-bottom: 28px;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Role Switcher (Manager Only) */
+.role-preview-switcher {
+  display: flex;
+  align-items: center;
+}
+
+/* KPI Grids */
+.dashboard-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 12px;
+  width: 100%;
+}
+
+.dash-kpi-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+  padding: 14px 16px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 106px;
+  min-width: 0;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.dash-kpi-card:hover {
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06) !important;
+}
+
+.dash-kpi-card.highlight-turquoise {
+  background: linear-gradient(135deg, #ffffff 60%, #f0fdfa 100%) !important;
+  border-color: #99f6e4 !important;
+}
+
+.dash-kpi-card.highlight-positive {
+  background: linear-gradient(135deg, #ffffff 60%, #ecfdf5 100%) !important;
+  border-color: #a7f3d0 !important;
+}
+
+.dash-kpi-card.highlight-negative {
+  background: linear-gradient(135deg, #ffffff 60%, #fef2f2 100%) !important;
+  border-color: #fecaca !important;
+}
+
+.dash-kpi-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.dash-kpi-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dash-kpi-icon-wrap {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.dash-kpi-icon-wrap.turquoise { background: #ccfbf1; color: #0f766e; }
+.dash-kpi-icon-wrap.blue      { background: #e0f2fe; color: #0369a1; }
+.dash-kpi-icon-wrap.amber     { background: #fef3c7; color: #b45309; }
+.dash-kpi-icon-wrap.purple    { background: #ede9fe; color: #6d28d9; }
+.dash-kpi-icon-wrap.emerald   { background: #d1fae5; color: #047857; }
+.dash-kpi-icon-wrap.green     { background: #dcfce7; color: #15803d; }
+.dash-kpi-icon-wrap.red       { background: #fee2e2; color: #b91c1c; }
+
+.dash-kpi-value {
+  font-size: clamp(1.35rem, 2vw, 1.75rem);
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.2;
+  margin-bottom: 6px;
+  overflow-wrap: anywhere;
+}
+
+.dash-kpi-value .unit {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.dash-kpi-value.text-danger  { color: #ef4444; }
+.dash-kpi-value.text-success { color: #10b981; }
+.dash-kpi-value.text-warning { color: #f59e0b; }
+
+.dash-kpi-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.dash-link {
+  color: #0d9488;
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.dash-link:hover {
+  text-decoration: underline;
+  color: #0f766e;
+}
+
+.dash-info-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  color: #475569;
+  font-size: 0.65rem;
+  font-weight: 700;
+  cursor: help;
+}
+
+/* Badges */
+.badge-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.badge-pill.turquoise { background: #f0fdfa; color: #0f766e; border: 1px solid #ccfbf1; }
+.badge-pill.green     { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+.badge-pill.amber     { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+.badge-pill.yellow    { background: #fefce8; color: #854d0e; border: 1px solid #fef08a; }
+.badge-pill.red       { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+.badge-pill.gray      { background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; }
+
+/* Charts Layout Grid */
+.dashboard-charts-grid {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: 14px;
+  width: 100%;
+}
+
+.dash-chart-card,
+.dash-section-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+  padding: 16px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.dash-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.dash-chart-wrapper {
+  position: relative;
+  width: 100%;
+  height: 230px;
+  min-height: 230px;
+}
+
+.dash-chart-wrapper.donut-box {
+  height: 190px;
+  min-height: 190px;
+}
+
+/* Donut Custom Legend Row */
+.dash-donut-legend-row {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.dash-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+}
+
+.dash-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dash-legend-label {
+  color: #64748b;
+}
+
+.dash-legend-val {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+/* Bottom Grid (Ranking + Stock Alerts) */
+.dashboard-bottom-grid {
+  display: grid;
+  grid-template-columns: 1.25fr 1fr;
+  gap: 14px;
+  width: 100%;
+}
+
+/* Ranking List */
+.dash-ranking-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.dash-ranking-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+  transition: background 0.15s ease;
+}
+
+.dash-ranking-item:hover {
+  background: #f1f5f9;
+}
+
+.dash-rank-badge {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.dash-rank-badge.rank-1 { background: #fef08a; color: #854d0e; }
+.dash-rank-badge.rank-2 { background: #e2e8f0; color: #334155; }
+.dash-rank-badge.rank-3 { background: #ffedd5; color: #9a3412; }
+.dash-rank-badge.rank-4,
+.dash-rank-badge.rank-5 { background: #f1f5f9; color: #64748b; }
+
+.dash-rank-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dash-rank-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.dash-rank-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dash-rank-amount {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #0d9488;
+  white-space: nowrap;
+}
+
+.dash-rank-bar-bg {
+  width: 100%;
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.dash-rank-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #14b8a6, #0d9488);
+  border-radius: 9999px;
+  transition: width 0.3s ease;
+}
+
+.dash-rank-units {
+  font-size: 0.7rem;
+  color: #64748b;
+}
+
+/* Stock List */
+.dash-alerts-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.dash-stock-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dash-empty-stock-ok {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #047857;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.stock-ok-icon {
+  font-weight: 800;
+  color: #059669;
+}
+
+.dash-stock-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+}
+
+.dash-stock-name-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.dash-stock-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Incidents Grid */
+.dash-incidents-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.dash-incident-item {
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+  border-radius: 8px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 58px;
+}
+
+.dash-inc-label {
+  font-size: 0.7rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.dash-inc-val {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.dash-inc-val.alert {
+  color: #ef4444;
+}
+
+/* ==========================================================================
+   WAITER DASHBOARD SPECIFIC
+   ========================================================================== */
+.waiter-money-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.waiter-money-total {
+  background: #f0fdfa;
+  border: 1px solid #ccfbf1;
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.waiter-money-total .label {
+  font-size: 0.85rem;
+  color: #0f766e;
+  font-weight: 600;
+}
+
+.waiter-money-total .amount {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #0d9488;
+}
+
+.waiter-methods-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.waiter-method-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.waiter-method-item .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.waiter-method-item .dot.green  { background: #10b981; }
+.waiter-method-item .dot.purple { background: #8b5cf6; }
+.waiter-method-item .dot.blue   { background: #0284c7; }
+
+.waiter-method-item .method-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.waiter-method-item .name {
+  font-size: 0.7rem;
+  color: #64748b;
+}
+
+.waiter-method-item .val {
+  font-size: 0.9rem;
+  color: #0f172a;
+}
+
+.waiter-settlement-body {
+  margin-top: 4px;
+}
+
+.waiter-shift-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  color: #334155;
+}
+
+.stat-row.alert-row.red {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.stat-row.alert-row.green {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #047857;
+}
+
+.waiter-accounts-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.waiter-account-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.acc-main-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.acc-table-badge {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.acc-total {
+  font-size: 1rem;
+  color: #0d9488;
+  font-weight: 700;
+}
+
+.acc-sub-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+/* ==========================================================================
+   COOK DASHBOARD SPECIFIC
+   ========================================================================== */
+.cook-quick-cta-card {
+  background: linear-gradient(135deg, #0d9488, #0f766e) !important;
+  color: #ffffff !important;
+  border-radius: 12px !important;
+  padding: 16px 20px !important;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 4px 14px rgba(13, 148, 136, 0.25) !important;
+}
+
+.cook-cta-content {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.cook-cta-icon {
+  background: rgba(255, 255, 255, 0.2);
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cook-cta-text h6 {
+  color: #ffffff;
+}
+
+.cook-cta-text p {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.cook-quick-cta-card button {
+  background: #ffffff !important;
+  color: #0f766e !important;
+  font-weight: 700 !important;
+  white-space: nowrap;
+}
+
+.cook-quick-cta-card button:hover {
+  background: #f0fdfa !important;
+}
+
+.cook-times-box {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.cook-time-stat {
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: center;
+}
+
+.cook-time-stat .time-label {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.cook-time-stat .time-val {
+  font-size: 1.85rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.cook-time-stat .time-val.green { color: #10b981; }
+.cook-time-stat .time-val.amber { color: #f59e0b; }
+.cook-time-stat .time-val.red   { color: #ef4444; }
+
+.cook-time-stat .time-caption {
+  font-size: 0.7rem;
+  color: #94a3b8;
+}
+
+.cook-portions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cook-portion-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cook-portion-group .group-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.cook-portion-group .group-title.red   { color: #b91c1c; }
+.cook-portion-group .group-title.amber { color: #b45309; }
+
+.chips-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* ==========================================================================
+   JALADOR DASHBOARD SPECIFIC
+   ========================================================================== */
+.jalador-tables-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 8px;
+}
+
+.jalador-table-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 12px 8px;
+  border-radius: 10px;
+  background: #f0fdfa;
+  border: 1.5px solid #99f6e4;
+  text-decoration: none;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.jalador-table-badge:hover {
+  transform: translateY(-2px);
+  background: #ccfbf1;
+}
+
+.jalador-table-badge .table-icon {
+  font-size: 1.2rem;
+}
+
+.jalador-table-badge .table-num {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #0f766e;
+}
+
+.jalador-table-badge .table-state.green {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #047857;
+  letter-spacing: 0.05em;
+}
+
+/* ==========================================================================
+   RESPONSIVE ADAPTATIONS (MOBILE FIRST 390x844, 844x390, 900x1100, 1440x900)
+   ========================================================================== */
+
+/* Tablet (max-width: 1100px) */
+@media (max-width: 1100px) {
+  .dashboard-charts-grid,
+  .dashboard-bottom-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Mobile & Small Screen (max-width: 699px) */
+@media (max-width: 699px) {
+  .dashboard-kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .dash-kpi-card {
+    padding: 10px 12px !important;
+    min-height: 94px;
+  }
+
+  .dash-kpi-value {
+    font-size: 1.3rem;
+  }
+
+  .dash-kpi-title {
+    font-size: 0.7rem;
+  }
+
+  .dash-chart-wrapper {
+    height: 190px;
+    min-height: 190px;
+  }
+
+  .dash-chart-wrapper.donut-box {
+    height: 170px;
+    min-height: 170px;
+  }
+
+  .dash-incidents-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .waiter-methods-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cook-quick-cta-card {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 14px !important;
+  }
+
+  .cook-times-box {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Priority Mobile Portrait (e.g. iPhone 390x844) */
+@media (max-width: 420px) {
+  .dashboard-kpi-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  /* Key highlight cards span full width on small mobile for maximum impact */
+  .dash-kpi-card.highlight-turquoise,
+  .dash-kpi-card.highlight-positive,
+  .dash-kpi-card.highlight-negative {
+    grid-column: span 2;
+  }
+
+  .dash-kpi-card {
+    padding: 8px 10px !important;
+  }
+
+  .dash-kpi-value {
+    font-size: 1.25rem;
+  }
+
+  .role-preview-switcher {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .role-preview-switcher .MuiToggleButtonGroup-root {
+    width: 100%;
+    justify-content: space-between;
+  }
+}

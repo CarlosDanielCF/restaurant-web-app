@@ -112,8 +112,22 @@ export const PrivateRouter: RouteObject[] = [
       },
       {
         path: 'operational-overview',
-        element: <Auth allowedRoles={[Roles.OWNER, Roles.ADMIN]} />,
+        element: (
+          <Auth
+            allowedRoles={[
+              Roles.OWNER,
+              Roles.ADMIN,
+              Roles.WAITER,
+              Roles.COOK,
+              Roles.HOST
+            ]}
+          />
+        ),
         children: [{ index: true, element: <OverviewPage /> }]
+      },
+      {
+        path: 'dashboard',
+        element: <Navigate to='/operational-overview' replace />
       },
 
       {

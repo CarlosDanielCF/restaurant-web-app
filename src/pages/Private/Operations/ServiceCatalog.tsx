@@ -14,6 +14,7 @@ import {
 import { useRestaurantStore } from '../Common/store/restaurantStore';
 import { useRestaurantImage } from '@/hooks/useRestaurantImage';
 import { Product } from './types';
+import { serviceCatalogPrice } from './serviceCatalogPrice';
 function ProductTile({
   product,
   onSelect,
@@ -66,7 +67,7 @@ function ProductTile({
         <Typography fontWeight={700}>
           {product.configuration?.courtesy
             ? 'Cortesía'
-            : `${product.options.filter((o) => o.isActive).length > 1 ? 'Desde ' : ''}S/ ${product.price}`}
+            : serviceCatalogPrice(product.price, product.options)}
         </Typography>
         <Chip
           size='small'

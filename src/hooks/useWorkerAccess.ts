@@ -29,7 +29,6 @@ export function routePermission(path: string): string | undefined {
       kitchen: 'kitchen',
       'internal-documents': 'documents',
       'operational-reports': 'reports',
-      'operational-overview': 'reports',
       restaurant: 'configuration',
       supplies: 'configuration',
       users: 'workers',
