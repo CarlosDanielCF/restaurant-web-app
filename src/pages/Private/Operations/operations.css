@@ -926,30 +926,80 @@
 }
 
 @media (max-width: 699px) {
-  .operations-metrics > div {
-    display: block;
-    padding: 10px 12px;
+  .operations-workspace {
+    padding-inline: 8px !important;
   }
-  .operations-metrics .MuiTypography-body1 {
-    font-size: 11px;
-    line-height: 1.3;
+  .operations-heading {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  .operations-metrics {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 4px !important;
+  }
+  .operations-metrics > div {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 4px 6px !important;
+    min-height: 44px;
+    gap: 1px;
+  }
+  .operations-metrics .MuiTypography-body1,
+  .operations-metrics .MuiTypography-root {
+    font-size: 0.62rem !important;
+    line-height: 1.1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
   }
   .operations-metrics .MuiTypography-h4 {
-    margin-top: 4px;
-    font-size: 1.35rem;
+    margin-top: 1px;
+    font-size: 1.05rem !important;
+    line-height: 1;
+  }
+  .attention-operational-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+  .attention-operational-bar > .MuiStack-root {
+    justify-content: space-between;
+    width: 100%;
+  }
+  .quick-table-grid {
+    grid-template-columns: repeat(auto-fill, minmax(95px, 1fr)) !important;
+    gap: 6px !important;
+  }
+  .quick-table {
+    min-height: 72px !important;
+    padding: 4px !important;
+  }
+  .quick-table strong {
+    font-size: 0.95rem !important;
+  }
+  .quick-table span {
+    font-size: 0.62rem !important;
+  }
+  .quick-table small {
+    font-size: 0.58rem !important;
   }
   .open-attention-layout {
     grid-template-columns: minmax(0, 1fr);
-    gap: 16px;
+    gap: 14px;
   }
   .open-attention-form {
     border-left: 0;
     border-top: 1.5px solid #e2e8f0;
     padding-left: 0;
-    padding-top: 14px;
+    padding-top: 12px;
   }
   .open-attention-card > .MuiCardContent-root {
-    padding: 14px;
+    padding: 8px;
   }
   .order-workbench {
     grid-template-columns: minmax(0, 1fr);

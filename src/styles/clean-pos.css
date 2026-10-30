@@ -1126,3 +1126,27 @@
     }
   }
 }
+
+/* ==========================================================================
+   Global Mobile Responsive & Overflow Safeguards
+   ========================================================================== */
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+[data-testid='app-content'] {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.MuiDialog-paper {
+  max-width: calc(100vw - 24px) !important;
+  margin: 12px !important;
+}
+
+.MuiTableContainer-root {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}

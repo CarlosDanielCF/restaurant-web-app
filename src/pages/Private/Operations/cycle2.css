@@ -297,12 +297,15 @@
   height: calc(100dvh - 104px);
   overflow: hidden;
   background: #f6f9fa;
+  min-width: 0;
 }
 .kitchen-operation .kitchen-screen {
   height: 100%;
   min-height: 0;
   overflow: hidden;
   gap: 8px;
+  display: flex;
+  flex-direction: column;
 }
 .kitchen-operation .kitchen-fullscreen {
   flex: 0 0 auto;
@@ -319,9 +322,14 @@
 .kitchen-operation .pos-kitchen-notices {
   flex: 0 0 auto;
   max-height: 82px;
-  overflow: hidden;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(230px, 1fr);
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.kitchen-operation .pos-kitchen-notices:empty {
+  display: none !important;
 }
 .kitchen-operation .pos-kitchen-notices .ticket-line {
   display: grid;
@@ -373,118 +381,162 @@
   min-height: 0;
   margin: 0 !important;
 }
+.kitchen-operation .kitchen-empty {
+  grid-column: 1 / -1 !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center;
+  border: 1.5px dashed #cbd5e1 !important;
+  background: #ffffff !important;
+  border-radius: 14px !important;
+}
+.kitchen-operation .kitchen-empty .MuiCardContent-root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.kitchen-operation .kitchen-empty svg {
+  font-size: 48px;
+  color: #0d9488;
+}
 .kitchen-operation .kitchen-ticket {
   height: 100%;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border-radius: 12px;
 }
 .kitchen-operation .kitchen-ticket .MuiCardContent-root {
   height: 100%;
   overflow: hidden;
   padding: 12px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  box-sizing: border-box;
 }
 .kitchen-operation .kitchen-ticket .MuiCardContent-root > .MuiStack-root {
-  gap: 5px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  gap: 4px;
+}
+.kitchen-operation .kitchen-ticket .point-ticket-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
 }
 .kitchen-operation .kitchen-ticket .ticket-clock {
   padding: 2px 0;
-  font-size: clamp(1.15rem, 2vw, 1.55rem) !important;
+  font-size: clamp(1.05rem, 1.8vw, 1.45rem) !important;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+.kitchen-operation .kitchen-ticket-items {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-right: 2px;
+  margin-top: 2px;
 }
 .kitchen-operation .kitchen-ticket .ticket-line {
-  padding: 6px 0;
+  padding: 6px 8px;
   margin-top: 0 !important;
   gap: 1px;
+  border-radius: 8px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  flex-shrink: 0 !important;
 }
 .kitchen-operation .kitchen-ticket .ticket-line > .MuiTypography-root:first-child {
-  font-size: clamp(1rem, 1.5vw, 1.25rem);
+  font-size: 0.95rem;
   line-height: 1.2;
-}
-.kitchen-operation .kitchen-ticket .ticket-line .MuiTypography-root {
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
 }
 .kitchen-operation .kitchen-ticket .ticket-notes {
   padding: 3px 7px;
 }
 .kitchen-operation .kitchen-ticket .ticket-item-line {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 36px;
-  grid-template-rows: auto auto auto;
-  column-gap: 8px;
-  align-items: center;
-  min-height: 0;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 36px !important;
+  grid-template-rows: auto auto auto !important;
+  column-gap: 8px !important;
+  align-items: center !important;
+  min-height: 0 !important;
 }
 .kitchen-operation .kitchen-ticket .ticket-item-line > .MuiTypography-root {
-  grid-column: 1;
-  min-width: 0;
+  grid-column: 1 !important;
+  min-width: 0 !important;
 }
 .kitchen-operation .kitchen-ticket .ticket-item-secondary {
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  white-space: normal !important;
+  word-break: break-word !important;
   display: block !important;
-  font-size: 0.78rem;
-  line-height: 1.15;
+  font-size: 0.76rem !important;
+  line-height: 1.2 !important;
+  color: #64748b;
+  margin-top: 1px;
+}
+.kitchen-operation .kitchen-ticket .ticket-item-line .MuiTypography-caption {
+  font-size: 0.72rem;
+  color: #475569;
 }
 .kitchen-operation .kitchen-ticket .kitchen-exit-button-wrap {
-  grid-column: 2;
-  grid-row: 1 / span 3;
-  display: inline-flex;
-  width: 34px;
-  height: 34px;
+  grid-column: 2 !important;
+  grid-row: 1 / span 3 !important;
+  display: inline-flex !important;
+  width: 34px !important;
+  height: 34px !important;
+  align-self: center !important;
 }
 .kitchen-operation .kitchen-ticket .kitchen-exit-button {
-  min-width: 34px;
-  width: 34px;
-  min-height: 34px;
-  height: 34px;
-  padding: 0;
-  border-radius: 7px;
-  font-size: 1.1rem;
-  font-weight: 900;
-}
-.kitchen-operation .kitchen-ticket--dense .MuiCardContent-root > .MuiStack-root,
-.kitchen-operation .kitchen-ticket--ultra-dense .MuiCardContent-root > .MuiStack-root {
-  height: 100%;
-  gap: 2px;
+  min-width: 34px !important;
+  width: 34px !important;
+  min-height: 34px !important;
+  height: 34px !important;
+  padding: 0 !important;
+  border-radius: 8px !important;
+  font-size: 1.1rem !important;
+  font-weight: 900 !important;
 }
 .kitchen-operation .kitchen-ticket--dense .ticket-item-line,
 .kitchen-operation .kitchen-ticket--ultra-dense .ticket-item-line {
-  flex: 1 1 0;
-  padding-block: 3px;
-}
-.kitchen-operation .kitchen-ticket--ultra-dense .ticket-item-secondary {
-  -webkit-line-clamp: 1;
-}
-.kitchen-operation .kitchen-ticket--dense .ticket-item-line > .MuiTypography-root:first-child {
-  font-size: 0.96rem;
+  padding: 4px 6px !important;
 }
 .kitchen-operation .kitchen-ticket--ultra-dense .ticket-item-line {
-  grid-template-columns: minmax(0, 1fr) 30px;
-  column-gap: 5px;
-  padding-block: 1px;
+  grid-template-columns: minmax(0, 1fr) 30px !important;
+  column-gap: 5px !important;
 }
 .kitchen-operation .kitchen-ticket--ultra-dense .ticket-item-line > .MuiTypography-root:first-child {
-  font-size: clamp(0.76rem, 1.05vw, 0.9rem);
-  line-height: 1.05;
+  font-size: 0.88rem !important;
 }
 .kitchen-operation .kitchen-ticket--ultra-dense .ticket-item-secondary,
 .kitchen-operation .kitchen-ticket--ultra-dense .ticket-item-line .MuiTypography-caption {
-  font-size: 0.66rem;
-  line-height: 1.05;
+  font-size: 0.68rem !important;
 }
 .kitchen-operation .kitchen-ticket--ultra-dense .kitchen-exit-button-wrap,
 .kitchen-operation .kitchen-ticket--ultra-dense .kitchen-exit-button {
-  width: 28px;
-  min-width: 28px;
-  height: 28px;
-  min-height: 28px;
+  width: 30px !important;
+  min-width: 30px !important;
+  height: 30px !important;
+  min-height: 30px !important;
 }
 .kitchen-operation .kitchen-navigation {
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  min-height: 42px;
+  min-height: 40px;
   white-space: nowrap;
 }
 .kitchen-operation .kitchen-navigation .MuiTypography-root {
@@ -495,7 +547,7 @@
   width: 100vw;
   height: 100dvh;
   max-width: none;
-  padding: 12px;
+  padding: 8px;
   overflow: hidden;
   background: #f6f9fa;
 }
@@ -512,29 +564,154 @@
 
 @media (max-width: 699px) {
   .kitchen-operation {
-    height: calc(100dvh - 92px);
+    height: 100dvh;
+    padding: 6px 8px !important;
   }
   .kitchen-operation .kitchen-screen {
-    gap: 6px;
-    padding-block: 8px;
+    gap: 4px;
+    padding-block: 4px;
   }
   .kitchen-operation .pos-kds-tickets {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 8px !important;
+  }
+  .kitchen-operation .kitchen-screen > .MuiStack-root:first-of-type {
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+  }
+  .kitchen-operation .MuiTypography-h4 {
+    font-size: 1.15rem !important;
+    font-weight: 800;
+  }
+  .kitchen-operation .kitchen-fullscreen {
+    min-width: 96px;
+    min-height: 30px;
+    height: 30px;
+    font-size: 0.72rem;
+    padding-inline: 8px;
+  }
+  .kitchen-operation .kitchen-screen > .MuiStack-root:nth-of-type(2) {
+    gap: 4px;
+  }
+  .kitchen-operation .kitchen-screen > .MuiStack-root:nth-of-type(2) .MuiButton-root {
+    min-height: 30px;
+    height: 30px;
+    font-size: 0.72rem;
+    padding: 2px 8px;
+  }
+  .kitchen-operation .kitchen-counts {
+    padding: 2px 6px;
+    font-size: 0.85rem;
   }
   .kitchen-operation .pos-kitchen-notices {
-    max-height: 66px;
+    max-height: 60px;
   }
   .kitchen-operation .kitchen-navigation {
-    gap: 2px;
+    min-height: 32px;
+    gap: 3px;
   }
   .kitchen-operation .kitchen-navigation .MuiButton-root {
     min-width: 0;
-    min-height: 38px;
-    padding-inline: 7px;
-    font-size: 0.76rem;
+    min-height: 32px;
+    height: 32px;
+    padding-inline: 8px;
+    font-size: 0.75rem;
   }
   .kitchen-operation .kitchen-navigation .MuiTypography-root {
     font-size: 0.78rem;
+  }
+}
+
+/* Horizontal / Landscape mobile (e.g. 844x390) */
+@media (max-height: 520px) {
+  .kitchen-operation {
+    height: 100dvh;
+    padding: 4px 6px !important;
+  }
+  .kitchen-operation .kitchen-screen {
+    gap: 3px;
+    padding-block: 2px;
+  }
+  .kitchen-operation .kitchen-screen > .MuiStack-root:first-of-type {
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+  }
+  .kitchen-operation .MuiTypography-h4 {
+    font-size: 0.95rem !important;
+    font-weight: 800;
+    line-height: 1;
+  }
+  .kitchen-operation .MuiChip-root {
+    height: 20px;
+    font-size: 0.65rem;
+  }
+  .kitchen-operation .kitchen-fullscreen {
+    min-width: 80px;
+    min-height: 24px;
+    height: 24px;
+    font-size: 0.68rem;
+    padding-inline: 6px;
+  }
+  .kitchen-operation .kitchen-screen > .MuiStack-root:nth-of-type(2) {
+    gap: 4px;
+  }
+  .kitchen-operation .kitchen-screen > .MuiStack-root:nth-of-type(2) .MuiButton-root {
+    min-height: 24px;
+    height: 24px;
+    font-size: 0.68rem;
+    padding: 1px 6px;
+  }
+  .kitchen-operation .kitchen-counts {
+    display: inline-block;
+    padding: 1px 6px;
+    font-size: 0.75rem;
+    line-height: 1.2;
+    margin: 0 !important;
+  }
+  .kitchen-operation .pos-kds-tickets {
+    gap: 6px !important;
+  }
+  .kitchen-operation .kitchen-ticket .MuiCardContent-root {
+    padding: 6px 8px !important;
+  }
+  .kitchen-operation .kitchen-ticket .ticket-location {
+    font-size: 0.95rem !important;
+  }
+  .kitchen-operation .kitchen-ticket .ticket-clock {
+    font-size: 0.85rem !important;
+    padding: 0;
+  }
+  .kitchen-operation .kitchen-ticket .ticket-item-line {
+    padding: 2px 4px !important;
+  }
+  .kitchen-operation .kitchen-ticket .ticket-item-line > .MuiTypography-root:first-child {
+    font-size: 0.82rem;
+  }
+  .kitchen-operation .kitchen-ticket .ticket-item-secondary {
+    font-size: 0.68rem !important;
+  }
+  .kitchen-operation .kitchen-ticket .kitchen-exit-button-wrap,
+  .kitchen-operation .kitchen-ticket .kitchen-exit-button {
+    width: 28px !important;
+    min-width: 28px !important;
+    height: 28px !important;
+    min-height: 28px !important;
+    font-size: 0.9rem !important;
+  }
+  .kitchen-operation .kitchen-navigation {
+    min-height: 26px;
+    gap: 3px;
+  }
+  .kitchen-operation .kitchen-navigation .MuiButton-root {
+    min-height: 24px;
+    height: 24px;
+    font-size: 0.68rem;
+    padding: 1px 6px;
+  }
+  .kitchen-operation .kitchen-navigation .MuiTypography-root {
+    font-size: 0.72rem;
   }
 }
 

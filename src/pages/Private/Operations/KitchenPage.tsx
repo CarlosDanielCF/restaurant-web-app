@@ -176,7 +176,8 @@ export function KitchenPage() {
       document.removeEventListener('fullscreenchange', onFullscreen);
     };
   }, []);
-  const columns = wide ? 3 : tablet ? 2 : 1,
+  const shortLandscape = useMediaQuery('(max-height: 520px)'),
+    columns = (wide && !shortLandscape) ? 3 : (tablet || shortLandscape) ? 2 : 1,
     cards = useMemo(
       () => buildKitchenCards(board?.dispatches || []),
       [board?.dispatches]
@@ -464,6 +465,7 @@ export function KitchenPage() {
                     {board?.notices
                       .filter((n) => n.dispatchId === d.id)
                       .map(renderNotice)}
+                    <div className='kitchen-ticket-items'>
                     {items.map((i) => (
                         <Stack
                           key={i.id}
@@ -514,24 +516,27 @@ export function KitchenPage() {
                           </Tooltip>
                         </Stack>
                       ))}
+                    </div>
                   </Stack>
                 </CardContent>
               </Card>
             );
           })}
         </Stack>
-        <Stack className='kitchen-navigation' direction='row' spacing={1}>
-          <Button disabled={page === 0} onClick={() => setPage((p) => p - 1)}>
-            Anterior
-          </Button>
-          <Typography>Página {page + 1} / {pages}</Typography>
-          <Button disabled={page + 1 >= pages} onClick={() => setPage((p) => p + 1)}>
-            Siguiente
-          </Button>
-          <Button disabled={page === 0} onClick={() => setPage(0)}>
-            Más antigua
-          </Button>
-        </Stack>
+        {total > 0 && (
+          <Stack className='kitchen-navigation' direction='row' spacing={1}>
+            <Button disabled={page === 0} onClick={() => setPage((p) => p - 1)}>
+              Anterior
+            </Button>
+            <Typography>Página {page + 1} / {pages}</Typography>
+            <Button disabled={page + 1 >= pages} onClick={() => setPage((p) => p + 1)}>
+              Siguiente
+            </Button>
+            <Button disabled={page === 0} onClick={() => setPage(0)}>
+              Más antigua
+            </Button>
+          </Stack>
+        )}
       </Stack>
     </Container>
   );
