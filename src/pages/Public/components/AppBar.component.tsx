@@ -1,7 +1,4 @@
-import { useState, MouseEvent } from 'react';
-
 import { NavLink as RouterLink, useNavigate } from 'react-router-dom';
-
 import {
   Container,
   AppBar as MuiAppBar,
@@ -9,239 +6,146 @@ import {
   Typography,
   Button,
   Box,
-  Menu,
-  MenuItem,
-  IconButton,
-  Stack,
-  ListItemText,
-  ListItem
-} from '@mui/material/';
-
-import MenuIcon from '@mui/icons-material/Menu';
+  Stack
+} from '@mui/material';
+import LoginIcon from '@mui/icons-material/Login';
 import { useRestaurantStore } from '../../Private/Common/store/restaurantStore';
-import { SOFTWARE_NAME } from '@/components/branding/SoftwareBrand';
+import { SOFTWARE_NAME, SOFTWARE_LOGO } from '@/components/branding/SoftwareBrand';
 
 const pages = [
   {
     name: 'Inicio',
     path: '/'
-  },
-  // { name: 'Productos', path: '/shop' },
-  // {
-  //   name: 'Acerca de',
-  //   path: '/about'
-  // },
-  {
-    name: 'Contacto',
-    path: '/contact'
   }
 ];
 
 export const AppBar = () => {
   const navigate = useNavigate();
-
   const { restaurant } = useRestaurantStore();
 
-  const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null);
-  const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
-
-  const handleOpenNavMenu = (event: MouseEvent<HTMLElement>) => {
-    setAnchorElNav(event.currentTarget);
-  };
-  const handleOpenUserMenu = (event: MouseEvent<HTMLElement>) => {
-    setAnchorElUser(event.currentTarget);
-  };
-
-  const handleCloseNavMenu = () => {
-    setAnchorElNav(null);
-  };
-
-  const handleCloseUserMenu = () => {
-    setAnchorElUser(null);
-  };
+  const logoSrc = restaurant?.logo || SOFTWARE_LOGO;
+  const brandName = restaurant?.name || SOFTWARE_NAME;
 
   return (
-    <>
-      <MuiAppBar
-        position='static'
-        sx={{ py: 2, backgroundColor: 'transparent' }}
-      >
-        <Container maxWidth='xl'>
-          <Toolbar disableGutters>
-            {/* Mobile */}
-            <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
-              <img
-                src={restaurant?.logo}
-                alt='logo'
-                width='60px'
-                style={{ borderRadius: 8 }}
-              />
-            </Box>
-            {/* <AdbIcon sx={{ display: { xs: "flex", md: "none" }, mr: 1 }} /> */}
+    <MuiAppBar
+      position='sticky'
+      elevation={0}
+      sx={{
+        py: 0.5,
+        backgroundColor: '#ffffff',
+        borderBottom: '1px solid #e2e8f0',
+        color: '#0f172a'
+      }}
+    >
+      <Container maxWidth='xl'>
+        <Toolbar disableGutters sx={{ minHeight: { xs: 56, md: 64 }, justifyContent: 'space-between' }}>
+          {/* Brand - Logo + Name */}
+          <Box
+            component={RouterLink}
+            to='/'
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1.5,
+              textDecoration: 'none',
+              color: 'inherit'
+            }}
+          >
+            <img
+              src={logoSrc}
+              alt={brandName}
+              width={38}
+              height={38}
+              style={{
+                borderRadius: 8,
+                objectFit: 'contain',
+                display: 'block'
+              }}
+            />
             <Typography
-              variant='h5'
+              variant='h6'
               noWrap
-              component='a'
-              href='#app-bar-with-responsive-menu'
               sx={{
-                mr: 2,
-                display: { xs: 'flex', md: 'none' },
-                flexGrow: 1,
-                textDecoration: 'none',
-                color: 'text.primary'
+                fontWeight: 700,
+                fontSize: { xs: '1.05rem', md: '1.2rem' },
+                color: '#0f172a',
+                letterSpacing: '-0.02em'
               }}
             >
-              {restaurant?.name}
+              {brandName}
             </Typography>
+          </Box>
 
-            <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
-              <Button
-                onClick={() => navigate('/auth/login')}
-                size='small'
-                sx={{ ml: 1 }}
-              >
-                Iniciar sesión
-              </Button>
-
-              <IconButton
-                size='large'
-                aria-label='account of current user'
-                aria-controls='menu-appbar'
-                aria-haspopup='true'
-                onClick={handleOpenNavMenu}
-              >
-                <MenuIcon />
-              </IconButton>
-              <Menu
-                id='menu-appbar'
-                anchorEl={anchorElNav}
-                anchorOrigin={{
-                  vertical: 'bottom',
-                  horizontal: 'left'
-                }}
-                keepMounted
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'left'
-                }}
-                open={Boolean(anchorElNav)}
-                onClose={handleCloseNavMenu}
-                sx={{
-                  display: { xs: 'block', md: 'none' }
-                }}
-              >
-                {pages.map((page) => (
-                  <MenuItem key={page.path} onClick={handleCloseNavMenu}>
-                    <Typography textAlign='center'>{page.name}</Typography>
-                  </MenuItem>
-                ))}
-              </Menu>
-            </Box>
-
-            {/* Desktop */}
-
-            <Box
-              display='flex'
-              alignItems='center'
-              justifyContent={{ xs: 'space-between', md: 'flex-start' }}
-              sx={{ display: { xs: 'none', md: 'flex' }, flexGrow: 1 }}
-            >
-              <Stack
-                sx={{
-                  display: { xs: 'none', md: 'flex' },
-                  alignItems: 'center'
-                }}
-                direction='row'
-                spacing={2}
-                flexGrow={1}
-              >
-                <Box>
-                  <img
-                    src={restaurant?.logo}
-                    alt='logo'
-                    width='60px'
-                    style={{ borderRadius: 8 }}
-                  />
-                </Box>
-                <Typography
-                  variant='h6'
-                  noWrap
-                  component='a'
+          {/* Desktop Navigation */}
+          <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 2 }}>
+            <Stack direction='row' spacing={1}>
+              {pages.map((page) => (
+                <Button
+                  key={page.path}
+                  component={RouterLink}
+                  to={page.path}
                   sx={{
-                    mr: 2,
-                    fontWeight: 'bold',
-                    color: 'text.primary',
-                    textDecoration: 'none'
+                    color: '#0f766e',
+                    fontWeight: 600,
+                    fontSize: '0.9rem',
+                    textTransform: 'none',
+                    borderRadius: '8px',
+                    px: 2
                   }}
                 >
-                  {SOFTWARE_NAME}
-                </Typography>
-              </Stack>
-              <Stack
-                direction='row'
-                spacing={2}
-                alignItems='center'
-                // sx={{ flexGrow: 1 }}
-                flexGrow={1}
-                justifyContent='center'
-              >
-                {pages.map((page) => (
-                  <ListItem
-                    key={page.path}
-                    component={RouterLink}
-                    onClick={handleCloseNavMenu}
-                    to={page.path}
-                    sx={{
-                      minHeight: 48,
-                      // justifyContent: open ? "initial" : "center",
-                      px: 2.5,
-                      '&.active': {
-                        color: 'primary.main',
-                        // bgcolor: "action.selected",
-                        fontWeight: 'fontWeightBold'
-                      },
-                      textAlign: 'center',
-                      color: 'secondary.main'
-                    }}
-                    end
-                  >
-                    <ListItemText
-                      primary={page.name}
-                      primaryTypographyProps={{
-                        fontSize: 14,
-                        fontWeight: 'bold'
-                      }}
-                      // sx={{ opacity: open ? 1 : 0 }}
-                    />
-                  </ListItem>
-                ))}
-              </Stack>
-              <Stack
-                direction='row'
-                spacing={1}
-                alignItems='center'
-                flexGrow={1}
-                justifyContent='right'
-              >
-                <Button
-                  onClick={() => navigate('/auth/login')}
-                  variant='outlined'
-                  size='small'
-                >
-                  Iniciar sesión
+                  {page.name}
                 </Button>
-                <Button
-                  onClick={() => navigate('/auth/register')}
-                  variant='contained'
-                  size='small'
-                >
-                  Registrarse
-                </Button>
-              </Stack>
-            </Box>
-          </Toolbar>
-        </Container>
-      </MuiAppBar>
-    </>
+              ))}
+            </Stack>
+
+            <Button
+              onClick={() => navigate('/auth/login')}
+              variant='contained'
+              startIcon={<LoginIcon />}
+              sx={{
+                bgcolor: '#0d9488',
+                color: '#ffffff',
+                fontWeight: 600,
+                textTransform: 'none',
+                px: 2.5,
+                py: 0.9,
+                borderRadius: '8px',
+                boxShadow: '0 2px 8px rgba(13, 148, 136, 0.25)',
+                '&:hover': {
+                  bgcolor: '#0f766e',
+                  boxShadow: '0 4px 12px rgba(13, 148, 136, 0.35)'
+                }
+              }}
+            >
+              Iniciar sesión
+            </Button>
+          </Box>
+
+          {/* Mobile Navigation CTA */}
+          <Box sx={{ display: { xs: 'flex', md: 'none' }, alignItems: 'center', gap: 1 }}>
+            <Button
+              onClick={() => navigate('/auth/login')}
+              variant='contained'
+              size='small'
+              startIcon={<LoginIcon sx={{ fontSize: '1rem !important' }} />}
+              sx={{
+                bgcolor: '#0d9488',
+                color: '#ffffff',
+                fontWeight: 600,
+                textTransform: 'none',
+                fontSize: '0.825rem',
+                px: 1.8,
+                py: 0.7,
+                borderRadius: '7px',
+                boxShadow: '0 2px 6px rgba(13, 148, 136, 0.2)',
+                '&:hover': { bgcolor: '#0f766e' }
+              }}
+            >
+              Iniciar sesión
+            </Button>
+          </Box>
+        </Toolbar>
+      </Container>
+    </MuiAppBar>
   );
 };
