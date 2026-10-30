@@ -1,4 +1,6 @@
 import { lazy } from 'react';
+import EditMenu from '../EditMenu.page';
+import { Sections } from '../views/Sections/Sections.view';
 
 import { Navigate, RouteObject } from 'react-router-dom';
 
@@ -17,18 +19,11 @@ const Products = lazy(() =>
 const CreateProduct = lazy(() =>
   import('../views/Products/').then((m) => ({ default: m.CreateProduct }))
 );
-const Sections = lazy(() =>
-  import('../views/Sections/Sections.view').then((m) => ({
-    default: m.Sections
-  }))
-);
 const Categories = lazy(() =>
   import('../views/Categories/Categories.view').then((m) => ({
     default: m.Categories
   }))
 );
-
-const EditMenu = lazy(() => import('../EditMenu.page'));
 
 export const MenuEditRouter: RouteObject = {
   path: 'menu',

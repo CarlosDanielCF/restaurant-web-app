@@ -156,7 +156,7 @@ export const EditUser = () => {
 
   return (
     <>
-      <TitlePage title='Editar usuario' />
+      <TitlePage title='Editar usuario' back backTo='/users' />
 
       <Grid container spacing={3} mb={4}>
         <Grid item xs={12} md={4}>

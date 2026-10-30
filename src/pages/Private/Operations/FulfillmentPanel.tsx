@@ -40,8 +40,6 @@ export function FulfillmentPanel({
   const [dispatches, setDispatches] = useState<Dispatch[]>([]),
     [screens, setScreens] = useState<number | null>(null),
     [error, setError] = useState(false);
-  const [exitAmounts, setExitAmounts] = useState<Record<string, number>>({});
-  const [exiting, setExiting] = useState(false);
   const confirmationLock = useRef(false);
   const [confirming, setConfirming] = useState(false);
   const [confirmationResult, setConfirmationResult] = useState<{
@@ -54,9 +52,7 @@ export function FulfillmentPanel({
     (l) => l.status === 'ACTIVE' && !Number(l.confirmedQuantity)
   );
   const production = requiresProduction(drafts);
-  const [itemId, setItemId] = useState(''),
-    [quantity, setQuantity] = useState(1),
-    [eventId, setEventId] = useState(''),
+  const [quantity, setQuantity] = useState(1),
     [reason, setReason] = useState('');
   const [lineId, setLineId] = useState(''),
     [notes, setNotes] = useState(''),
@@ -87,12 +83,6 @@ export function FulfillmentPanel({
     ['kitchen.changed', 'kitchen.presence', 'attention.changed'],
     String(account.version)
   );
-  const items = dispatches.flatMap((d) =>
-    d.items.map((i) => ({ ...i, command: commandLabel(d) }))
-  );
-  const events = dispatches
-    .flatMap((d) => d.events)
-    .filter((e) => e.dispatchItemId === itemId && Number(e.quantityDelta) > 0);
   const line = account.lines.find((l) => l.id === lineId);
   async function action(
     path: string,
@@ -312,14 +302,14 @@ export function FulfillmentPanel({
     <Card className='fulfillment-card'>
       <CardContent>
         <Stack spacing={2}>
-          <Typography variant='h6'>Comandas y salida por mozo</Typography>
+          <Typography variant='h6'>Estado de pedidos</Typography>
           {confirmationContainer ? (
             <>{createPortal(confirmation, confirmationContainer)}</>
           ) : (
             confirmation
           )}
           <details className='service-details' open>
-            <summary>Comandas ({dispatches.length})</summary>
+            <summary>Estado de pedidos</summary>
             {dispatches.map((d) => (
               <Stack key={d.id} spacing={1} className='dispatch-summary'>
                 <Typography fontWeight='bold'>
@@ -346,66 +336,19 @@ export function FulfillmentPanel({
                     <Typography
                       color={i.pending === 0 ? 'primary' : 'text.primary'}
                     >
-                      {i.status === 'CANCELLED'
-                        ? 'Cancelado'
-                        : `Enviado: ${Number(i.quantity) - Number(i.itemSnapshot.reclassifiedCourtesyQuantity || 0)} · Entregado: ${Number(i.delivered)} · Pendiente: ${i.pending}${Number(i.cancelledQuantity) > Number(i.itemSnapshot.reclassifiedCourtesyQuantity || 0) ? ` · Cancelado: ${Number(i.cancelledQuantity) - Number(i.itemSnapshot.reclassifiedCourtesyQuantity || 0)}` : ''}`}
-                      {i.status === 'ACTIVE' &&
-                        i.pending === 0 &&
-                        (Number(i.cancelledQuantity) >
-                        Number(i.itemSnapshot.reclassifiedCourtesyQuantity || 0)
-                          ? ' · Salidas completadas'
-                          : ' · ENTREGADO ✓')}
+                      Pedido{' '}
+                      {Math.max(
+                        0,
+                        Number(i.quantity) - Number(i.cancelledQuantity)
+                      )}{' '}
+                      | Entregado {Number(i.delivered)} | Faltan{' '}
+                      {Math.max(
+                        0,
+                        Number(i.quantity) -
+                          Number(i.cancelledQuantity) -
+                          Number(i.delivered)
+                      )}
                     </Typography>
-                    {i.status === 'ACTIVE' && i.pending > 0 && (
-                      <Stack direction='row' gap={1}>
-                        {i.pending > 1 && (
-                          <TextField
-                            size='small'
-                            type='number'
-                            label={`Unidades de ${i.itemSnapshot.name}`}
-                            value={Math.min(
-                              exitAmounts[i.id] ?? i.pending,
-                              i.pending
-                            )}
-                            inputProps={{
-                              min: 0.001,
-                              max: i.pending,
-                              step: 0.001
-                            }}
-                            onChange={(e) =>
-                              setExitAmounts((v) => ({
-                                ...v,
-                                [i.id]: Number(e.target.value)
-                              }))
-                            }
-                          />
-                        )}
-                        <Button
-                          variant='contained'
-                          disabled={
-                            exiting ||
-                            error ||
-                            (exitAmounts[i.id] ?? i.pending) <= 0
-                          }
-                          onClick={async () => {
-                            if (exiting) return;
-                            setExiting(true);
-                            try {
-                              await action(`dispatch-items/${i.id}/exits`, {
-                                quantity: Math.min(
-                                  exitAmounts[i.id] ?? i.pending,
-                                  i.pending
-                                )
-                              });
-                            } finally {
-                              setExiting(false);
-                            }
-                          }}
-                        >
-                          ✓ Entregar
-                        </Button>
-                      </Stack>
-                    )}
                   </Stack>
                 ))}
               </Stack>
@@ -414,102 +357,6 @@ export function FulfillmentPanel({
           <details className='service-details'>
             <summary>Más opciones · cambios y correcciones</summary>
             <Stack spacing={1.5} mt={1}>
-              <TextField
-                select
-                label='Plato de la comanda'
-                value={itemId}
-                onChange={(e) => {
-                  setItemId(e.target.value);
-                  setEventId('');
-                }}
-              >
-                <MenuItem value=''>Seleccione</MenuItem>
-                {items.map((i) => (
-                  <MenuItem key={i.id} value={i.id}>
-                    {i.command} · {i.itemSnapshot.name} · {i.pending} pendientes
-                  </MenuItem>
-                ))}
-              </TextField>
-              {itemId && (
-                <Typography className='exit-pending'>
-                  Pendiente: {items.find((i) => i.id === itemId)?.pending} ·
-                  Entregado: {items.find((i) => i.id === itemId)?.delivered}
-                </Typography>
-              )}
-              <Stack
-                direction='row'
-                gap={1}
-                alignItems='center'
-                className='exit-stepper'
-              >
-                <Button
-                  aria-label='Reducir unidades de salida'
-                  disabled={quantity <= 1}
-                  onClick={() => setQuantity((q) => Math.max(0.001, q - 1))}
-                >
-                  −
-                </Button>
-                <TextField
-                  label='Unidades de salida o corrección'
-                  type='number'
-                  inputProps={{ min: 0.001, step: 0.001 }}
-                  value={quantity}
-                  onChange={(e) => setQuantity(Number(e.target.value))}
-                />
-                <Button
-                  aria-label='Aumentar unidades de salida'
-                  onClick={() => setQuantity((q) => q + 1)}
-                >
-                  +
-                </Button>
-              </Stack>
-              <Button
-                variant='contained'
-                disabled={!itemId || quantity <= 0 || error}
-                onClick={() =>
-                  void action(`dispatch-items/${itemId}/exits`, { quantity })
-                }
-              >
-                Registrar salida de platos
-              </Button>
-              <TextField
-                select
-                label='Salida a corregir'
-                value={eventId}
-                onChange={(e) => setEventId(e.target.value)}
-              >
-                <MenuItem value=''>Seleccione</MenuItem>
-                {events.map((e) => (
-                  <MenuItem key={e.id} value={e.id}>
-                    {e.quantityDelta} unidades ·{' '}
-                    {new Date(e.occurredAt || e.createdAt).toLocaleTimeString(
-                      'es-PE',
-                      {
-                        timeZone: zone
-                      }
-                    )}
-                  </MenuItem>
-                ))}
-              </TextField>
-              <TextField
-                label='Motivo de corrección o recuperación'
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-              />
-              <Button
-                disabled={
-                  !eventId || reason.trim().length < 2 || quantity <= 0 || error
-                }
-                onClick={() =>
-                  void action(`dispatch-items/${itemId}/corrections`, {
-                    eventId,
-                    quantity,
-                    reason
-                  })
-                }
-              >
-                Corregir salida con motivo
-              </Button>
               <Typography variant='h6'>
                 Observaciones y recuperación manual
               </Typography>
@@ -539,6 +386,11 @@ export function FulfillmentPanel({
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
               />
+              <TextField
+                label='Motivo del cambio o recuperación'
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+              />
               <Button
                 disabled={
                   !line || line.status !== 'ACTIVE' || reason.trim().length < 2
@@ -562,6 +414,15 @@ export function FulfillmentPanel({
                   />
                 }
               />
+              {line?.status === 'CANCELLED' && (
+                <TextField
+                  label='Unidades a recuperar'
+                  type='number'
+                  inputProps={{ min: 0.001, step: 0.001 }}
+                  value={quantity}
+                  onChange={(e) => setQuantity(Number(e.target.value))}
+                />
+              )}
               <Button
                 disabled={
                   !line ||

@@ -24,7 +24,7 @@ import { NavLink } from 'react-router-dom';
 import LockOpenTwoToneIcon from '@mui/icons-material/LockOpenTwoTone';
 import { startLogout, selectAuth } from '../../../../../../redux/slices/auth';
 import { useAppDispatch, useAppSelector } from '../../../../../../hooks';
-import { Circle, Done } from '@mui/icons-material';
+import { Circle, Done, ExpandMore } from '@mui/icons-material';
 import { SocketContext } from '../../../../../../context/SocketContext';
 import { Label } from '../../../../../../components/ui';
 import { Restaurant } from '@/pages/Private/Common/models/restaurant.model';
@@ -32,32 +32,29 @@ import { useRestaurantStore } from '@/pages/Private/Common/store/restaurantStore
 import { switchRestaurantMutation } from '@/pages/Private/Restaurant/hooks/useRestaurant';
 import { Roles } from '@/models/roles';
 
-// background: ${grey[900]};
-
 const MenuUserBox = styled(Box)(
   ({ theme }) => `
-        padding: ${theme.spacing(2)};
+        padding: ${theme.spacing(1.75, 2)};
 `
 );
 
 const UserBoxText = styled(Box)(
   ({ theme }) => `
         text-align: left;
-        padding-left: ${theme.spacing(1)};
 `
 );
 
 const UserBoxLabel = styled(Typography)(
   ({ theme }) => `
         font-weight: ${theme.typography.fontWeightBold};
-        color: ${theme.palette.secondary.main};
+        color: ${theme.palette.text.primary};
         display: block;
 `
 );
 
 const UserBoxDescription = styled(Typography)(
   ({ theme }) => `
-        color: ${lighten(theme.palette.secondary.main, 0.5)}
+        color: ${theme.palette.text.secondary};
 `
 );
 
@@ -118,11 +115,16 @@ export const Userbox = ({ showDetails = false }: UserboxProps) => {
           minWidth: 0,
           maxWidth: '100%',
           overflow: 'hidden',
-          p: showDetails ? 1 : 0.5,
-          borderRadius: 2,
+          p: showDetails ? '5px 12px 5px 8px' : 0.5,
+          borderRadius: 2.5,
+          border: showDetails ? 1 : 0,
+          borderColor: 'divider',
+          bgcolor: showDetails ? 'background.paper' : 'transparent',
+          boxShadow: showDetails ? '0 1px 2px 0 rgba(15, 23, 42, 0.04)' : 'none',
           transition: 'all 0.2s ease',
           '&:hover': {
-            bgcolor: 'action.hover'
+            bgcolor: 'action.hover',
+            borderColor: 'primary.main'
           }
         }}
         onClick={handleOpen}
@@ -143,12 +145,13 @@ export const Userbox = ({ showDetails = false }: UserboxProps) => {
             alt={user.name}
             sx={{
               flexShrink: 0,
-              width: showDetails ? 38 : 34,
-              height: showDetails ? 38 : 34,
-              bgcolor: 'primary.main',
-              color: 'primary.contrastText',
+              width: showDetails ? 36 : 32,
+              height: showDetails ? 36 : 32,
+              background: 'linear-gradient(135deg, #0d9488 0%, #0f766e 100%)',
+              color: '#ffffff',
               fontSize: '0.875rem',
-              fontWeight: 700
+              fontWeight: 700,
+              boxShadow: '0 2px 4px rgba(13, 148, 136, 0.25)'
             }}
           >
             {user.name?.at(0)?.toUpperCase()}
@@ -156,69 +159,72 @@ export const Userbox = ({ showDetails = false }: UserboxProps) => {
         </Badge>
 
         {showDetails && (
-          <Box sx={{ ml: 1.5, textAlign: 'left', minWidth: 0 }}>
-            <Typography
-              variant='subtitle2'
-              fontWeight={600}
-              color='text.primary'
-              noWrap
-            >
-              {user.name}
-            </Typography>
-            <Typography
-              variant='caption'
-              color='text.secondary'
-              noWrap
-              display='block'
-            >
-              {user.jobtitle || 'Usuario'}
-            </Typography>
-          </Box>
+          <>
+            <Box sx={{ ml: 1.25, textAlign: 'left', minWidth: 0 }}>
+              <Typography
+                variant='subtitle2'
+                fontWeight={650}
+                color='text.primary'
+                noWrap
+                sx={{ fontSize: '0.8125rem', lineHeight: 1.25 }}
+              >
+                {user.name}
+              </Typography>
+              <Typography
+                variant='caption'
+                color='text.secondary'
+                noWrap
+                display='block'
+                sx={{ fontSize: '0.6875rem', lineHeight: 1.2 }}
+              >
+                {user.jobtitle || 'Usuario'}
+              </Typography>
+            </Box>
+            <ExpandMore sx={{ fontSize: 18, color: 'text.secondary', ml: 0.5, opacity: 0.7 }} />
+          </>
         )}
       </Box>
-
-      {/* <UserBoxText>
-
-          <UserBoxLabel variant="body1">  {user.name} </UserBoxLabel>
-          <UserBoxDescription variant="body2">
-            <Circle sx={{ fontSize: 10 }} color={online ? 'success' : 'error'} />
-            {online ? ' En línea' : ' Desconectado'}
-          </UserBoxDescription>
-        </UserBoxText> */}
-
-      {/* <ExpandMoreTwoToneIcon sx={{ ml: 1 }} /> */}
 
       <Popover
         anchorEl={ref.current}
         onClose={handleClose}
         open={isOpen}
         anchorOrigin={{
-          vertical: 'top',
+          vertical: 'bottom',
           horizontal: 'right'
         }}
         transformOrigin={{
           vertical: 'top',
           horizontal: 'right'
         }}
+        PaperProps={{
+          sx: {
+            minWidth: 230,
+            borderRadius: 2.5,
+            border: 1,
+            borderColor: 'divider',
+            boxShadow: '0 10px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.05)',
+            overflow: 'hidden'
+          }
+        }}
       >
-        <MenuUserBox sx={{ minWidth: 210 }} display='flex'>
-          {/* <Avatar variant="rounded" alt={user.name} src={user.avatar} /> */}
-          <UserBoxText>
-            <UserBoxLabel variant='body1'>
-              {user.name}{' '}
+        <MenuUserBox sx={{ bgcolor: '#f8fafc', borderBottom: 1, borderColor: 'divider' }} display='flex'>
+          <UserBoxText sx={{ pl: 0 }}>
+            <UserBoxLabel variant='body2' sx={{ fontWeight: 700, color: 'text.primary', display: 'flex', alignItems: 'center', gap: 0.75 }}>
+              {user.name}
               <Circle
-                sx={{ fontSize: 10 }}
+                sx={{ fontSize: 9 }}
                 color={online ? 'success' : 'error'}
               />
             </UserBoxLabel>
-            <UserBoxDescription variant='body2'>
-              {user.jobtitle}
+            <UserBoxDescription variant='caption' sx={{ color: 'text.secondary', fontWeight: 500 }}>
+              {user.jobtitle || 'Usuario'}
             </UserBoxDescription>
           </UserBoxText>
         </MenuUserBox>
+
         {userState?.role.name !== Roles.HOST && (
           <>
-            <Divider sx={{ mb: 0 }} />
             <List
               sx={{ p: 1 }}
               component='nav'
@@ -226,7 +232,17 @@ export const Userbox = ({ showDetails = false }: UserboxProps) => {
                 <ListSubheader
                   component='div'
                   id='nested-list-subheader'
-                  sx={{ fontSize: 12 }}
+                  sx={{
+                    fontSize: 11,
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.06em',
+                    color: 'text.secondary',
+                    px: 1.5,
+                    py: 0.5,
+                    lineHeight: 2,
+                    background: 'transparent'
+                  }}
                 >
                   Restaurantes
                 </ListSubheader>
@@ -236,15 +252,30 @@ export const Userbox = ({ showDetails = false }: UserboxProps) => {
                 <ListItemButton
                   key={restaurantRole.id}
                   onClick={() => changeRestaurant(restaurantRole.restaurant)}
+                  sx={{
+                    borderRadius: 1.5,
+                    py: 0.75,
+                    px: 1.5,
+                    my: 0.25,
+                    bgcolor: restaurant?.id === restaurantRole.restaurant.id ? '#f0fdfa' : 'transparent',
+                    '&:hover': {
+                      bgcolor: '#f0fdfa'
+                    }
+                  }}
                 >
                   <ListItemText
-                    primaryTypographyProps={{ variant: 'body1' }}
-                    secondaryTypographyProps={{ variant: 'subtitle2' }}
+                    primaryTypographyProps={{
+                      variant: 'body2',
+                      fontWeight: restaurant?.id === restaurantRole.restaurant.id ? 650 : 500,
+                      color: restaurant?.id === restaurantRole.restaurant.id ? 'primary.main' : 'text.primary'
+                    }}
+                    secondaryTypographyProps={{ variant: 'caption', color: 'text.secondary' }}
                     primary={restaurantRole.restaurant.name}
+                    secondary={restaurantRole.role.description}
                   />
                   {restaurant?.id === restaurantRole.restaurant.id && (
-                    <ListItemIcon sx={{ minWidth: '30px' }}>
-                      <Done fontSize='small' color='secondary' />
+                    <ListItemIcon sx={{ minWidth: '24px', justifyContent: 'flex-end' }}>
+                      <Done fontSize='small' color='primary' />
                     </ListItemIcon>
                   )}
                 </ListItemButton>
@@ -252,16 +283,21 @@ export const Userbox = ({ showDetails = false }: UserboxProps) => {
             </List>
           </>
         )}
+
         {userState?.role.name !== Roles.HOST && (
           <>
-            <Divider sx={{ mb: 0 }} />
+            <Divider sx={{ my: 0.5 }} />
             <List sx={{ p: 1 }} component='nav'>
               <ListItemButton
                 to='/users/profile'
                 component={NavLink}
                 onClick={handleClose}
+                sx={{ borderRadius: 1.5, py: 0.75, px: 1.5, my: 0.25 }}
               >
-                <ListItemText primary='Mi perfil' />
+                <ListItemText
+                  primary='Mi perfil'
+                  primaryTypographyProps={{ variant: 'body2', fontWeight: 500 }}
+                />
                 <ListItemSecondaryAction>
                   <Label color='info'>Nuevo</Label>
                 </ListItemSecondaryAction>
@@ -271,50 +307,39 @@ export const Userbox = ({ showDetails = false }: UserboxProps) => {
                 to='/users/account'
                 component={NavLink}
                 onClick={handleClose}
+                sx={{ borderRadius: 1.5, py: 0.75, px: 1.5, my: 0.25 }}
               >
-                {/* <ListItemIcon>
-                <AccountBoxTwoToneIcon fontSize="small" />
-
-              </ListItemIcon> */}
-                <ListItemText primary='Mi cuenta' />
-                <ListItemSecondaryAction>
-                  {/* <Label color="info">Nuevo</Label> */}
-                </ListItemSecondaryAction>
+                <ListItemText
+                  primary='Mi cuenta'
+                  primaryTypographyProps={{ variant: 'body2', fontWeight: 500 }}
+                />
               </ListItemButton>
-
-              {/* <ListItemButton onClick={() => !online && conectarSocket()}>
-            <ListItemText primary={online ? "Conectado" : "Conectar"} />
-      
-          </ListItemButton> */}
-
-              {/* <ButtonTheme /> */}
-
-              {/*
-          <ListItem
-            button
-            to="/dashboards/messenger"
-            comionent={NavLink}
-          >
-            <InboxTwoToneIcon fontSize="small" />
-            <ListItemText primary="Messenger" />
-          </ListItem>
-        */}
-              {/* <ListItem
-            
-            to="/management/profile/settings"
-            component={NavLink}
-           
-          >
-            <AccountTreeTwoToneIcon fontSize="small" />
-            <ListItemText primary="Ver perfil" />
-          </ListItem>  */}
             </List>
-            <Divider />
+            <Divider sx={{ my: 0.5 }} />
           </>
         )}
-        <Box sx={{ m: 1 }}>
-          <Button color='primary' fullWidth onClick={() => handleLogout()}>
-            <LockOpenTwoToneIcon sx={{ mr: 1 }} />
+
+        <Box sx={{ p: 1.25 }}>
+          <Button
+            variant='outlined'
+            color='error'
+            fullWidth
+            onClick={() => handleLogout()}
+            sx={{
+              borderRadius: 2,
+              py: 0.75,
+              fontSize: '0.8125rem',
+              fontWeight: 650,
+              bgcolor: '#fef2f2',
+              borderColor: '#fecaca',
+              color: '#dc2626',
+              '&:hover': {
+                bgcolor: '#fee2e2',
+                borderColor: '#fca5a5'
+              }
+            }}
+          >
+            <LockOpenTwoToneIcon sx={{ mr: 1, fontSize: 18 }} />
             Cerrar sesión
           </Button>
         </Box>

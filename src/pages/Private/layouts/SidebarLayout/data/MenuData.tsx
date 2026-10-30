@@ -7,7 +7,6 @@ import {
   TableRestaurantOutlined,
   PeopleOutline,
   Groups3Outlined,
-  ReceiptLongOutlined,
   AssessmentOutlined,
   Inventory2Outlined,
   PaymentsOutlined
@@ -21,20 +20,14 @@ const service = [...managers, Roles.WAITER];
 // reports use the F9 domain, never the obsolete dashboard/checkout APIs.
 export const menuSections: MenuSection[] = [
   {
-    title: 'Operación',
-    allowedRoles: [Roles.HOST],
+    title: 'OPERACIÓN',
     items: [
       {
         title: 'Registrar llegada',
         icon: <TableRestaurantOutlined />,
         to: '/jalador',
         allowedRoles: [Roles.HOST]
-      }
-    ]
-  },
-  {
-    title: 'Operación',
-    items: [
+      },
       {
         title: 'Atención y pedidos',
         icon: <TableRestaurantOutlined />,
@@ -60,18 +53,6 @@ export const menuSections: MenuSection[] = [
         allowedRoles: service
       },
       {
-        title: 'Documentos internos',
-        icon: <ReceiptLongOutlined />,
-        to: '/internal-documents',
-        allowedRoles: service
-      },
-      {
-        title: 'Reportes operativos',
-        icon: <AssessmentOutlined />,
-        to: '/operational-reports',
-        allowedRoles: service
-      },
-      {
         title: 'Tiempos de cocina',
         icon: <AssessmentOutlined />,
         to: '/operational-reports',
@@ -86,7 +67,7 @@ export const menuSections: MenuSection[] = [
     ]
   },
   {
-    title: 'Gestión',
+    title: 'CONTROL',
     items: [
       {
         title: 'Resumen operativo',
@@ -95,17 +76,22 @@ export const menuSections: MenuSection[] = [
         allowedRoles: managers
       },
       {
+        title: 'Reportes operativos',
+        icon: <AssessmentOutlined />,
+        to: '/operational-reports',
+        allowedRoles: managers
+      },
+      {
         title: 'Compras y bebidas',
         icon: <Inventory2Outlined />,
         to: '/supplies',
         allowedRoles: managers
       },
-      {
-        title: 'Restaurante',
-        icon: <StorefrontOutlined />,
-        to: '/restaurant',
-        allowedRoles: managers
-      },
+    ]
+  },
+  {
+    title: 'GESTIÓN',
+    items: [
       {
         title: 'Carta permanente',
         icon: <MenuBookOutlined />,
@@ -129,6 +115,12 @@ export const menuSections: MenuSection[] = [
         icon: <Groups3Outlined />,
         to: '/clients',
         allowedRoles: service
+      },
+      {
+        title: 'Restaurante',
+        icon: <StorefrontOutlined />,
+        to: '/restaurant',
+        allowedRoles: managers
       }
     ]
   }

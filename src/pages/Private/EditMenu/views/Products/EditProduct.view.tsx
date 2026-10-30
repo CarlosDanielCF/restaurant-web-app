@@ -58,7 +58,7 @@ export const EditProduct = () => {
 
   return (
     <>
-      <TitlePage title={product.name} />
+      <TitlePage title={product.name} back backTo='/menu/products' />
 
       {product && <FormProduct product={product} />}
 

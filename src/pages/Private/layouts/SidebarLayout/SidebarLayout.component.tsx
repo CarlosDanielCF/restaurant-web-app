@@ -28,6 +28,9 @@ import { SidebarContext } from '../../Common/contexts/SidebarContext';
 import { useRestaurantStore } from '../../Common/store/restaurantStore';
 import { useAppSelector } from '@/hooks';
 import { selectAuth } from '@/redux';
+import { SocketContext } from '@/context';
+import { useNotificationSound } from '@/hooks';
+import { useSnackbar } from 'notistack';
 
 interface SidebarLayoutProps {
   children?: ReactNode;
@@ -42,6 +45,12 @@ const SidebarLayout: FC<SidebarLayoutProps> = () => {
       location.pathname
     );
   const { user } = useAppSelector(selectAuth);
+  const { socket } = useContext(SocketContext);
+  const { enqueueSnackbar } = useSnackbar();
+  const { play: playNotificationSound } = useNotificationSound(
+    1,
+    '/audio/kitchen-waiter-bell.mp3'
+  );
   const currentSection = menuSections
     .flatMap((section) => section.items)
     .find(
@@ -56,6 +65,24 @@ const SidebarLayout: FC<SidebarLayoutProps> = () => {
   useEffect(() => {
     if (mobile) closeSidebar();
   }, [mobile]);
+
+  useEffect(() => {
+    const notify = ({
+      data
+    }: {
+      data: { table: string; product: string; quantity: number };
+    }) => {
+      void playNotificationSound();
+      enqueueSnackbar(
+        `Mesa: ${data.table} · ${data.product} · salió ${data.quantity}`,
+        { variant: 'success' }
+      );
+    };
+    socket?.on('kitchen.exit.ready', notify);
+    return () => {
+      socket?.off('kitchen.exit.ready', notify);
+    };
+  }, [socket, enqueueSnackbar, playNotificationSound]);
 
   return (
     <>
@@ -95,15 +122,15 @@ const SidebarLayout: FC<SidebarLayoutProps> = () => {
               flexShrink: 0,
               alignItems: 'center',
               justifyContent: 'space-between',
-              px: 2,
-              py: 1.25,
+              px: { xs: 1.5, sm: 2.5 },
+              py: 1,
               bgcolor: 'background.paper',
               borderBottom: 1,
               borderColor: 'divider',
               position: 'sticky',
               top: 0,
               zIndex: 100,
-              boxShadow: theme.shadows[1]
+              boxShadow: '0 1px 2px 0 rgba(15, 23, 42, 0.04)'
             }}
           >
             <Box
@@ -122,29 +149,66 @@ const SidebarLayout: FC<SidebarLayoutProps> = () => {
                   display: {
                     xs: user?.role.name === Roles.HOST ? 'none' : 'inline-flex',
                     lg: 'none'
+                  },
+                  width: 38,
+                  height: 38,
+                  borderRadius: 2,
+                  border: 1,
+                  borderColor: 'divider',
+                  bgcolor: 'background.paper',
+                  '&:hover': {
+                    bgcolor: 'action.hover',
+                    borderColor: 'primary.main'
                   }
                 }}
               >
-                <MenuTwoToneIcon />
+                <MenuTwoToneIcon fontSize='small' />
               </IconButton>
-              <Typography
-                variant='h6'
-                fontWeight={700}
-                color='text.primary'
-                noWrap
-              >
-                {restaurant?.name || 'Sistema Restaurante'}
+              <Box sx={{ minWidth: 0 }}>
+                <Box display='flex' alignItems='center' gap={1}>
+                  <Typography
+                    variant='subtitle1'
+                    fontWeight={750}
+                    color='text.primary'
+                    noWrap
+                    sx={{
+                      fontSize: { xs: '0.95rem', sm: '1.05rem' },
+                      letterSpacing: '-0.015em'
+                    }}
+                  >
+                    {restaurant?.name || 'Sistema Restaurante'}
+                  </Typography>
+                  {currentSection && (
+                    <Box
+                      sx={{
+                        display: { xs: 'none', sm: 'inline-flex' },
+                        alignItems: 'center',
+                        px: 1.25,
+                        py: 0.25,
+                        borderRadius: '20px',
+                        bgcolor: 'rgba(13, 148, 136, 0.08)',
+                        border: '1px solid rgba(13, 148, 136, 0.2)',
+                        color: 'primary.main',
+                        fontSize: '0.6875rem',
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.04em'
+                      }}
+                    >
+                      {currentSection}
+                    </Box>
+                  )}
+                </Box>
                 <Typography
-                  component='span'
                   variant='caption'
                   color='text.secondary'
-                  sx={{ display: { xs: 'none', lg: 'block' } }}
+                  sx={{ display: { xs: 'none', lg: 'block' }, lineHeight: 1.2 }}
                 >
                   Sección: {currentSection || 'Restaurante'}
                 </Typography>
-              </Typography>
+              </Box>
             </Box>
-            <Box className='pos-header-team'>
+            <Box className='pos-header-team' display='flex' alignItems='center' gap={1.5}>
               {user?.role.name !== Roles.HOST && <OperationalHeaderMeta />}
               {user && <HeaderUserbox showDetails />}
             </Box>

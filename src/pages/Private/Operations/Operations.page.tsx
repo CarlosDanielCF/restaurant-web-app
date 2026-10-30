@@ -231,7 +231,7 @@ export function OperationsPage() {
     return <Navigate to='/unauthorized' replace />;
   return (
     <Container maxWidth='xl' className='operations-workspace'>
-      <Stack spacing={1.5} py={0.5}>
+      <Stack spacing={0.75} py={0.25}>
         <Box className='operations-heading'>
           <Box>
             <Typography variant='overline' color='primary'>
@@ -240,7 +240,7 @@ export function OperationsPage() {
             <Typography variant='h4' component='h1'>
               {cook ? 'Menú y disponibilidad' : 'Atención del restaurante'}
             </Typography>
-            <Typography color='text.secondary' mt={1}>
+            <Typography color='text.secondary' sx={{ mt: 0.25, fontSize: '0.8rem' }}>
               {cook
                 ? 'Menú del día, opciones y porciones disponibles.'
                 : 'Mesas, pedidos y reservas en un solo lugar.'}

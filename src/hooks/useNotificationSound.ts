@@ -3,14 +3,19 @@ import { useRef, useCallback, useState, useEffect } from 'react';
 const preferenceEvent = 'notification-sound-preference';
 
 /** Historical notifications use a local synthesized tone, never a network/cache asset. */
-export const useNotificationSound = (volume = 0.5) => {
+export const useNotificationSound = (volume = 0.5, source?: string) => {
   const context = useRef<AudioContext | null>(null);
+  const media = useRef<HTMLAudioElement | null>(null);
   const [isMuted, setIsMuted] = useState(
     () => localStorage.getItem('notificationSoundMuted') === 'true'
   );
   const [isAudioEnabled, setIsAudioEnabled] = useState(false);
   const unlock = useCallback(async () => {
     try {
+      if (source) {
+        setIsAudioEnabled(!!media.current);
+        return;
+      }
       const Audio = window.AudioContext;
       if (!Audio) return;
       context.current ??= new Audio();
@@ -19,7 +24,20 @@ export const useNotificationSound = (volume = 0.5) => {
     } catch {
       setIsAudioEnabled(false);
     }
-  }, []);
+  }, [source]);
+
+  useEffect(() => {
+    if (!source) return;
+    const audio = new Audio(source);
+    audio.preload = 'auto';
+    audio.volume = Math.max(0, Math.min(1, volume));
+    media.current = audio;
+    setIsAudioEnabled(true);
+    return () => {
+      audio.pause();
+      media.current = null;
+    };
+  }, [source, volume]);
 
   useEffect(() => {
     const synchronize = () =>
@@ -45,6 +63,18 @@ export const useNotificationSound = (volume = 0.5) => {
 
   const play = useCallback(async () => {
     if (localStorage.getItem('notificationSoundMuted') === 'true') return;
+    if (source) {
+      const audio = media.current;
+      if (!audio) return;
+      audio.currentTime = 0;
+      audio.volume = Math.max(0, Math.min(1, volume));
+      try {
+        await audio.play();
+      } catch {
+        setIsAudioEnabled(false);
+      }
+      return;
+    }
     const audio = context.current;
     // Browser autoplay permission is obtained only from a user interaction.
     if (!audio || audio.state !== 'running') return;
@@ -73,7 +103,7 @@ export const useNotificationSound = (volume = 0.5) => {
     } catch {
       setIsAudioEnabled(false);
     }
-  }, [volume]);
+  }, [source, volume]);
 
   const setMute = useCallback(
     (mute: boolean) => {

@@ -292,6 +292,252 @@
   margin-top: 6px !important;
 }
 
+/* Cocina/TV: tablero contenido en el viewport, sin desplazar la página. */
+.kitchen-operation {
+  height: calc(100dvh - 104px);
+  overflow: hidden;
+  background: #f6f9fa;
+}
+.kitchen-operation .kitchen-screen {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  gap: 8px;
+}
+.kitchen-operation .kitchen-fullscreen {
+  flex: 0 0 auto;
+  min-width: 132px;
+  padding-inline: 10px;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+.kitchen-operation .kitchen-counts {
+  flex: 0 0 auto;
+  padding: 6px 10px;
+  font-size: 1rem;
+}
+.kitchen-operation .pos-kitchen-notices {
+  flex: 0 0 auto;
+  max-height: 82px;
+  overflow: hidden;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(230px, 1fr);
+}
+.kitchen-operation .pos-kitchen-notices .ticket-line {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: 4px 8px;
+  padding: 5px 8px;
+  margin: 0 !important;
+  border: 1px solid #efc4c0;
+  border-radius: 8px;
+  background: #fff8f8;
+}
+.kitchen-operation .kitchen-ticket .ticket-line .MuiButton-root {
+  min-height: 26px;
+  padding-block: 2px;
+}
+.kitchen-operation .kitchen-ticket .kitchen-notice {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 2px 6px;
+  padding: 4px 6px;
+  border-radius: 7px;
+  background: #fff4f2;
+}
+.kitchen-operation .kitchen-ticket .kitchen-notice > * {
+  margin: 0;
+  font-size: 0.72rem;
+  line-height: 1.1;
+}
+.kitchen-operation .kitchen-ticket .kitchen-notice .MuiButton-root {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+}
+.kitchen-operation .pos-kitchen-notices .ticket-line > * {
+  min-width: 0;
+  margin: 0;
+}
+.kitchen-operation .pos-kds-tickets {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  flex: 1 1 auto;
+  min-height: 0;
+  gap: 12px !important;
+  overflow: hidden;
+}
+.kitchen-operation .pos-kds-tickets > * {
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  margin: 0 !important;
+}
+.kitchen-operation .kitchen-ticket {
+  height: 100%;
+  overflow: hidden;
+}
+.kitchen-operation .kitchen-ticket .MuiCardContent-root {
+  height: 100%;
+  overflow: hidden;
+  padding: 12px;
+}
+.kitchen-operation .kitchen-ticket .MuiCardContent-root > .MuiStack-root {
+  gap: 5px;
+}
+.kitchen-operation .kitchen-ticket .ticket-clock {
+  padding: 2px 0;
+  font-size: clamp(1.15rem, 2vw, 1.55rem) !important;
+}
+.kitchen-operation .kitchen-ticket .ticket-line {
+  padding: 6px 0;
+  margin-top: 0 !important;
+  gap: 1px;
+}
+.kitchen-operation .kitchen-ticket .ticket-line > .MuiTypography-root:first-child {
+  font-size: clamp(1rem, 1.5vw, 1.25rem);
+  line-height: 1.2;
+}
+.kitchen-operation .kitchen-ticket .ticket-line .MuiTypography-root {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.kitchen-operation .kitchen-ticket .ticket-notes {
+  padding: 3px 7px;
+}
+.kitchen-operation .kitchen-ticket .ticket-item-line {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 36px;
+  grid-template-rows: auto auto auto;
+  column-gap: 8px;
+  align-items: center;
+  min-height: 0;
+}
+.kitchen-operation .kitchen-ticket .ticket-item-line > .MuiTypography-root {
+  grid-column: 1;
+  min-width: 0;
+}
+.kitchen-operation .kitchen-ticket .ticket-item-secondary {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  display: block !important;
+  font-size: 0.78rem;
+  line-height: 1.15;
+}
+.kitchen-operation .kitchen-ticket .kitchen-exit-button-wrap {
+  grid-column: 2;
+  grid-row: 1 / span 3;
+  display: inline-flex;
+  width: 34px;
+  height: 34px;
+}
+.kitchen-operation .kitchen-ticket .kitchen-exit-button {
+  min-width: 34px;
+  width: 34px;
+  min-height: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: 7px;
+  font-size: 1.1rem;
+  font-weight: 900;
+}
+.kitchen-operation .kitchen-ticket--dense .MuiCardContent-root > .MuiStack-root,
+.kitchen-operation .kitchen-ticket--ultra-dense .MuiCardContent-root > .MuiStack-root {
+  height: 100%;
+  gap: 2px;
+}
+.kitchen-operation .kitchen-ticket--dense .ticket-item-line,
+.kitchen-operation .kitchen-ticket--ultra-dense .ticket-item-line {
+  flex: 1 1 0;
+  padding-block: 3px;
+}
+.kitchen-operation .kitchen-ticket--ultra-dense .ticket-item-secondary {
+  -webkit-line-clamp: 1;
+}
+.kitchen-operation .kitchen-ticket--dense .ticket-item-line > .MuiTypography-root:first-child {
+  font-size: 0.96rem;
+}
+.kitchen-operation .kitchen-ticket--ultra-dense .ticket-item-line {
+  grid-template-columns: minmax(0, 1fr) 30px;
+  column-gap: 5px;
+  padding-block: 1px;
+}
+.kitchen-operation .kitchen-ticket--ultra-dense .ticket-item-line > .MuiTypography-root:first-child {
+  font-size: clamp(0.76rem, 1.05vw, 0.9rem);
+  line-height: 1.05;
+}
+.kitchen-operation .kitchen-ticket--ultra-dense .ticket-item-secondary,
+.kitchen-operation .kitchen-ticket--ultra-dense .ticket-item-line .MuiTypography-caption {
+  font-size: 0.66rem;
+  line-height: 1.05;
+}
+.kitchen-operation .kitchen-ticket--ultra-dense .kitchen-exit-button-wrap,
+.kitchen-operation .kitchen-ticket--ultra-dense .kitchen-exit-button {
+  width: 28px;
+  min-width: 28px;
+  height: 28px;
+  min-height: 28px;
+}
+.kitchen-operation .kitchen-navigation {
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  white-space: nowrap;
+}
+.kitchen-operation .kitchen-navigation .MuiTypography-root {
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+}
+.kitchen-operation:fullscreen {
+  width: 100vw;
+  height: 100dvh;
+  max-width: none;
+  padding: 12px;
+  overflow: hidden;
+  background: #f6f9fa;
+}
+.kitchen-operation:fullscreen .kitchen-screen {
+  height: 100%;
+  padding-block: 0;
+}
+
+@media (max-width: 1199px) {
+  .kitchen-operation .pos-kds-tickets {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 699px) {
+  .kitchen-operation {
+    height: calc(100dvh - 92px);
+  }
+  .kitchen-operation .kitchen-screen {
+    gap: 6px;
+    padding-block: 8px;
+  }
+  .kitchen-operation .pos-kds-tickets {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .kitchen-operation .pos-kitchen-notices {
+    max-height: 66px;
+  }
+  .kitchen-operation .kitchen-navigation {
+    gap: 2px;
+  }
+  .kitchen-operation .kitchen-navigation .MuiButton-root {
+    min-width: 0;
+    min-height: 38px;
+    padding-inline: 7px;
+    font-size: 0.76rem;
+  }
+  .kitchen-operation .kitchen-navigation .MuiTypography-root {
+    font-size: 0.78rem;
+  }
+}
+
 .finance-operation > .MuiStack-root {
   gap: 10px;
 }

@@ -137,16 +137,27 @@ export const useRenewToken = () => {
     };
     const resume = () => {
       // Coalesce passive resume events, never explicit permission changes or retries.
-      if (document.visibilityState === 'visible' && Date.now() - lastRenewAt >= 30000)
+      if (
+        document.visibilityState === 'visible' &&
+        Date.now() - lastRenewAt >= 30000
+      )
         void renew(true);
     };
     const permissions = () => void renew(true);
+    const revoked = () => {
+      localStorage.removeItem('token');
+      setRestaurant(null);
+      dispatch(
+        onLogout('La sesión ya no es válida. Inicia sesión nuevamente.')
+      );
+    };
     void renew(true);
     const timer = setInterval(() => void renew(), 60000);
     window.addEventListener('online', resume);
     window.addEventListener('focus', resume);
     window.addEventListener('worker-access-changed', permissions);
     window.addEventListener('session-renew-request', permissions);
+    window.addEventListener('session-revoked', revoked);
     document.addEventListener('visibilitychange', resume);
     return () => {
       disposed = true;
@@ -155,6 +166,7 @@ export const useRenewToken = () => {
       window.removeEventListener('focus', resume);
       window.removeEventListener('worker-access-changed', permissions);
       window.removeEventListener('session-renew-request', permissions);
+      window.removeEventListener('session-revoked', revoked);
       document.removeEventListener('visibilitychange', resume);
     };
   }, [dispatch, setRestaurant]);

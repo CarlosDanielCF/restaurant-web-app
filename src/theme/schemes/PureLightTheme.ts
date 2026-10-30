@@ -235,7 +235,7 @@ export const PureLightTheme = createTheme({
     reactFrameworkColor: '#00D8FF',
     borderRadiusSm: '6px',
     borderRadius: '10px',
-    borderRadiusLg: '12px',
+    borderRadiusLg: '14px',
     borderRadiusXl: '16px'
   },
   sidebar: {
@@ -249,14 +249,13 @@ export const PureLightTheme = createTheme({
     menuItemIconColor: colors.layout.sidebar.menuItemIconColor,
     menuItemIconColorActive: colors.layout.sidebar.menuItemIconColorActive,
     menuItemHeadingColor: colors.layout.sidebar.menuItemHeadingColor,
-    boxShadow:
-      '2px 0 3px rgba(159, 162, 191, .18), 1px 0 1px rgba(159, 162, 191, 0.32)',
-    width: '290px'
+    boxShadow: '1px 0 0 #e2e8f0',
+    width: '260px'
   },
   header: {
-    height: '80px',
+    height: '60px',
     background: colors.alpha.white[100],
-    boxShadow: colors.shadows.cardSm,
+    boxShadow: '0 1px 3px 0 rgba(15, 23, 42, 0.05)',
     textColor: colors.secondary.main
   },
   spacing: 9,
@@ -447,15 +446,31 @@ export const PureLightTheme = createTheme({
     MuiOutlinedInput: {
       styleOverrides: {
         root: {
+          borderRadius: 10,
           '& .MuiInputAdornment-positionEnd.MuiInputAdornment-outlined': {
             paddingRight: 6
           },
-          '&:hover .MuiOutlinedInput-notchedOutline': {
-            borderColor: colors.alpha.black[50]
+          '& .MuiOutlinedInput-notchedOutline': {
+            borderColor: '#CBD5E1',
+            transition: 'border-color 0.2s ease, box-shadow 0.2s ease'
           },
-          '&.Mui-focused:hover .MuiOutlinedInput-notchedOutline': {
-            borderColor: colors.primary.main
+          '&:hover .MuiOutlinedInput-notchedOutline': {
+            borderColor: '#94A3B8'
+          },
+          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+            borderColor: colors.primary.main,
+            borderWidth: '1.5px',
+            boxShadow: '0 0 0 3px rgba(13, 148, 136, 0.15)'
           }
+        }
+      }
+    },
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          borderRadius: 14,
+          border: '1px solid #E2E8F0',
+          boxShadow: '0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 1px 2px -1px rgba(15, 23, 42, 0.04)'
         }
       }
     },
@@ -586,8 +601,9 @@ export const PureLightTheme = createTheme({
       },
       styleOverrides: {
         root: {
-          fontWeight: 'bold',
+          fontWeight: 650,
           textTransform: 'none',
+          borderRadius: 10,
           paddingLeft: 16,
           paddingRight: 16,
 
@@ -598,6 +614,25 @@ export const PureLightTheme = createTheme({
         endIcon: {
           marginRight: -8
         },
+        containedPrimary: {
+          backgroundColor: colors.primary.main,
+          color: colors.alpha.white[100],
+          boxShadow: '0 1px 2px 0 rgba(13, 148, 136, 0.2)',
+          '&:hover': {
+            backgroundColor: colors.primary.dark,
+            boxShadow: '0 4px 6px -1px rgba(13, 148, 136, 0.3)'
+          }
+        },
+        outlinedPrimary: {
+          borderColor: colors.primary.main,
+          color: colors.primary.main,
+          borderWidth: '1.5px',
+          '&:hover': {
+            borderWidth: '1.5px',
+            backgroundColor: '#F0FDFA',
+            borderColor: colors.primary.dark
+          }
+        },
         containedSecondary: {
           backgroundColor: colors.secondary.main,
           color: colors.alpha.white[100],
@@ -605,9 +640,12 @@ export const PureLightTheme = createTheme({
         },
         outlinedSecondary: {
           backgroundColor: colors.alpha.white[100],
+          borderColor: '#E2E8F0',
+          color: '#334155',
 
           '&:hover, &.MuiSelected': {
             backgroundColor: colors.alpha.black[5],
+            borderColor: '#CBD5E1',
             color: colors.alpha.black[100]
           }
         },

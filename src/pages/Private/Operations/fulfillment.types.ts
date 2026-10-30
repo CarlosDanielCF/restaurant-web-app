@@ -17,6 +17,8 @@ export interface DispatchItem {
   consumptionLineId: string;
   quantity: string;
   delivered: string;
+  kitchenExited: string;
+  kitchenPending: number;
   cancelledQuantity?: string;
   pending: number;
   status: string;

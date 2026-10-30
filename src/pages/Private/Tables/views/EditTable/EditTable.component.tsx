@@ -1,4 +1,4 @@
-import { Add, ArrowBack, CloseRounded, SaveRounded } from '@mui/icons-material';
+import { Add, CloseRounded, SaveRounded } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
 import {
   Grid,
@@ -99,16 +99,8 @@ export const EditTable = () => {
     <>
       <TitlePage
         title={`${activeTable ? 'Editar' : 'Crear'} mesa`}
-        action={
-          <Button
-            startIcon={<ArrowBack />}
-            onClick={() => navigate('/tables')}
-            variant='outlined'
-            size='small'
-          >
-            Volver a mesas
-          </Button>
-        }
+        back
+        backTo='/tables'
       />
 
       <Card

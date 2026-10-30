@@ -5,11 +5,6 @@ const SuppliesPage = lazy(() =>
 const OverviewPage = lazy(() =>
   import('../Insights/OverviewPage').then((m) => ({ default: m.OverviewPage }))
 );
-const DocumentsPage = lazy(() =>
-  import('../Insights/DocumentsPage').then((m) => ({
-    default: m.DocumentsPage
-  }))
-);
 const ReportsPage = lazy(() =>
   import('../Insights/ReportsPage').then((m) => ({ default: m.ReportsPage }))
 );
@@ -56,16 +51,11 @@ export const PrivateRouter: RouteObject[] = [
     element: <SidebarLayout />,
     children: [
       {
-        path: 'internal-documents',
-        element: (
-          <Auth allowedRoles={[Roles.OWNER, Roles.ADMIN, Roles.WAITER]} />
-        ),
-        children: [{ index: true, element: <DocumentsPage /> }]
-      },
-      {
         path: 'operational-reports',
         element: (
-          <Auth allowedRoles={[Roles.OWNER, Roles.ADMIN, Roles.WAITER]} />
+          <Auth
+            allowedRoles={[Roles.OWNER, Roles.ADMIN, Roles.WAITER, Roles.COOK]}
+          />
         ),
         children: [{ index: true, element: <ReportsPage /> }]
       },
@@ -84,7 +74,9 @@ export const PrivateRouter: RouteObject[] = [
       {
         path: 'attention',
         element: (
-          <Auth allowedRoles={[Roles.OWNER, Roles.ADMIN, Roles.WAITER]} />
+          <Auth
+            allowedRoles={[Roles.OWNER, Roles.ADMIN, Roles.WAITER, Roles.COOK]}
+          />
         ),
         children: [{ index: true, element: <OperationsPage /> }]
       },

@@ -3,15 +3,6 @@ import { Navigate, RouteObject } from 'react-router-dom';
 const ListOrders = lazy(() =>
   import('../views').then((m) => ({ default: m.ListOrders }))
 );
-const EditOrder = lazy(() =>
-  import('../views').then((m) => ({ default: m.EditOrder }))
-);
-const MenuAddProductsOrder = lazy(() =>
-  import('../views').then((m) => ({ default: m.MenuAddProductsOrder }))
-);
-const ReceiptOrder = lazy(() =>
-  import('../views').then((m) => ({ default: m.ReceiptOrder }))
-);
 const OrdersDashboard = lazy(() =>
   import('../views').then((m) => ({ default: m.OrdersDashboard }))
 );
@@ -41,15 +32,15 @@ export const OrderRouter: RouteObject = {
     },
     {
       path: 'list/edit/:orderId',
-      element: <EditOrder />
+      element: <Navigate to='/orders/list' replace />
     },
     {
       path: 'list/edit/:orderId/products',
-      element: <MenuAddProductsOrder />
+      element: <Navigate to='/orders/list' replace />
     },
     {
       path: 'list/edit/:orderId/receipt',
-      element: <ReceiptOrder />
+      element: <Navigate to='/orders/list' replace />
     },
     {
       path: 'add',

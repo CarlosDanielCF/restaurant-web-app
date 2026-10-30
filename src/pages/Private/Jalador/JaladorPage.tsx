@@ -53,7 +53,7 @@ export function JaladorPage() {
     totalPeople: 0,
     tables: 0
   });
-  const [selected, setSelected] = useState<CaptureTable | null>(null);
+  const [selected, setSelected] = useState<CaptureTable[]>([]);
   const [partySize, setPartySize] = useState('');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -76,12 +76,11 @@ export function JaladorPage() {
       ]);
       setTables(tableResponse.data);
       setSelected((current) =>
-        current &&
-        tableResponse.data.some(
-          (table) => table.id === current.id && table.status === 'libre'
+        current.filter((selectedTable) =>
+          tableResponse.data.some(
+            (table) => table.id === selectedTable.id && table.status === 'libre'
+          )
         )
-          ? current
-          : null
       );
       setMetrics(metricsResponse.data);
       setError('');
@@ -98,7 +97,7 @@ export function JaladorPage() {
   const submit = async () => {
     const count = Number(partySize);
     if (
-      !selected ||
+      !selected.length ||
       !Number.isInteger(count) ||
       count < 1 ||
       requestLock.current
@@ -110,11 +109,13 @@ export function JaladorPage() {
     setNotice('');
     try {
       await restauranteApi.post('/client-captures', {
-        tableId: selected.id,
+        tableIds: selected.map((table) => table.id),
         partySize: count
       });
-      setNotice(`Llegada registrada para ${selected.name}.`);
-      setSelected(null);
+      setNotice(
+        `Llegada registrada para ${selected.map((table) => table.name).join(' + ')}.`
+      );
+      setSelected([]);
       setPartySize('');
       await refresh(true);
     } catch (reason) {
@@ -202,7 +203,7 @@ export function JaladorPage() {
               Mesas
             </Typography>
             <Typography variant='body2' color='text.secondary'>
-              Selecciona una mesa para registrar una llegada.
+              Selecciona una mesa o une varias mesas libres.
             </Typography>
           </Box>
           <Typography variant='body2' color='text.secondary'>
@@ -221,7 +222,7 @@ export function JaladorPage() {
           <Box className='jalador-table-grid'>
             {tables.map((table) => {
               const occupied = table.status === 'ocupada';
-              const active = selected?.id === table.id;
+              const active = selected.some((item) => item.id === table.id);
               return (
                 <Card
                   key={table.id}
@@ -232,8 +233,11 @@ export function JaladorPage() {
                     disabled={occupied}
                     onClick={() => {
                       if (occupied) return;
-                      setSelected(table);
-                      setPartySize('');
+                      setSelected((current) =>
+                        active
+                          ? current.filter((item) => item.id !== table.id)
+                          : [...current, table]
+                      );
                       setError('');
                       setNotice('');
                     }}
@@ -264,7 +268,7 @@ export function JaladorPage() {
         )}
       </section>
 
-      {selected && (
+      {!!selected.length && (
         <Card
           component='section'
           variant='outlined'
@@ -275,7 +279,9 @@ export function JaladorPage() {
             <Stack spacing={2}>
               <Box>
                 <Typography id='capture-title' variant='h6' fontWeight={800}>
-                  Registrar llegada · Mesa {selected.name}
+                  Registrar llegada ·{' '}
+                  {selected.length === 1 ? 'Mesa ' : 'Mesas '}
+                  {selected.map((table) => table.name).join(' + ')}
                 </Typography>
                 <Typography variant='body2' color='text.secondary'>
                   La disponibilidad se actualizará desde el sistema.
@@ -314,6 +320,7 @@ export function JaladorPage() {
                 fullWidth
                 disabled={
                   submitting ||
+                  !selected.length ||
                   !Number.isInteger(Number(partySize)) ||
                   Number(partySize) < 1
                 }

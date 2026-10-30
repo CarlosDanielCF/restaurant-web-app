@@ -1,11 +1,11 @@
 import { FC } from 'react';
 
-import { Box, Typography, Stack, Breadcrumbs } from '@mui/material';
+import { Box, Button, Typography, Stack, Breadcrumbs } from '@mui/material';
 
 import Link, { LinkProps } from '@mui/material/Link';
 
-import { Link as RouterLink, useLocation } from 'react-router-dom';
-import { CircleRounded } from '@mui/icons-material';
+import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
+import { ArrowBack, CircleRounded } from '@mui/icons-material';
 
 const breadcrumbNameMap: { [key: string]: string } = {
   '/orders': 'Pedidos',
@@ -65,14 +65,19 @@ interface Props {
   action?: React.ReactNode;
   breadcrumbEnd?: string;
   showBreadcrumbs?: boolean;
+  back?: boolean;
+  backTo?: string;
 }
 
 export const TitlePage: FC<Props> = ({
   title,
   action,
-  showBreadcrumbs = false
+  showBreadcrumbs = false,
+  back = false,
+  backTo
 }) => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const pathnames = location.pathname.split('/').filter((x) => x);
 
@@ -85,13 +90,44 @@ export const TitlePage: FC<Props> = ({
       alignItems={{ sm: 'center' }}
     >
       <Stack direction='row' alignItems='center' justifyContent='flex-start'>
+        {back && (
+          <Button
+            startIcon={<ArrowBack />}
+            onClick={() => (backTo ? navigate(backTo) : navigate(-1))}
+            variant='outlined'
+            size='small'
+            sx={{
+              mr: 1.5,
+              borderRadius: 2,
+              borderColor: 'divider',
+              color: 'text.secondary',
+              bgcolor: 'background.paper',
+              textTransform: 'none',
+              fontWeight: 600,
+              boxShadow: '0 1px 2px rgba(15, 23, 42, 0.04)',
+              '&:hover': {
+                bgcolor: '#f0fdfa',
+                borderColor: '#99f6e4',
+                color: 'primary.main'
+              }
+            }}
+          >
+            Volver
+          </Button>
+        )}
         <Box>
-          <Typography variant='h5' fontWeight={500}>
+          <Typography
+            variant='h5'
+            fontWeight={750}
+            color='text.primary'
+            sx={{ letterSpacing: '-0.02em', lineHeight: 1.3 }}
+          >
             {title}
           </Typography>
           {showBreadcrumbs && (
             <Breadcrumbs
-              separator={<CircleRounded sx={{ fontSize: 4, color: '#888' }} />}
+              separator={<CircleRounded sx={{ fontSize: 4, color: 'text.disabled' }} />}
+              sx={{ mt: 0.25 }}
             >
               {pathnames.map((value, index) => {
                 const last = index === pathnames.length - 1;
@@ -99,7 +135,12 @@ export const TitlePage: FC<Props> = ({
 
                 if (breadcrumbNameMap[to]) {
                   return last ? (
-                    <Typography color='text.primary' key={to}>
+                    <Typography
+                      variant='caption'
+                      color='text.primary'
+                      fontWeight={600}
+                      key={to}
+                    >
                       {breadcrumbNameMap[to]}
                     </Typography>
                   ) : (
@@ -108,6 +149,7 @@ export const TitlePage: FC<Props> = ({
                       color='inherit'
                       to={to}
                       key={to}
+                      sx={{ fontSize: '0.75rem', color: 'text.secondary' }}
                     >
                       {breadcrumbNameMap[to]}
                     </LinkRouter>

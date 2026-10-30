@@ -1,78 +1,759 @@
+/* ==========================================================================
+   Point Restaurant POS - Modernized Operations & Attention Workspace
+   White & Turquoise Identity (#0d9488) - Tactile, Clean, Ergonomic
+   ========================================================================== */
+
 .operations-workspace {
   min-width: 0;
 }
+
 .operations-heading {
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 20px;
+  gap: 8px;
+  padding: 0 0 2px;
 }
+
+.operations-heading h1,
+.attention-service h2,
+.open-attention-map h3 {
+  color: #0f172a;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.operations-heading h1 {
+  font-size: 1.25rem !important;
+  margin: 0 !important;
+  line-height: 1.2 !important;
+}
+
+.operations-workspace .operations-heading .MuiTypography-overline {
+  display: none;
+}
+
+.operations-heading .MuiTypography-body1 {
+  margin-top: 1px;
+  color: #64748b;
+  font-size: 0.775rem;
+  line-height: 1.2;
+}
+
+/* --------------------------------------------------------------------------
+   KPI Metrics Cards - Compact Telemetry
+   -------------------------------------------------------------------------- */
 .operations-metrics {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  gap: 8px;
+  margin-bottom: 2px;
 }
+
 .operations-metrics > div {
-  padding: 16px 20px;
-  border: 1px solid #dce9e6;
-  border-radius: 14px;
-  background: #fff;
-  color: #134e4a;
+  padding: 5px 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+  transition: all 0.18s ease;
+  min-height: 38px;
 }
+
+.operations-metrics > div:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06);
+}
+
+.operations-metrics .MuiTypography-body1,
+.operations-metrics .MuiTypography-root {
+  font-size: 0.72rem;
+  font-weight: 650;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin: 0;
+  line-height: 1.1;
+}
+
+.operations-metrics .MuiTypography-h4 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+/* --------------------------------------------------------------------------
+   Segmented Capsule Navigation Tabs - Compact
+   -------------------------------------------------------------------------- */
 .operations-workspace .operations-tabs {
   height: auto;
-  min-height: 48px;
-  padding: 4px;
-  border-radius: 12px;
-  background: #eaf3f1;
+  min-height: 36px;
+  padding: 2px;
+  border-radius: 10px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
 }
+
 .operations-workspace .operations-tabs .MuiTabs-indicator {
   display: none;
 }
+
 .operations-workspace .operations-tabs .MuiTab-root {
-  min-height: 44px;
+  min-height: 32px;
   height: auto;
   white-space: nowrap;
+  border-radius: 8px;
+  font-weight: 650;
+  font-size: 0.8125rem;
+  text-transform: none;
+  color: #475569;
+  padding: 3px 14px;
+  transition: all 0.15s ease;
+  margin: 0 2px;
 }
+
+.operations-workspace .operations-tabs .MuiTab-root:hover {
+  color: #0d9488;
+  background: rgba(13, 148, 136, 0.06);
+}
+
 .operations-workspace .operations-tabs .MuiTab-root.Mui-selected {
-  background: #107e76;
-  color: #fff;
+  background: #0d9488 !important;
+  color: #ffffff !important;
+  font-weight: 750;
+  box-shadow: 0 2px 6px rgba(13, 148, 136, 0.28);
 }
+
+.operations-workspace .operations-tabs .MuiTab-root svg {
+  font-size: 17px !important;
+  margin-right: 4px;
+}
+
+.operations-workspace .operations-tabs .MuiTab-root.Mui-selected svg {
+  color: #ffffff;
+}
+
+/* --------------------------------------------------------------------------
+   Operations Section & Form Overrides
+   -------------------------------------------------------------------------- */
 .operations-section {
-  margin-top: 16px;
+  margin-top: 6px;
   min-width: 0;
 }
+
+.open-attention-card {
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03) !important;
+  background: #ffffff !important;
+}
+
+.open-attention-card > .MuiCardContent-root {
+  padding: 8px 10px !important;
+}
+
+.open-attention-card > .MuiCardContent-root:last-child {
+  padding-bottom: 8px !important;
+}
+
+.attention-operational-bar {
+  padding: 0 2px;
+  margin-bottom: 6px !important;
+}
+
+.attention-operational-bar .MuiButton-root {
+  min-height: 28px !important;
+  height: 28px !important;
+  border-radius: 8px !important;
+  font-size: 0.75rem !important;
+  padding: 2px 10px !important;
+  font-weight: 650 !important;
+  text-transform: none !important;
+}
+
 .operations-section .MuiCard-root {
-  border: 1px solid #e0e9e7;
+  border: 1.5px solid #e2e8f0;
   border-radius: 16px;
-  box-shadow: 0 2px 8px #183d3210;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+  background: #ffffff;
 }
+
 .operations-section .MuiCardContent-root {
-  padding: 24px;
+  padding: 20px;
 }
+
 .operations-section .MuiButton-root {
-  min-height: 44px;
+  min-height: 42px;
+  border-radius: 10px;
+  text-transform: none;
+  font-weight: 650;
 }
+
 .operations-section .MuiInputBase-root {
-  background: #fff;
+  background: #ffffff;
+  border-radius: 10px;
 }
+
+.operation-empty {
+  padding: 28px 24px;
+  background: #f8fafc;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 14px;
+  color: #64748b;
+  text-align: center;
+  font-weight: 500;
+}
+
+/* --------------------------------------------------------------------------
+   Open Attention Layout & Map
+   -------------------------------------------------------------------------- */
+.open-attention-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+  gap: 20px;
+  align-items: start;
+}
+
+.open-attention-form {
+  padding-left: 20px;
+  border-left: 1.5px solid #e2e8f0;
+  min-width: 0;
+}
+
+.open-attention-map {
+  min-width: 0;
+}
+
+.open-attention-map .table-choice-grid {
+  grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
+  gap: 8px;
+}
+
+.open-attention-map .MuiFormControlLabel-root {
+  min-height: 72px;
+}
+
+.open-attention-map .MuiFormControlLabel-label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.open-attention-map .MuiFormControlLabel-root.Mui-disabled .MuiFormControlLabel-label {
+  color: #94a3b8;
+}
+
+.open-attention-map .MuiFormControlLabel-root:focus-within {
+  outline: 2px solid #0d9488;
+  outline-offset: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   Tactile Table Choices Grid
+   -------------------------------------------------------------------------- */
 .table-choice-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 10px;
   width: 100%;
 }
+
 .table-choice-grid .MuiFormControlLabel-root {
   margin: 0;
   min-height: 76px;
+  border-radius: 12px;
+  transition: all 0.15s ease;
 }
-.operation-empty {
-  padding: 24px;
-  background: #f0f6f4;
-  border: 1px dashed #b6d3ca;
+
+.operations-section .table-choice-grid .MuiFormControlLabel-root {
   border-radius: 12px;
 }
+
+.operations-section .table-choice-grid .MuiFormControlLabel-root:has(.Mui-checked) {
+  background: #f0fdfa;
+  border-color: #0d9488;
+}
+
+/* --------------------------------------------------------------------------
+   Interactive Table Tiles (Quick Table Grid) - High Density (25-40 tables)
+   -------------------------------------------------------------------------- */
+.quick-table-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)) !important;
+  gap: 7px !important;
+}
+
+.quick-table {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 82px !important;
+  height: auto !important;
+  padding: 6px 6px !important;
+  border-radius: 10px !important;
+  border-width: 1.5px !important;
+  border-style: solid !important;
+  text-transform: none !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  cursor: pointer !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.quick-table strong {
+  font-size: 1.05rem !important;
+  font-weight: 800 !important;
+  line-height: 1.15;
+  margin: 1px 0 0;
+  color: inherit;
+  letter-spacing: -0.01em;
+}
+
+.quick-table span {
+  font-size: 0.68rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  line-height: 1.15;
+  margin-top: 1px;
+}
+
+.quick-table small {
+  font-size: 0.67rem !important;
+  margin-top: 2px;
+  line-height: 1.2;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  display: block;
+}
+
+.quick-table svg {
+  font-size: 18px !important;
+  margin-bottom: 1px !important;
+  color: inherit;
+  flex-shrink: 0;
+}
+
+/* State: Disponible */
+.attention-service .quick-table[data-occupied='false'],
+.quick-table[data-occupied='false'] {
+  background: linear-gradient(180deg, #ffffff 0%, #f0fdf4 100%) !important;
+  border-color: #86efac !important;
+  color: #15803d !important;
+}
+
+.attention-service .quick-table[data-occupied='false']:hover,
+.quick-table[data-occupied='false']:hover {
+  background: #dcfce7 !important;
+  border-color: #4ade80 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(34, 197, 94, 0.16) !important;
+}
+
+/* State: Atención abierta (borrador sin consumo confirmado) */
+.attention-service .quick-table[data-open-draft='true'],
+.quick-table[data-open-draft='true'] {
+  background: linear-gradient(180deg, #ffffff 0%, #f0fdfa 100%) !important;
+  border-color: #5eead4 !important;
+  color: #0f766e !important;
+}
+
+.attention-service .quick-table[data-open-draft='true']:hover,
+.quick-table[data-open-draft='true']:hover {
+  background: #ccfbf1 !important;
+  border-color: #2dd4bf !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(13, 148, 136, 0.18) !important;
+}
+
+/* State: Ocupada (consumo confirmado) */
+.attention-service .quick-table[data-occupied='true'],
+.quick-table[data-occupied='true'] {
+  background: linear-gradient(180deg, #ffffff 0%, #fff1f2 100%) !important;
+  border-color: #fca5a5 !important;
+  color: #b91c1c !important;
+}
+
+.attention-service .quick-table[data-occupied='true']:hover,
+.quick-table[data-occupied='true']:hover {
+  background: #fee2e2 !important;
+  border-color: #f87171 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.16) !important;
+}
+
+/* State: Seleccionada para unión/traslado */
+.quick-table[aria-pressed='true'] {
+  background: linear-gradient(180deg, #f0fdfa 0%, #ccfbf1 100%) !important;
+  border-color: #0d9488 !important;
+  color: #0f766e !important;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.3), 0 4px 12px rgba(13, 148, 136, 0.2) !important;
+}
+
+/* Open Draft Badge */
+.open-draft-badge {
+  background: #0d9488 !important;
+  color: #ffffff !important;
+  border-radius: 9999px !important;
+  height: 18px !important;
+  font-size: 0.625rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.05em !important;
+  padding: 0 6px !important;
+  margin: 3px 0 !important;
+}
+
+/* --------------------------------------------------------------------------
+   Active Account Cards
+   -------------------------------------------------------------------------- */
+.account-cards {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 4px 2px;
+}
+
+.operations-section .account-tile {
+  padding: 8px 12px;
+  flex: 0 1 200px;
+  min-width: 0;
+  border-radius: 10px !important;
+  border: 1.5px solid #e2e8f0 !important;
+  border-left: 4px solid #0d9488 !important;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+  transition: all 0.18s ease;
+}
+
+.operations-section .account-tile:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+  border-color: #cbd5e1 !important;
+  border-left-color: #0f766e !important;
+}
+
+.account-tile .MuiTypography-root:first-child {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 2px;
+}
+
+.account-tile .MuiButton-root {
+  display: block;
+  margin-top: 8px;
+  font-weight: 700;
+}
+
+.attention-service > .account-cards,
+.open-attention-map > .account-cards {
+  max-height: 160px;
+  overflow: auto;
+  padding: 4px 2px;
+}
+
+/* --------------------------------------------------------------------------
+   Accordions: Secondary Account Selector & Service Details
+   -------------------------------------------------------------------------- */
+.secondary-account-selector,
+.service-details {
+  border: 1.5px solid #e2e8f0;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 12px 16px;
+  transition: all 0.15s ease;
+}
+
+.secondary-account-selector:hover,
+.service-details:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.secondary-account-selector summary,
+.service-details summary {
+  cursor: pointer;
+  color: #0f766e;
+  font-weight: 700;
+  font-size: 0.9rem;
+  min-height: 24px;
+}
+
+.secondary-account-selector > .MuiFormControl-root {
+  margin-top: 12px;
+}
+
+.service-details > .MuiTypography-root {
+  margin-top: 8px;
+}
+
+/* --------------------------------------------------------------------------
+   Order Workbench Layout
+   -------------------------------------------------------------------------- */
+.order-workbench {
+  display: grid;
+  grid-template-columns: minmax(0, 1.65fr) minmax(360px, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.order-catalog,
+.current-order {
+  min-width: 0;
+  scroll-margin-top: 85px;
+}
+
+.current-order {
+  position: sticky;
+  top: 80px;
+  max-height: calc(100dvh - 100px);
+  overflow: auto;
+  display: grid;
+  gap: 12px;
+}
+
+.operations-section .current-order .MuiCardContent-root {
+  padding: 16px;
+}
+
+.operations-section .current-order-card > .MuiCardContent-root > .MuiStack-root {
+  gap: 10px;
+}
+
+.operations-section .current-order-card > .MuiCardContent-root > .MuiStack-root > * {
+  margin-top: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Current Order Card (POS Receipt Ticket)
+   -------------------------------------------------------------------------- */
+.current-order-card {
+  border: 1.5px solid #e2e8f0 !important;
+  border-top: 4px solid #0d9488 !important;
+  border-radius: 16px !important;
+  background: #ffffff;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+}
+
+.current-order-card .MuiCard-root {
+  border: 1px solid #f1f5f9;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+  transition: all 0.15s ease;
+}
+
+.current-order-card .MuiCard-root:hover {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+/* Ticket Notes */
+.ticket-notes {
+  padding: 6px 10px;
+  border-left: 3px solid #0d9488;
+  background: #f0fdfa;
+  border-radius: 6px;
+  font-weight: 600 !important;
+  color: #0f766e;
+  font-size: 0.8125rem;
+}
+
+/* --------------------------------------------------------------------------
+   Order Total & Action Footer
+   -------------------------------------------------------------------------- */
+.order-total {
+  border: 1.5px solid #ccfbf1;
+  background: linear-gradient(180deg, #f8fafc 0%, #f0fdfa 100%);
+  border-radius: 14px;
+  padding: 16px;
+  color: #0f172a;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.order-total > .MuiTypography-root {
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: #475569;
+}
+
+.order-total > .MuiTypography-h5,
+.order-total > .MuiTypography-h6 {
+  font-size: 1.25rem;
+  font-weight: 850;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+}
+
+.attention-service .order-production {
+  grid-column: 1 / -1;
+  margin-top: 4px;
+}
+
+.attention-service .order-production .MuiButton-root {
+  min-height: 46px;
+  border-radius: 10px;
+  font-weight: 750;
+  font-size: 0.9375rem;
+}
+
+.attention-service .order-production > .MuiStack-root > .MuiStack-root > .MuiButton-root {
+  flex: 1;
+}
+
+.attention-service .order-production:has(.MuiAlert-root) {
+  grid-column: 1 / -1;
+}
+
+/* --------------------------------------------------------------------------
+   Product Catalogue & Service Product Tiles
+   -------------------------------------------------------------------------- */
+.service-product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 12px;
+}
+
+.operations-section .service-product {
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  background: #ffffff;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.operations-section .service-product:hover {
+  transform: translateY(-2px);
+  border-color: #99f6e4;
+  box-shadow: 0 8px 20px rgba(13, 148, 136, 0.1);
+}
+
+.service-product img,
+.product-symbol {
+  width: 100%;
+  height: 96px;
+  object-fit: cover;
+  background: #f1f5f9;
+}
+
+.product-symbol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #0d9488;
+  background: linear-gradient(135deg, #f0fdfa 0%, #f1f5f9 100%);
+}
+
+.product-symbol svg {
+  font-size: 32px;
+}
+
+.product-info {
+  padding: 12px;
+  display: grid;
+  gap: 5px;
+}
+
+.product-info .MuiTypography-root:first-child {
+  font-size: 0.925rem;
+  font-weight: 750;
+  color: #0f172a;
+  line-height: 1.25;
+}
+
+.product-info .MuiTypography-caption {
+  font-size: 0.72rem;
+  color: #64748b;
+  line-height: 1.2;
+}
+
+.product-info .MuiChip-root {
+  justify-self: start;
+  max-width: 100%;
+  border-radius: 9999px;
+  height: 22px;
+  font-weight: 650;
+}
+
+.product-info .MuiTypography-root {
+  overflow-wrap: anywhere;
+}
+
+.service-product .product-quantity {
+  display: grid;
+  grid-template-columns: 40px minmax(24px, 1fr) 40px;
+  align-items: center;
+  gap: 4px;
+}
+
+.service-product .product-quantity .MuiButton-root {
+  width: 40px;
+  min-width: 40px;
+  min-height: 38px;
+  padding: 4px;
+  border-radius: 8px;
+  border: 1.5px solid #e2e8f0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.service-product .product-quantity .MuiButton-root:hover {
+  background: #f0fdfa;
+  border-color: #99f6e4;
+  color: #0d9488;
+}
+
+.service-product .product-quantity .MuiTypography-root {
+  white-space: nowrap;
+  text-align: center;
+  font-weight: 800;
+  font-size: 0.95rem;
+}
+
+/* --------------------------------------------------------------------------
+   Sticky Catalog Search & Category Rail
+   -------------------------------------------------------------------------- */
+.point-catalog .point-catalog-search,
+.attention-service .point-catalog-search {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  padding: 6px 0;
+  background: #ffffff;
+}
+
+.point-catalog .point-category-rail,
+.attention-service .point-category-rail {
+  position: sticky;
+  top: 54px;
+  z-index: 4;
+  background: #ffffff;
+  padding: 6px 0 10px;
+}
+
+/* --------------------------------------------------------------------------
+   Desktop Ergonomics (min-width: 900px & 1000px)
+   -------------------------------------------------------------------------- */
 @media (min-width: 900px) {
   .operations-section .operation-form-grid {
     display: grid;
@@ -87,380 +768,13 @@
   .operations-section .operation-form-grid > .MuiFormControl-root {
     grid-column: auto;
   }
-}
-@media (max-width: 599px) {
-  .operations-workspace.MuiContainer-root {
-    padding: 0;
-  }
-  .operations-metrics {
-    gap: 6px;
-  }
-  .operations-metrics > div {
-    padding: 12px 8px;
-  }
-  .operations-metrics .MuiTypography-body1 {
-    font-size: 12px;
-  }
-  .operations-section .MuiCardContent-root {
-    padding: 16px;
-  }
-}
 
-/* Cycle 1 visual correction: compact service overview, no changes to other modules. */
-.operations-workspace.MuiContainer-root {
-  padding-left: 0;
-  padding-right: 0;
-}
-.operations-heading {
-  gap: 10px;
-}
-.operations-heading h1,
-.attention-service h2,
-.open-attention-map h3 {
-  color: #19364a;
-}
-.operations-metrics {
-  gap: 8px;
-}
-.operations-metrics > div {
-  padding: 9px 14px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-.operations-metrics .MuiTypography-body1 {
-  font-size: 13px;
-}
-.operations-metrics .MuiTypography-h4 {
-  font-size: 22px;
-}
-.operations-workspace .operations-tabs {
-  border: 1px solid #d7e6e2;
-  border-radius: 10px;
-}
-.operations-workspace .operations-tabs .MuiTab-root.Mui-selected {
-  font-weight: 800;
-  box-shadow: inset 0 -3px 0 #064b47;
-}
-.operations-section {
-  margin-top: 8px;
-}
-.open-attention-card > .MuiCardContent-root {
-  padding: 16px;
-}
-.open-attention-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
-  gap: 20px;
-  align-items: start;
-}
-.open-attention-form {
-  padding-left: 20px;
-  border-left: 1px solid #e0e9e7;
-  min-width: 0;
-}
-.open-attention-map {
-  min-width: 0;
-}
-.open-attention-map .table-choice-grid {
-  grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
-  gap: 8px;
-}
-.open-attention-map .MuiFormControlLabel-root {
-  min-height: 72px;
-}
-.open-attention-map .MuiFormControlLabel-label {
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
-.open-attention-map
-  .MuiFormControlLabel-root.Mui-disabled
-  .MuiFormControlLabel-label {
-  color: #56616c;
-}
-.open-attention-map .MuiFormControlLabel-root:focus-within {
-  outline: 2px solid #0e7972;
-  outline-offset: 2px;
-}
-@media (max-width: 1100px) {
-  .open-attention-layout {
-    grid-template-columns: minmax(0, 1fr) 280px;
-    gap: 14px;
-  }
-  .open-attention-form {
-    padding-left: 14px;
-  }
-}
-@media (max-width: 699px) {
-  .operations-metrics > div {
-    display: block;
-    padding: 8px;
-  }
-  .operations-metrics .MuiTypography-body1 {
-    font-size: 11px;
-    line-height: 1.3;
-  }
-  .operations-metrics .MuiTypography-h4 {
-    margin-top: 4px;
-    font-size: 20px;
-  }
-  .open-attention-layout {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 16px;
-  }
-  .open-attention-form {
-    border-left: 0;
-    border-top: 1px solid #e0e9e7;
-    padding-left: 0;
-    padding-top: 14px;
-  }
-  .open-attention-card > .MuiCardContent-root {
-    padding: 12px;
-  }
-}
-
-/* Operational service view: catalog and order retain independent scroll on desktop. */
-.secondary-account-selector,
-.service-details {
-  border: 1px solid #dde7e4;
-  background: #fff;
-  border-radius: 10px;
-  padding: 10px 12px;
-}
-.secondary-account-selector summary,
-.service-details summary {
-  cursor: pointer;
-  color: #22534f;
-  font-weight: 600;
-  min-height: 24px;
-}
-.secondary-account-selector > .MuiFormControl-root {
-  margin-top: 12px;
-}
-.account-cards {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.operations-section .account-tile {
-  padding: 12px;
-  flex: 0 1 220px;
-  min-width: 0;
-  border-radius: 12px;
-}
-.account-tile .MuiButton-root {
-  display: block;
-}
-.order-workbench {
-  display: grid;
-  grid-template-columns: minmax(0, 1.85fr) minmax(300px, 1fr);
-  gap: 16px;
-  align-items: start;
-}
-.order-catalog,
-.current-order {
-  min-width: 0;
-}
-.current-order {
-  position: sticky;
-  top: 82px;
-  max-height: calc(100dvh - 100px);
-  overflow: auto;
-  display: grid;
-  gap: 10px;
-}
-.operations-section .current-order .MuiCardContent-root {
-  padding: 12px;
-}
-.operations-section
-  .current-order-card
-  > .MuiCardContent-root
-  > .MuiStack-root {
-  gap: 8px;
-}
-.operations-section
-  .current-order-card
-  > .MuiCardContent-root
-  > .MuiStack-root
-  > * {
-  margin-top: 0;
-}
-.order-total {
-  border-top: 1px solid #d8e5e1;
-  padding-top: 10px;
-  color: #183c4e;
-}
-.service-product-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 10px;
-}
-.operations-section .service-product {
-  border-radius: 12px;
-  overflow: hidden;
-}
-.service-product img,
-.product-symbol {
-  width: 100%;
-  height: 86px;
-  object-fit: cover;
-  background: #edf5f2;
-}
-.product-symbol {
-  display: grid;
-  place-items: center;
-  color: #4e8279;
-}
-.product-info {
-  padding: 10px;
-  display: grid;
-  gap: 5px;
-}
-.product-info .MuiChip-root {
-  justify-self: start;
-  max-width: 100%;
-}
-.product-info .MuiTypography-root {
-  overflow-wrap: anywhere;
-}
-.operations-workspace .operations-heading .MuiTypography-overline {
-  display: none;
-}
-.operations-heading .MuiTypography-body1 {
-  margin-top: 4px;
-}
-.operations-metrics > div {
-  padding: 6px 12px;
-}
-.operations-section .table-choice-grid .MuiFormControlLabel-root {
-  border-radius: 12px;
-}
-.operations-section
-  .table-choice-grid
-  .MuiFormControlLabel-root:has(.Mui-checked) {
-  background: #e7f5f1;
-}
-.operations-section .reservation-workbench {
-  display: grid;
-  grid-template-columns: minmax(0, 1.8fr) minmax(280px, 1fr);
-  gap: 12px;
-}
-.reservation-workbench > * {
-  margin-top: 0 !important;
-  min-width: 0;
-}
-.reservation-workbench > .MuiTypography-root,
-.reservation-arrival {
-  grid-column: 1 / -1;
-}
-.reservation-form {
-  grid-column: 2;
-  grid-row: 3;
-}
-.reservation-list {
-  grid-column: 1;
-  grid-row: 3;
-  display: grid;
-  align-content: start;
-  gap: 10px;
-}
-.operations-section .reservation-form .MuiCardContent-root,
-.operations-section .reservation-list .MuiCardContent-root {
-  padding: 14px;
-}
-.operations-section .daily-menu-card {
-  border-left: 4px solid #0d8277;
-}
-@media (max-width: 1100px) {
-  .order-workbench {
-    grid-template-columns: minmax(0, 1.5fr) minmax(280px, 1fr);
-  }
-}
-@media (max-width: 699px) {
-  .order-workbench,
-  .operations-section .reservation-workbench {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .current-order {
-    position: static;
-    max-height: none;
-  }
-  .reservation-list,
-  .reservation-form {
-    grid-column: 1;
-    grid-row: auto;
-  }
-  .reservation-list {
-    order: 1;
-  }
-  .reservation-form {
-    order: 2;
-  }
-  .reservation-arrival {
-    order: 3;
-  }
-  .service-product-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .operations-section .account-tile {
-    flex-basis: calc(50% - 4px);
-  }
-}
-.attention-service > .account-cards {
-  max-height: 150px;
-  overflow: auto;
-  padding: 2px;
-}
-.current-order,
-.order-catalog {
-  scroll-margin-top: 85px;
-}
-.service-details > .MuiTypography-root {
-  margin-top: 8px;
-}
-.open-attention-map > .account-cards {
-  max-height: 150px;
-  overflow: auto;
-  padding: 2px;
-}
-@media (min-width: 700px) {
-  .current-order {
-    display: flex;
-    flex-direction: column;
-    height: calc(100dvh - 330px);
-    min-height: 420px;
-    overflow: hidden;
-  }
-  .current-order-card {
-    flex: 1;
-    min-height: 160px;
-    overflow: auto;
-  }
-  .current-order > .fulfillment-card {
-    flex-shrink: 0;
-    max-height: 240px;
-    overflow: auto;
-  }
-}
-/* Occupancy comes from active accounts; payment never changes this state. */
-.attention-service .quick-table[data-occupied='false'] {
-  border-color: #16a34a;
-  background: #f0fdf4;
-  color: #166534;
-}
-.attention-service .quick-table[data-occupied='true'] {
-  border-color: #dc2626;
-  background: #fef2f2;
-  color: #991b1b;
-}
-@media (min-width: 900px) {
   .attention-service .order-workbench {
-    height: calc(100dvh - 410px);
-    min-height: 300px;
+    height: calc(100dvh - 380px);
+    min-height: 320px;
     align-items: stretch;
   }
+
   .attention-service .order-catalog,
   .attention-service .current-order {
     height: 100%;
@@ -468,37 +782,49 @@
     overflow-y: auto;
     overscroll-behavior: contain;
   }
-  .attention-service .point-catalog-search {
-    position: sticky;
-    top: 0;
-    z-index: 3;
-    background: #fff;
-  }
+
   .attention-service .current-order {
     display: block;
     position: static;
   }
+
   .attention-service .current-order-card,
   .attention-service .current-order > .fulfillment-card {
     max-height: none;
     overflow: visible;
   }
-  .attention-service .point-category-rail {
+
+  .attention-service .order-total {
     position: sticky;
-    top: 54px;
-    align-self: start;
+    bottom: 0;
+    z-index: 2;
+    background: #ffffff;
+    border-top: 1.5px solid #e2e8f0;
   }
 }
+
+@media (min-width: 1000px) {
+  .attention-service .order-workbench {
+    grid-template-columns: minmax(0, 1.6fr) minmax(350px, 1fr);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Mobile & Tablet Responsive Adjustments
+   -------------------------------------------------------------------------- */
 @media (max-width: 899px) {
   body [data-testid='app-content'] .point-catalog-layout {
     grid-template-columns: minmax(0, 1fr);
   }
+
   .attention-service {
     padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px));
   }
+
   .attention-service.has-account {
     padding-bottom: 0;
   }
+
   .mobile-order-bar {
     position: fixed;
     left: 0;
@@ -509,21 +835,36 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
-    background: #fff;
-    border-top: 1px solid #d7e6e2;
-    box-shadow: 0 -4px 16px #173d3218;
+    padding: 12px 18px calc(12px + env(safe-area-inset-bottom, 0px));
+    backdrop-filter: blur(12px);
+    background: rgba(255, 255, 255, 0.95);
+    border-top: 1.5px solid #ccfbf1;
+    box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.1);
   }
+
   .mobile-order-bar-summary {
     min-width: 0;
   }
-  .mobile-order-bar .MuiButton-root {
-    min-height: 48px;
-    flex: 0 0 auto;
+
+  .mobile-order-bar-summary .MuiTypography-root:first-child {
+    font-weight: 800;
+    font-size: 1rem;
+    color: #0f172a;
   }
+
+  .mobile-order-bar .MuiButton-root {
+    min-height: 46px;
+    flex: 0 0 auto;
+    border-radius: 10px;
+    font-weight: 750;
+    background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+    box-shadow: 0 4px 12px rgba(13, 148, 136, 0.25);
+  }
+
   .attention-service[data-mobile-pane='order'] .mobile-order-bar {
     display: none;
   }
+
   .attention-service[data-mobile-pane='order'] .mobile-order-send {
     display: block;
     position: sticky;
@@ -533,360 +874,146 @@
     min-height: 52px;
     margin-top: 8px;
   }
+
   .attention-service .current-order .mobile-order-close {
     min-height: 48px;
     position: sticky;
     top: 56px;
     z-index: 2;
-    background: #fff;
+    background: #ffffff;
+    border-radius: 10px;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
   }
+
   .attention-service[data-mobile-pane='order'] .current-order {
     padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
   }
+
   .attention-service.has-account .order-catalog {
     overflow: visible;
   }
+
   .attention-service.has-account .point-catalog {
     gap: 8px;
     min-width: 0;
     padding-bottom: calc(190px + env(safe-area-inset-bottom, 0px));
   }
+
   .attention-service.has-account .point-catalog > .MuiTypography-h5 {
     font-size: 1.125rem;
     line-height: 1.25;
   }
-  body [data-testid='app-content'] .point-catalog .point-catalog-search {
-    position: sticky;
-    top: 0;
-    z-index: 5;
-    padding: 3px 0;
-    background: #fff;
-  }
-  body [data-testid='app-content'] .point-catalog .point-category-rail {
-    flex-direction: row !important;
-    position: sticky;
-    top: 54px;
-    z-index: 4;
-    width: 100%;
-    min-width: 0;
-    max-width: 100%;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    overflow-y: hidden;
-    padding: 4px 2px 8px;
-    border-radius: 99px;
-    background: #fff;
-    scrollbar-width: thin;
-    overscroll-behavior-x: contain;
-    -webkit-overflow-scrolling: touch;
-  }
-  body
-    [data-testid='app-content']
-    .point-catalog
-    .point-category-rail
-    .MuiChip-root {
-    flex: 0 0 auto !important;
-    width: auto !important;
-    min-height: 36px;
-    justify-content: center;
-    border-radius: 99px !important;
-    flex-shrink: 0 !important;
-  }
-  body
-    [data-testid='app-content']
-    .point-catalog
-    .point-category-rail
-    .MuiChip-label {
-    white-space: nowrap !important;
-    padding: 0 10px;
-  }
-  body
-    [data-testid='app-content']
-    .point-catalog
-    .point-category-rail
-    + .service-product-grid {
-    gap: 8px;
-    grid-auto-flow: row;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: start;
-  }
-  body
-    [data-testid='app-content']
-    .point-catalog
-    .point-category-rail
-    + .service-product-grid
-    .service-product {
-    min-width: 0;
-    border-radius: 10px;
-    overflow: hidden;
-    padding: 0;
-  }
-  body
-    [data-testid='app-content']
-    .point-catalog
-    .point-category-rail
-    + .service-product-grid
-    .service-product
-    > img,
-  body
-    [data-testid='app-content']
-    .point-catalog
-    .point-category-rail
-    + .service-product-grid
-    .service-product
-    > .product-symbol {
-    height: 64px;
-  }
-  body
-    [data-testid='app-content']
-    .point-catalog
-    .point-category-rail
-    + .service-product-grid
-    .service-product
-    > .product-symbol
-    svg {
-    font-size: 26px;
-  }
-  body
-    [data-testid='app-content']
-    .point-catalog
-    .point-category-rail
-    + .service-product-grid
-    .product-info {
-    padding: 7px;
-    gap: 3px;
-  }
-  body
-    [data-testid='app-content']
-    .point-catalog
-    .point-category-rail
-    + .service-product-grid
-    .product-info
-    .product-quantity {
-    grid-template-columns: 36px minmax(20px, 1fr) 36px;
-    gap: 2px;
-  }
-  body
-    [data-testid='app-content']
-    .point-catalog
-    .point-category-rail
-    + .service-product-grid
-    .product-info
-    .product-quantity
-    .MuiButton-root {
-    width: 36px;
-    min-width: 36px;
-    min-height: 36px;
-    padding: 4px;
-  }
-  body
-    [data-testid='app-content']
-    .point-catalog
-    .point-category-rail
-    + .service-product-grid
-    .product-info
-    > .MuiButton-root {
-    min-height: 36px;
-  }
-  body
-    [data-testid='app-content']
-    .point-catalog
-    .point-category-rail
-    + .service-product-grid
-    .product-info
-    > .MuiButton-root.MuiButton-outlined {
-    min-height: 36px;
-  }
-  body
-    [data-testid='app-content']
-    .point-catalog
-    .point-category-rail
-    + .service-product-grid
-    .product-info
-    > .MuiTypography-root:first-child {
-    font-size: 0.9rem;
-    line-height: 1.2;
-  }
-  body
-    [data-testid='app-content']
-    .point-catalog
-    .point-category-rail
-    + .service-product-grid
-    .service-product
-    .product-info
-    > .MuiTypography-caption {
-    font-size: 0.68rem;
-    line-height: 1.2;
-  }
-  body
-    [data-testid='app-content']
-    .point-catalog
-    .point-category-rail
-    + .service-product-grid
-    .service-product
-    .product-info
-    > .MuiChip-root {
-    height: 22px;
-  }
-  body
-    [data-testid='app-content']
-    .point-catalog
-    .point-category-rail
-    + .service-product-grid
-    .service-product
-    .product-info
-    > .MuiChip-root
-    .MuiChip-label {
-    padding-inline: 7px;
-  }
-  body
-    [data-testid='app-content']
-    .point-catalog
-    .point-category-rail
-    + .service-product-grid
-    .service-product
-    .product-info
-    > .MuiButton-root:last-child {
-    min-height: 36px;
-  }
-  body
-    [data-testid='app-content']
-    .point-catalog
-    .service-product
-    > .product-symbol
-    .MuiTypography-root {
-    font-size: 0.65rem;
-  }
+
   .attention-service[data-mobile-pane='products'] .current-order {
     display: none;
   }
+
   .attention-service[data-mobile-pane='order'] .order-catalog {
     display: none;
   }
+
   .attention-service .current-order {
     height: auto;
     overflow: visible;
   }
+
   .attention-service .current-order-card,
   .attention-service .current-order > .fulfillment-card {
     max-height: none;
     overflow: visible;
   }
 }
-.attention-service .product-symbol {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  color: #64748b;
-  background: #f1f5f9;
+
+@media (max-width: 699px) {
+  .operations-metrics > div {
+    display: block;
+    padding: 10px 12px;
+  }
+  .operations-metrics .MuiTypography-body1 {
+    font-size: 11px;
+    line-height: 1.3;
+  }
+  .operations-metrics .MuiTypography-h4 {
+    margin-top: 4px;
+    font-size: 1.35rem;
+  }
+  .open-attention-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+  .open-attention-form {
+    border-left: 0;
+    border-top: 1.5px solid #e2e8f0;
+    padding-left: 0;
+    padding-top: 14px;
+  }
+  .open-attention-card > .MuiCardContent-root {
+    padding: 14px;
+  }
+  .order-workbench {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .current-order {
+    position: static;
+    max-height: none;
+  }
+  .service-product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .operations-section .account-tile {
+    flex-basis: 100%;
+  }
 }
 
-@media (min-width: 900px) {
-  .attention-service .point-catalog-search {
-    position: sticky;
-    top: 0;
-    z-index: 3;
-    background: #fff;
+@media (max-width: 599px) {
+  .operations-workspace.MuiContainer-root {
+    padding: 0;
   }
-  .attention-service .point-category-rail {
-    top: 54px;
-    background: #fff;
-    z-index: 2;
-  }
-  .attention-service .order-total {
-    position: sticky;
-    bottom: 0;
-    z-index: 2;
-    background: #fff;
-    border-top: 1px solid #e2e8f0;
+  .operations-metrics {
+    gap: 6px;
   }
 }
-.service-product .product-quantity {
-  display: grid;
-  grid-template-columns: 44px minmax(24px, 1fr) 44px;
-  align-items: center;
-  gap: 2px;
-}
-.service-product .product-quantity .MuiButton-root {
-  width: 44px;
-  min-width: 44px;
-  padding: 4px;
-}
-.service-product .product-quantity .MuiTypography-root {
-  white-space: nowrap;
-  text-align: center;
-}
+
+/* --------------------------------------------------------------------------
+   Has Active Account View Compacting
+   -------------------------------------------------------------------------- */
 .operations-workspace:has(.has-account) .operations-metrics {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
 }
+
 .operations-workspace:has(.has-account) .operations-metrics > div {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 6px 10px;
+  padding: 6px 12px;
   flex: 1;
 }
+
 .operations-workspace:has(.has-account) .operations-metrics .MuiTypography-h4 {
-  font-size: 20px;
+  font-size: 1.25rem;
 }
-.operations-workspace:has(.has-account)
-  .operations-metrics
-  .MuiTypography-root {
-  font-size: 13px;
+
+.operations-workspace:has(.has-account) .operations-metrics .MuiTypography-root {
+  font-size: 0.8125rem;
 }
+
 .operations-workspace:has(.has-account) .operations-heading {
   gap: 8px;
 }
+
 .operations-workspace:has(.has-account) .operations-heading .MuiTypography-h4 {
-  font-size: 22px;
+  font-size: 1.35rem;
 }
+
 .operations-workspace:has(.has-account) > .MuiStack-root > * + * {
   margin-top: 8px;
 }
+
 .operations-workspace:has(.has-account) .MuiAlert-root {
   padding-top: 0;
   padding-bottom: 0;
-}
-.attention-service .order-total {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 6px;
-  align-items: center;
-  padding: 10px;
-}
-.attention-service .order-total > .MuiTypography-root {
-  font-size: 13px;
-  line-height: 1.4;
-}
-.attention-service .order-total > .MuiTypography-h6 {
-  font-size: 17px;
-  font-weight: 700;
-}
-.attention-service .order-production .MuiButton-root {
-  font-size: 12px;
-  min-height: 44px;
-}
-.attention-service .order-production:has(.MuiAlert-root) {
-  grid-column: 1/-1;
-}
-
-/* Operational desktop: preserve readable order details alongside catalogue. */
-@media (min-width: 1000px) {
-  .attention-service .order-workbench {
-    grid-template-columns: minmax(0, 1.6fr) minmax(340px, 1fr);
-  }
-}
-
-.attention-service .order-production {
-  grid-column: 1 / -1;
-}
-.attention-service
-  .order-production
-  > .MuiStack-root
-  > .MuiStack-root
-  > .MuiButton-root {
-  flex: 1;
 }

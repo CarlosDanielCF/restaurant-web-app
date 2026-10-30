@@ -122,7 +122,7 @@ export const EditClient = () => {
 
   return (
     <>
-      <TitlePage title={`Editar cliente`} />
+      <TitlePage title='Editar cliente' back backTo='/clients' />
 
       <Grid container spacing={2}>
         <Grid item xs={12} lg={4}>

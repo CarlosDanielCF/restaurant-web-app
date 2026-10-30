@@ -81,7 +81,7 @@ export const CardTable: FC<Props> = ({ table }) => {
         <div>
           <Card>
             <CardHeader
-              title={`Mesa ${table.name}`}
+              title={table.name}
               avatar={<TableRestaurantIcon />}
               subheader={`Asientos: ${table.chairs}`}
               titleTypographyProps={{

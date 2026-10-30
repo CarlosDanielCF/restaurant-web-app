@@ -78,7 +78,7 @@ export const AddClient = () => {
 
   return (
     <>
-      <TitlePage title='Nuevo cliente' />
+      <TitlePage title='Nuevo cliente' back backTo='/clients' />
 
       <Container maxWidth={'sm'}>
         <Card>

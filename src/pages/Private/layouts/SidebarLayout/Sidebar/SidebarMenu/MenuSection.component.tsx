@@ -36,12 +36,13 @@ export const MenuSection: FC<Props> = ({ section }) => {
             sx={{
               background: 'transparent',
               fontSize: '0.6875rem',
-              fontWeight: 700,
+              fontWeight: 750,
               textTransform: 'uppercase',
               letterSpacing: '0.08em',
-              color: 'text.secondary',
-              px: 2.5,
-              py: 0.5,
+              color: '#64748b',
+              px: 2,
+              pt: 1.25,
+              pb: 0.5,
               lineHeight: 2
             }}
           >

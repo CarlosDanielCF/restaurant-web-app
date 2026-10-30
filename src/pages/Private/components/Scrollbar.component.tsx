@@ -31,12 +31,12 @@ export const Scrollbar: FC<ScrollbarProps> = ({
             sx={{
               width: 5,
               height: 5,
-              background: `${theme.colors.alpha.black[10]}`,
-              borderRadius: `${theme.general.borderRadiusLg}`,
-              transition: `${theme.transitions.create(['background'])}`,
+              background: 'rgba(15, 23, 42, 0.18)',
+              borderRadius: '9999px',
+              transition: theme.transitions.create(['background']),
 
               '&:hover': {
-                background: `${theme.colors.alpha.black[30]}`
+                background: 'rgba(13, 148, 136, 0.5)'
               }
             }}
           />
@@ -48,19 +48,12 @@ export const Scrollbar: FC<ScrollbarProps> = ({
             sx={{
               width: 5,
               height: 5,
-              background: `${theme.colors.alpha.black[10]}`,
-              borderRadius: `${theme.general.borderRadiusLg}`,
-              // animation fade
-              transition: `${
-                (theme.transitions.create(['background']),
-                {
-                  duration: 100
-                })
-              }`,
+              background: 'rgba(15, 23, 42, 0.18)',
+              borderRadius: '9999px',
+              transition: theme.transitions.create(['background']),
               '&:hover': {
-                background: `${theme.colors.alpha.black[30]}`
-              },
-              animation: `fadeIn 100ms`
+                background: 'rgba(13, 148, 136, 0.5)'
+              }
             }}
           />
         );
@@ -74,8 +67,8 @@ export const Scrollbar: FC<ScrollbarProps> = ({
               width: '100%',
               bottom: 0,
               left: 0,
-              borderRadius: `${theme.general.borderRadiusLg}`,
-              background: `${theme.colors.alpha.black[10]}`
+              borderRadius: '9999px',
+              background: theme.colors.alpha.black[10]
             }}
           />
         );
@@ -86,4 +79,3 @@ export const Scrollbar: FC<ScrollbarProps> = ({
     </Scrollbars>
   );
 };
-

@@ -1,6 +1,4 @@
 import { Button } from '@mui/material';
-
-import { useNavigate } from 'react-router-dom';
 import { FC } from 'react';
 
 interface Props {
@@ -8,15 +6,26 @@ interface Props {
 }
 
 export const BtnCancel: FC<Props> = ({ actionClick }) => {
-  const navigate = useNavigate();
-
   const cancel = () => {
-    //navigate(-1)
     actionClick && actionClick();
   };
 
   return (
-    <Button color='error' variant='outlined' onClick={() => cancel()}>
+    <Button
+      color='inherit'
+      variant='outlined'
+      onClick={() => cancel()}
+      sx={{
+        borderRadius: 2,
+        borderColor: 'divider',
+        color: 'text.secondary',
+        '&:hover': {
+          bgcolor: 'action.hover',
+          borderColor: 'text.secondary',
+          color: 'text.primary'
+        }
+      }}
+    >
       Cancelar
     </Button>
   );

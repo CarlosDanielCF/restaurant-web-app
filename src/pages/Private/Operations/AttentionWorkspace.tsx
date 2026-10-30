@@ -11,6 +11,7 @@ import CheckCircleOutline from '@mui/icons-material/CheckCircleOutline';
 import { ServiceCatalog } from './ServiceCatalog';
 import TableRestaurantOutlined from '@mui/icons-material/TableRestaurantOutlined';
 import { OffsitePanel, modalityLabel } from './OffsitePanel';
+import { ClientPhoneLookup } from './ClientPhoneLookup';
 import { restauranteApi } from '@/api';
 import { FulfillmentPanel } from './FulfillmentPanel';
 import { useRestaurantStore } from '../Common/store/restaurantStore';
@@ -115,17 +116,32 @@ export function TableChoices({
               }
               sx={{
                 m: 0.5,
-                p: 1,
+                p: 1.25,
                 minWidth: 0,
                 width: '100%',
                 boxSizing: 'border-box',
-                transition: 'border-color .15s',
+                transition: 'all .15s ease',
                 outline: selected.includes(t.id) ? '2px solid' : 'none',
                 outlineColor: 'primary.main',
-                border: '1px solid',
-                borderColor: occupied ? 'primary.main' : 'divider',
-                borderRadius: 2,
-                bgcolor: occupied ? 'action.selected' : 'background.paper'
+                border: '1.5px solid',
+                borderColor: selected.includes(t.id)
+                  ? 'primary.main'
+                  : occupied
+                    ? '#fca5a5'
+                    : 'divider',
+                borderRadius: 2.5,
+                bgcolor: selected.includes(t.id)
+                  ? '#f0fdfa'
+                  : occupied
+                    ? '#fff1f2'
+                    : 'background.paper',
+                boxShadow: selected.includes(t.id)
+                  ? '0 0 0 3px rgba(13, 148, 136, 0.15)'
+                  : '0 1px 2px rgba(15, 23, 42, 0.04)',
+                '&:hover': {
+                  borderColor: 'primary.main',
+                  bgcolor: '#f0fdfa'
+                }
               }}
               control={
                 <Checkbox
@@ -400,6 +416,8 @@ export function AttentionWorkspace({
       setReplaceLine('');
       setCustomizing(false);
       setEditDraft(null);
+      setKind('');
+      setBeneficiary('');
     }
   }
   async function enterTables(ids: string[]) {
@@ -475,11 +493,9 @@ export function AttentionWorkspace({
         Abrir atención
       </Typography>
       {modality !== 'TABLE' && (
-        <details className='service-details'>
-          <summary>Opciones de reparto</summary>
           <TextField
             select
-            size='small'
+            size='medium'
             label='Tipo de reparto'
             value={modality}
             onChange={(e) => setModality(e.target.value as Account['modality'])}
@@ -491,10 +507,6 @@ export function AttentionWorkspace({
               Recogida sin mesa (atención independiente)
             </MenuItem>
           </TextField>
-          <Typography variant='caption'>
-            El envío es gratuito. Entrega y pago se registran por separado.
-          </Typography>
-        </details>
       )}
       {modality === 'TABLE' && (
         <MoreOptions title='Seleccionar o cambiar mesas'>
@@ -538,7 +550,23 @@ export function AttentionWorkspace({
             }
           />
         ))}
-      <MoreOptions title='Más detalles: cliente, referencia y observaciones'>
+      {modality !== 'TABLE' && (
+        <ClientPhoneLookup
+          phone={offsite.phone}
+          name={offsite.customerName}
+          address={offsite.address}
+          onSelect={(found) => {
+            setClient(found.id);
+            setOffsite((current) => ({
+              ...current,
+              customerName: found.name,
+              phone: found.phone,
+              address: found.address || current.address
+            }));
+          }}
+        />
+      )}
+      {modality === 'TABLE' && <MoreOptions title='Más detalles del cliente'>
         <TextField
           size={modality === 'TABLE' ? 'small' : 'medium'}
           select
@@ -553,7 +581,8 @@ export function AttentionWorkspace({
             </MenuItem>
           ))}
         </TextField>
-        {modality !== 'TABLE' && (
+      </MoreOptions>}
+      {modality !== 'TABLE' && <MoreOptions title='Referencia y observaciones (opcional)'>
           <TextField
             label='Referencia de entrega'
             value={offsite.reference}
@@ -561,14 +590,14 @@ export function AttentionWorkspace({
               setOffsite((f) => ({ ...f, reference: e.target.value }))
             }
           />
-        )}
         <TextField
-          size={modality === 'TABLE' ? 'small' : 'medium'}
+          size='medium'
           label='Observaciones de la atención'
           value={accountNotes}
           onChange={(e) => setAccountNotes(e.target.value)}
         />
       </MoreOptions>
+      }
 
       <Button
         variant='contained'
@@ -698,6 +727,15 @@ export function AttentionWorkspace({
         onClose={() => !courtesyBusy && setCourtesyLineId('')}
         maxWidth='xs'
         fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 2.5,
+            border: 1,
+            borderColor: 'divider',
+            boxShadow: '0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.05)',
+            p: 0.5
+          }
+        }}
       >
         <DialogTitle>Marcar como cortesía</DialogTitle>
         <DialogContent>
@@ -777,6 +815,15 @@ export function AttentionWorkspace({
         onClose={() => !presentationBusy && setPresentationId('')}
         fullWidth
         maxWidth='xs'
+        PaperProps={{
+          sx: {
+            borderRadius: 2.5,
+            border: 1,
+            borderColor: 'divider',
+            boxShadow: '0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.05)',
+            p: 0.5
+          }
+        }}
       >
         <DialogTitle>{presentationProduct?.name}</DialogTitle>
         <DialogContent>
@@ -864,54 +911,167 @@ export function AttentionWorkspace({
             </Button>
           </Box>
         )}
-      <Stack direction='row' justifyContent='space-between' alignItems='center'>
-        <Typography variant='h5' component='h2'>
-          {account ? 'Tomar pedido' : 'Mesas y cuentas'}
-        </Typography>
-        {account && (
-          <Button variant='outlined' onClick={() => selectAccount('')}>
+      {account && (
+        <Stack direction='row' justifyContent='space-between' alignItems='center'>
+          <Typography variant='h5' component='h2'>
+            Tomar pedido
+          </Typography>
+          <Button
+            variant='outlined'
+            size='small'
+            onClick={() => selectAccount('')}
+            sx={{
+              borderRadius: 2,
+              borderColor: 'divider',
+              color: 'text.secondary',
+              fontWeight: 600,
+              boxShadow: '0 1px 2px rgba(15, 23, 42, 0.04)',
+              '&:hover': {
+                bgcolor: '#f0fdfa',
+                borderColor: '#99f6e4',
+                color: 'primary.main'
+              }
+            }}
+          >
             Volver a mesas
           </Button>
-        )}
-      </Stack>
-
-      {!account && can('delivery') && (
-        <Stack
-          direction='row'
-          gap={1}
-          flexWrap='wrap'
-          aria-label='Modalidad de atención'
-        >
-          {Object.entries({ TABLE: 'Mesa', OWN_DELIVERY: 'Delivery' }).map(
-            ([value, label]) => (
-              <Button
-                key={value}
-                size='small'
-                variant={
-                  (
-                    value === 'TABLE'
-                      ? modality === 'TABLE'
-                      : modality !== 'TABLE'
-                  )
-                    ? 'contained'
-                    : 'outlined'
-                }
-                aria-pressed={
-                  value === 'TABLE'
-                    ? modality === 'TABLE'
-                    : modality !== 'TABLE'
-                }
-                onClick={() => {
-                  setModality(value as Account['modality']);
-                  setTableIds([]);
-                }}
-              >
-                {label}
-              </Button>
-            )
-          )}
         </Stack>
       )}
+
+      {!account && (
+        <Stack
+          direction='row'
+          justifyContent='space-between'
+          alignItems='center'
+          flexWrap='wrap'
+          gap={1}
+          className='attention-operational-bar'
+        >
+          <Stack direction='row' alignItems='center' gap={1} flexWrap='wrap'>
+            <Typography
+              variant='h6'
+              component='h2'
+              sx={{
+                fontWeight: 800,
+                fontSize: '1.05rem',
+                letterSpacing: '-0.01em',
+                m: 0
+              }}
+            >
+              {joining ? 'Seleccionar mesas' : 'Mesas y cuentas'}
+            </Typography>
+            <Chip
+              size='small'
+              variant='outlined'
+              label={
+                joining
+                  ? `${tableIds.length} seleccionadas`
+                  : 'Toca una mesa para atender'
+              }
+              sx={{ height: 22, fontSize: '0.72rem', fontWeight: 600 }}
+            />
+            <Typography
+              variant='caption'
+              color='text.secondary'
+              sx={{
+                display: { xs: 'none', md: 'inline' },
+                fontSize: '0.72rem'
+              }}
+            >
+              Disponible: inicia la atención · Ocupada: abre su cuenta actual
+            </Typography>
+          </Stack>
+
+          <Stack direction='row' alignItems='center' gap={1} flexWrap='wrap'>
+            {can('delivery') && (
+              <Stack
+                direction='row'
+                gap={0.5}
+                aria-label='Modalidad de atención'
+              >
+                {Object.entries({
+                  TABLE: 'Mesa',
+                  OWN_DELIVERY: 'Delivery'
+                }).map(([value, label]) => (
+                  <Button
+                    key={value}
+                    size='small'
+                    variant={
+                      (
+                        value === 'TABLE'
+                          ? modality === 'TABLE'
+                          : modality !== 'TABLE'
+                      )
+                        ? 'contained'
+                        : 'outlined'
+                    }
+                    aria-pressed={
+                      value === 'TABLE'
+                        ? modality === 'TABLE'
+                        : modality !== 'TABLE'
+                    }
+                    sx={{
+                      minHeight: 28,
+                      py: 0.25,
+                      px: 1.25,
+                      fontSize: '0.75rem'
+                    }}
+                    onClick={() => {
+                      setModality(value as Account['modality']);
+                      setTableIds([]);
+                    }}
+                  >
+                    {label}
+                  </Button>
+                ))}
+              </Stack>
+            )}
+
+            {modality === 'TABLE' && (
+              <Stack direction='row' gap={0.5}>
+                <Button
+                  size='small'
+                  variant={joining ? 'contained' : 'outlined'}
+                  sx={{
+                    minHeight: 28,
+                    py: 0.25,
+                    px: 1.25,
+                    fontSize: '0.75rem'
+                  }}
+                  onClick={() => {
+                    setJoining(!joining);
+                    setTableIds([]);
+                  }}
+                >
+                  {joining ? 'Cancelar selección' : 'Unir mesas'}
+                </Button>
+                {joining && (
+                  <Button
+                    size='small'
+                    variant='contained'
+                    color='primary'
+                    disabled={tableIds.length < 2}
+                    sx={{
+                      minHeight: 28,
+                      py: 0.25,
+                      px: 1.25,
+                      fontSize: '0.75rem'
+                    }}
+                    onClick={() =>
+                      waiter
+                        ? void enterTables(tableIds)
+                        : setOpenAttention(true)
+                    }
+                  >
+                    Unir y atender
+                  </Button>
+                )}
+              </Stack>
+            )}
+          </Stack>
+        </Stack>
+      )}
+
       {!account ? (
         <Card
           className={modality === 'TABLE' ? 'open-attention-card' : undefined}
@@ -920,60 +1080,11 @@ export function AttentionWorkspace({
             <Box className={''}>
               {modality === 'TABLE' && (
                 <Box className='open-attention-map'>
-                  <Stack
-                    direction='row'
-                    justifyContent='space-between'
-                    alignItems='center'
-                    mb={1}
-                  >
-                    <Typography variant='h6' component='h3'>
-                      {joining
-                        ? 'Seleccionar mesas'
-                        : 'Toca una mesa para atender'}
-                    </Typography>
-                    <Chip
-                      size={modality === 'TABLE' ? 'small' : 'medium'}
-                      variant='outlined'
-                      label={
-                        joining
-                          ? `${tableIds.length} seleccionadas`
-                          : 'Atención rápida'
-                      }
-                    />
-                  </Stack>
-                  <Typography variant='body2' color='text.secondary' mb={1.5}>
-                    Disponible: inicia la atención. Ocupada: abre su cuenta
-                    actual.
-                  </Typography>
                   {!tables.some((t) => t.isActive) && (
                     <Typography className='operation-empty'>
                       No hay mesas activas. Configúralas desde Gestión de mesas.
                     </Typography>
                   )}
-                  <Stack direction='row' gap={1} mb={1}>
-                    <Button
-                      variant={joining ? 'contained' : 'outlined'}
-                      onClick={() => {
-                        setJoining(!joining);
-                        setTableIds([]);
-                      }}
-                    >
-                      {joining ? 'Cancelar selección' : 'Unir mesas'}
-                    </Button>
-                    {joining && (
-                      <Button
-                        variant='contained'
-                        disabled={tableIds.length < 2}
-                        onClick={() =>
-                          waiter
-                            ? void enterTables(tableIds)
-                            : setOpenAttention(true)
-                        }
-                      >
-                        Unir y atender
-                      </Button>
-                    )}
-                  </Stack>
                   <Box className='quick-table-grid'>
                     {tables
                       .filter((t) => t.isActive)
@@ -1052,7 +1163,7 @@ export function AttentionWorkspace({
                         );
                       })}
                   </Box>
-                  <Typography variant='h6' mt={2} mb={1}>
+                  <Typography variant='h6' mt={1.5} mb={0.75} sx={{ fontSize: '0.95rem', fontWeight: 700 }}>
                     Cuentas abiertas
                   </Typography>
                   {accountCards}
@@ -1081,6 +1192,15 @@ export function AttentionWorkspace({
                   onClose={() => setOpenAttention(false)}
                   fullWidth
                   maxWidth='sm'
+                  PaperProps={{
+                    sx: {
+                      borderRadius: 2.5,
+                      border: 1,
+                      borderColor: 'divider',
+                      boxShadow: '0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.05)',
+                      p: 0.5
+                    }
+                  }}
                 >
                   <DialogTitle>
                     Abrir atención ·{' '}
@@ -1144,11 +1264,24 @@ export function AttentionWorkspace({
                   </Box>
                   <Button
                     onClick={() => {
+                      setKind('');
+                      setBeneficiary('');
                       setReplaceLine('');
                       setCustomizing(true);
                     }}
                   >
                     Agregar productos / personalizar
+                  </Button>
+                  <Button
+                    variant='outlined'
+                    onClick={() => {
+                      setKind('STAFF');
+                      setBeneficiary(user?.id || '');
+                      setReplaceLine('');
+                      setCustomizing(true);
+                    }}
+                  >
+                    Consumo de personal
                   </Button>
                 </>
               ) : (
@@ -1305,8 +1438,7 @@ export function AttentionWorkspace({
                             line.status === 'ACTIVE' &&
                             (!line.kind || line.kind === 'SALE') &&
                             can('attention') && (
-                              <>
-                                <Button
+                              <Button
                                   size='small'
                                   variant='outlined'
                                   color='secondary'
@@ -1319,21 +1451,6 @@ export function AttentionWorkspace({
                                 >
                                   Marcar como cortesía
                                 </Button>
-                                <MoreOptions title='Más opciones del producto'>
-                                  <Button
-                                    onClick={() => {
-                                      setCourtesyLineId(line.id);
-                                      setCourtesyQuantity(
-                                        Number(line.quantity)
-                                      );
-                                      setCourtesyReason('');
-                                      setCourtesyError('');
-                                    }}
-                                  >
-                                    Marcar como cortesía
-                                  </Button>
-                                </MoreOptions>
-                              </>
                             )}
                           {account.attentionStatus === 'OPEN' &&
                             line.status === 'ACTIVE' &&
@@ -1475,6 +1592,17 @@ export function AttentionWorkspace({
                           variant='contained'
                           component={Link}
                           to={`/finance?accountId=${account.id}&pay=1`}
+                          sx={{
+                            minHeight: 46,
+                            borderRadius: 2,
+                            fontWeight: 750,
+                            fontSize: '0.95rem',
+                            background: 'linear-gradient(135deg, #0d9488 0%, #0f766e 100%)',
+                            boxShadow: '0 4px 12px rgba(13, 148, 136, 0.25)',
+                            '&:hover': {
+                              background: 'linear-gradient(135deg, #0f766e 0%, #115e59 100%)'
+                            }
+                          }}
                         >
                           Cobrar S/ {account.balance}
                         </Button>
@@ -1555,9 +1683,6 @@ export function AttentionWorkspace({
                           </MenuItem>
                           <MenuItem value='STAFF'>
                             Consumo gratuito de personal
-                          </MenuItem>
-                          <MenuItem value='COURTESY'>
-                            Cortesía permitida
                           </MenuItem>
                         </TextField>
                         {kind === 'STAFF' && (
@@ -1948,22 +2073,9 @@ export function AttentionWorkspace({
                       >
                         Finalizar atención y liberar mesas
                       </Button>
-                      <Button
-                        disabled={reason.trim().length < 2}
-                        onClick={() =>
-                          void run(`/attention-accounts/${account.id}/close`, {
-                            expectedVersion: account.version,
-                            reason,
-                            mode: 'WITH_DEBT'
-                          })
-                        }
-                      >
-                        Finalizar con deuda previamente registrada
-                      </Button>
                       <Typography>
-                        Con saldo pendiente se requiere una deuda registrada.
-                        Los cobros y el registro de fiados se gestionan en
-                        Finanzas. El pago nunca libera una mesa automáticamente.
+                        La atención solo puede finalizarse cuando no exista
+                        saldo ni producción pendiente.
                       </Typography>
                     </Stack>
                   </CardContent>
@@ -1990,6 +2102,15 @@ export function AttentionWorkspace({
             onClose={() => setCancelLine('')}
             fullWidth
             maxWidth='xs'
+            PaperProps={{
+              sx: {
+                borderRadius: 2.5,
+                border: 1,
+                borderColor: 'divider',
+                boxShadow: '0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.05)',
+                p: 0.5
+              }
+            }}
           >
             <DialogTitle>
               {returnConsumption

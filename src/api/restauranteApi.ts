@@ -94,6 +94,14 @@ restauranteApi.interceptors.response.use(
     return resp;
   },
   (err) => {
+    const status = err.response?.status;
+    const path = String(err.config?.url || '').replace(/^\//, '');
+    if (
+      status === 401 &&
+      localStorage.getItem('token') &&
+      path !== 'auth/login'
+    )
+      window.dispatchEvent(new Event('session-revoked'));
     return Promise.reject(err.response || err);
   }
 );

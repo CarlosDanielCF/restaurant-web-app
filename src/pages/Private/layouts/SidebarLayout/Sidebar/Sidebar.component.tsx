@@ -92,7 +92,7 @@ const Title = ({ isCollapsed = false }: TitleProps) => {
   const logo = useRestaurantImage(restaurant?.logo);
   const { user } = useSelector(selectAuth);
 
-  const ref = useRef<HTMLButtonElement | null>(null);
+  const ref = useRef<HTMLDivElement | null>(null);
   const [isOpen, setOpen] = useState<boolean>(false);
 
   const handleOpen = (): void => {
@@ -110,71 +110,116 @@ const Title = ({ isCollapsed = false }: TitleProps) => {
     handleClose();
   };
 
+  const hasMultiple = Boolean(user?.restaurantRoles && user.restaurantRoles.length > 1);
+
   if (isCollapsed) {
     return (
       <>
         <Tooltip title={restaurant?.name || 'Restaurante'} placement='right'>
-          <IconButton
-            onClick={handleOpen}
+          <Box
+            onClick={hasMultiple ? handleOpen : undefined}
             ref={ref}
-            size='small'
-            sx={{ p: 0.5 }}
+            sx={{
+              p: 0.5,
+              borderRadius: 2,
+              cursor: hasMultiple ? 'pointer' : 'default',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s ease',
+              '&:hover': hasMultiple ? {
+                bgcolor: 'action.hover'
+              } : {}
+            }}
           >
             {restaurant?.logo ? (
               <img
                 src={logo}
                 alt={restaurant.name}
-                width='32px'
-                height='32px'
+                width='34px'
+                height='34px'
                 style={{ borderRadius: 8, objectFit: 'contain' }}
               />
             ) : (
               <Box
                 sx={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 1.5,
-                  bgcolor: 'primary.main',
+                  width: 34,
+                  height: 34,
+                  borderRadius: 1.75,
+                  background: 'linear-gradient(135deg, #0d9488 0%, #0f766e 100%)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: 'primary.contrastText'
+                  color: 'primary.contrastText',
+                  boxShadow: '0 2px 4px rgba(13, 148, 136, 0.25)'
                 }}
               >
-                <StorefrontRoundedIcon fontSize='small' />
+                <StorefrontRoundedIcon sx={{ fontSize: 18 }} />
               </Box>
             )}
-          </IconButton>
+          </Box>
         </Tooltip>
-        {user?.restaurantRoles && user.restaurantRoles.length > 1 && (
+        {hasMultiple && (
           <Popover
             anchorEl={ref.current}
             onClose={handleClose}
             open={isOpen}
             anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
             transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+            PaperProps={{
+              sx: {
+                minWidth: 230,
+                borderRadius: 2.5,
+                border: 1,
+                borderColor: 'divider',
+                boxShadow: '0 10px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.05)',
+                overflow: 'hidden'
+              }
+            }}
           >
-            <List sx={{ width: 220 }}>
+            <List sx={{ p: 1 }}>
               <ListSubheader
                 sx={{
                   fontSize: 11,
                   fontWeight: 700,
-                  textTransform: 'uppercase'
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.06em',
+                  color: 'text.secondary',
+                  px: 1.5,
+                  py: 0.5,
+                  lineHeight: 2,
+                  background: 'transparent'
                 }}
               >
                 Cambiar restaurante
               </ListSubheader>
-              {user.restaurantRoles.map((restaurantRole) => (
+              {user?.restaurantRoles?.map((restaurantRole) => (
                 <ListItemButton
                   key={restaurantRole.id}
                   onClick={() => changeRestaurant(restaurantRole.restaurant)}
+                  sx={{
+                    borderRadius: 1.5,
+                    py: 0.75,
+                    px: 1.5,
+                    my: 0.25,
+                    bgcolor: restaurant?.id === restaurantRole.restaurant.id ? '#f0fdfa' : 'transparent',
+                    '&:hover': {
+                      bgcolor: '#f0fdfa'
+                    }
+                  }}
                 >
                   <ListItemText
                     primary={restaurantRole.restaurant.name}
                     secondary={restaurantRole.role.description}
+                    primaryTypographyProps={{
+                      variant: 'body2',
+                      fontWeight: restaurant?.id === restaurantRole.restaurant.id ? 650 : 500,
+                      color: restaurant?.id === restaurantRole.restaurant.id ? 'primary.main' : 'text.primary'
+                    }}
+                    secondaryTypographyProps={{ variant: 'caption', color: 'text.secondary' }}
                   />
                   {restaurant?.id === restaurantRole.restaurant.id && (
-                    <ListItemIcon sx={{ minWidth: 28 }}>
+                    <ListItemIcon sx={{ minWidth: 24, justifyContent: 'flex-end' }}>
                       <DoneOutlineRounded fontSize='small' color='primary' />
                     </ListItemIcon>
                   )}
@@ -190,34 +235,51 @@ const Title = ({ isCollapsed = false }: TitleProps) => {
   return (
     <>
       <Box
+        onClick={hasMultiple ? handleOpen : undefined}
+        ref={ref}
         display='flex'
         alignItems='center'
-        gap={1.5}
-        sx={{ minWidth: 0, flex: 1 }}
+        gap={1.25}
+        sx={{
+          minWidth: 0,
+          flex: 1,
+          p: '6px 10px',
+          borderRadius: 2,
+          border: '1px solid',
+          borderColor: 'divider',
+          bgcolor: 'background.paper',
+          cursor: hasMultiple ? 'pointer' : 'default',
+          transition: 'all 0.2s ease',
+          '&:hover': hasMultiple ? {
+            bgcolor: '#f0fdfa',
+            borderColor: '#99f6e4'
+          } : {}
+        }}
       >
         {restaurant?.logo ? (
           <img
             src={logo}
             alt={restaurant.name}
-            width='36px'
-            height='36px'
+            width='34px'
+            height='34px'
             style={{ borderRadius: 8, objectFit: 'contain', flexShrink: 0 }}
           />
         ) : (
           <Box
             sx={{
-              width: 36,
-              height: 36,
-              borderRadius: 2,
-              bgcolor: 'primary.main',
+              width: 34,
+              height: 34,
+              borderRadius: 1.75,
+              background: 'linear-gradient(135deg, #0d9488 0%, #0f766e 100%)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               color: 'primary.contrastText',
-              flexShrink: 0
+              flexShrink: 0,
+              boxShadow: '0 2px 4px rgba(13, 148, 136, 0.25)'
             }}
           >
-            <StorefrontRoundedIcon fontSize='small' />
+            <StorefrontRoundedIcon sx={{ fontSize: 18 }} />
           </Box>
         )}
 
@@ -227,6 +289,7 @@ const Title = ({ isCollapsed = false }: TitleProps) => {
             fontWeight={700}
             color='text.primary'
             noWrap
+            sx={{ fontSize: '0.8125rem', lineHeight: 1.25 }}
           >
             {restaurant?.name || 'Sistema Restaurante'}
           </Typography>
@@ -235,43 +298,78 @@ const Title = ({ isCollapsed = false }: TitleProps) => {
             color='text.secondary'
             noWrap
             display='block'
+            sx={{ fontSize: '0.6875rem', lineHeight: 1.2 }}
           >
-            Restaurante seleccionado
+            {hasMultiple ? 'Cambiar sucursal' : 'Restaurante activo'}
           </Typography>
         </Box>
 
-        {user?.restaurantRoles && user.restaurantRoles.length > 1 && (
-          <IconButton onClick={handleOpen} ref={ref} size='small'>
-            <ExpandMore fontSize='small' />
-          </IconButton>
+        {hasMultiple && (
+          <ExpandMore fontSize='small' sx={{ color: 'text.secondary', opacity: 0.7 }} />
         )}
       </Box>
 
-      {user?.restaurantRoles && user.restaurantRoles.length > 1 && (
+      {hasMultiple && (
         <Popover
           anchorEl={ref.current}
           onClose={handleClose}
           open={isOpen}
           anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
           transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+          PaperProps={{
+            sx: {
+              minWidth: 230,
+              borderRadius: 2.5,
+              border: 1,
+              borderColor: 'divider',
+              boxShadow: '0 10px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.05)',
+              overflow: 'hidden'
+            }
+          }}
         >
-          <List sx={{ width: 240 }}>
+          <List sx={{ p: 1 }}>
             <ListSubheader
-              sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase' }}
+              sx={{
+                fontSize: 11,
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.06em',
+                color: 'text.secondary',
+                px: 1.5,
+                py: 0.5,
+                lineHeight: 2,
+                background: 'transparent'
+              }}
             >
               Restaurantes disponibles
             </ListSubheader>
-            {user.restaurantRoles.map((restaurantRole) => (
+            {user?.restaurantRoles?.map((restaurantRole) => (
               <ListItemButton
                 key={restaurantRole.id}
                 onClick={() => changeRestaurant(restaurantRole.restaurant)}
+                sx={{
+                  borderRadius: 1.5,
+                  py: 0.75,
+                  px: 1.5,
+                  my: 0.25,
+                  bgcolor: restaurant?.id === restaurantRole.restaurant.id ? '#f0fdfa' : 'transparent',
+                  '&:hover': {
+                    bgcolor: '#f0fdfa'
+                  }
+                }}
               >
                 <ListItemText
                   primary={restaurantRole.restaurant.name}
                   secondary={restaurantRole.role.description}
+                  primaryTypographyProps={{
+                    variant: 'body2',
+                    fontWeight: restaurant?.id === restaurantRole.restaurant.id ? 650 : 500,
+                    color: restaurant?.id === restaurantRole.restaurant.id ? 'primary.main' : 'text.primary'
+                  }}
+                  secondaryTypographyProps={{ variant: 'caption', color: 'text.secondary' }}
                 />
                 {restaurant?.id === restaurantRole.restaurant.id && (
-                  <ListItemIcon sx={{ minWidth: 28 }}>
+                  <ListItemIcon sx={{ minWidth: 24, justifyContent: 'flex-end' }}>
                     <DoneOutlineRounded fontSize='small' color='primary' />
                   </ListItemIcon>
                 )}
@@ -312,7 +410,7 @@ function Sidebar() {
         {/* Top Header */}
         <Box
           sx={{
-            height: 64,
+            height: 60,
             display: 'flex',
             alignItems: 'center',
             justifyContent: isCollapsed ? 'center' : 'space-between',
@@ -435,12 +533,25 @@ function Sidebar() {
                   <ButtonTheme />
                   <ButtonSound />
                 </Stack>
-                <Tooltip title='Minimizar menú'>
+                <Tooltip title='Minimizar barra lateral'>
                   <IconButton
                     onClick={toggleCollapse}
                     size='small'
-                    aria-label='Minimizar menú'
-                    sx={{ color: 'text.secondary' }}
+                    aria-label='Minimizar barra lateral'
+                    sx={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: 1.5,
+                      border: 1,
+                      borderColor: 'divider',
+                      color: 'text.secondary',
+                      transition: 'all 0.15s ease',
+                      '&:hover': {
+                        bgcolor: '#f0fdfa',
+                        borderColor: '#99f6e4',
+                        color: 'primary.main'
+                      }
+                    }}
                   >
                     <ChevronLeftRoundedIcon fontSize='small' />
                   </IconButton>
@@ -551,15 +662,22 @@ function Sidebar() {
                         selected={isSelected}
                         sx={{
                           borderRadius: 2,
-                          mb: 0.5,
+                          my: 0.5,
+                          mx: 0.5,
                           py: 1,
-                          px: 2,
+                          px: 1.75,
                           color: isSelected ? 'primary.main' : 'text.primary',
-                          bgcolor: isSelected
-                            ? 'action.selected'
+                          background: isSelected
+                            ? 'linear-gradient(90deg, rgba(13, 148, 136, 0.12) 0%, rgba(13, 148, 136, 0.04) 100%)'
                             : 'transparent',
+                          boxShadow: isSelected
+                            ? 'inset 3.5px 0 0 #0d9488'
+                            : 'inset 0 0 0 transparent',
+                          transition: 'all 0.15s ease',
                           '&:hover': {
-                            bgcolor: 'action.hover'
+                            bgcolor: isSelected
+                              ? 'rgba(13, 148, 136, 0.14)'
+                              : 'action.hover'
                           }
                         }}
                       >

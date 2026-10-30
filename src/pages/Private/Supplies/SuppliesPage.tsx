@@ -543,23 +543,16 @@ export function SuppliesPage() {
                 onChange={(e) => setSearch(e.target.value)}
                 size='small'
               />
-              <Button
-                variant='contained'
-                startIcon={<AddOutlined />}
-                onClick={() => open('configure')}
-              >
-                Configurar bebida
-              </Button>
             </div>
             <Alert severity='info'>
-              Solo se controla stock de bebidas envasadas de fábrica
-              configuradas aquí. Las bebidas preparadas y la disponibilidad por
-              porciones conservan su propio funcionamiento.
+              Las bebidas de entrega directa aparecen automáticamente. Las
+              bebidas preparadas y la disponibilidad por porciones conservan
+              su propio funcionamiento.
             </Alert>
             {!busy && !error && !stocks.rows.length && (
               <WorkspaceEmpty
-                title='Sin bebidas configuradas'
-                description='Selecciona productos reales de la carta. Registra el stock inicial solo después de conocer el conteo; no se asignan existencias de demostración.'
+                title='Sin bebidas de entrega directa'
+                description='Crea la bebida en la carta. Registra el stock inicial solo después de conocer el conteo; no se asignan existencias de demostración.'
               />
             )}
             <div className='supplies-grid'>

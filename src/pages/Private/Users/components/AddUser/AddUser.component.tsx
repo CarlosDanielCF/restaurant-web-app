@@ -57,7 +57,7 @@ export const AddUser = () => {
 
   return (
     <>
-      <TitlePage title='Agregar usuario' />
+      <TitlePage title='Agregar usuario' back backTo='/users' />
 
       <Box width={{ xs: '100%', md: '570px' }} mx='auto' mb={4} mt={4}>
         <Card sx={{ p: 3 }}>

@@ -64,7 +64,7 @@ export const DraggableTable: FC<Props> = ({ table, reorder }) => {
       <div ref={setNodeRef} style={style} {...attributes}>
         <Card>
           <CardHeader
-            title={`Mesa ${table.name}`}
+            title={table.name}
             avatar={
               reorder && <Dehaze {...listeners} sx={{ cursor: 'pointer' }} />
             }

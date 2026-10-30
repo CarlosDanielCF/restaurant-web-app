@@ -75,14 +75,17 @@ export const NavItemButton: FC<Props> = ({ item }) => {
               bgcolor: isSelected
                 ? alpha(theme.palette.primary.main, 0.12)
                 : 'transparent',
+              boxShadow: isSelected
+                ? '0 2px 6px rgba(13, 148, 136, 0.15)'
+                : 'none',
               '&:hover': {
                 bgcolor: isSelected
-                  ? alpha(theme.palette.primary.main, 0.2)
+                  ? alpha(theme.palette.primary.main, 0.18)
                   : alpha(theme.palette.action.hover, 0.08),
                 color: isSelected ? 'primary.main' : 'text.primary'
               },
               transition: theme.transitions.create(
-                ['background-color', 'color'],
+                ['background-color', 'color', 'box-shadow'],
                 {
                   duration: theme.transitions.duration.shorter
                 }
@@ -102,29 +105,35 @@ export const NavItemButton: FC<Props> = ({ item }) => {
       component='div'
       key={item.to}
       disablePadding
-      sx={{ my: 0.5, px: 1.5 }}
+      sx={{ my: 0.35, px: 1.25 }}
     >
       <ListItemButton
         onClick={handleClick}
         selected={isSelected}
         sx={{
           borderRadius: 2,
-          py: 1,
+          py: 0.9,
           px: 1.5,
           color: isSelected ? 'primary.main' : 'text.primary',
           bgcolor: isSelected
-            ? alpha(theme.palette.primary.main, 0.1)
+            ? 'linear-gradient(90deg, rgba(13, 148, 136, 0.12) 0%, rgba(13, 148, 136, 0.02) 100%)'
             : 'transparent',
+          boxShadow: isSelected ? 'inset 3.5px 0 0 #0d9488' : 'none',
           '&.Mui-selected': {
-            bgcolor: alpha(theme.palette.primary.main, 0.1),
+            bgcolor: 'rgba(13, 148, 136, 0.1)',
+            color: 'primary.main',
+            boxShadow: 'inset 3.5px 0 0 #0d9488',
             '&:hover': {
-              bgcolor: alpha(theme.palette.primary.main, 0.16)
+              bgcolor: 'rgba(13, 148, 136, 0.16)'
             }
           },
           '&:hover': {
-            bgcolor: alpha(theme.palette.action.hover, 0.08)
+            bgcolor: alpha(theme.palette.action.hover, 0.08),
+            '& .MuiListItemIcon-root': {
+              color: isSelected ? 'primary.main' : 'primary.main'
+            }
           },
-          transition: theme.transitions.create(['background-color', 'color'], {
+          transition: theme.transitions.create(['background-color', 'color', 'box-shadow'], {
             duration: theme.transitions.duration.shorter
           })
         }}
@@ -132,7 +141,11 @@ export const NavItemButton: FC<Props> = ({ item }) => {
         <ListItemIcon
           sx={{
             minWidth: 36,
-            color: isSelected ? 'primary.main' : 'text.secondary'
+            color: isSelected ? 'primary.main' : 'text.secondary',
+            transition: 'color 0.2s ease',
+            '& .MuiSvgIcon-root': {
+              fontSize: 20
+            }
           }}
         >
           {item.icon}
@@ -141,8 +154,11 @@ export const NavItemButton: FC<Props> = ({ item }) => {
           primary={item.title}
           primaryTypographyProps={{
             variant: 'body2',
-            fontWeight: isSelected ? 600 : 500,
-            noWrap: true
+            fontWeight: isSelected ? 650 : 500,
+            noWrap: true,
+            sx: {
+              letterSpacing: '-0.01em'
+            }
           }}
         />
       </ListItemButton>

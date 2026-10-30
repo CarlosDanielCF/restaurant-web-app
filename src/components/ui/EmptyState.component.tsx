@@ -30,8 +30,8 @@ export const EmptyState: FC<EmptyStateProps> = ({
         py: 6,
         px: 3,
         textAlign: 'center',
-        border: (theme) => `1px dashed ${theme.palette.divider}`,
-        borderRadius: 2,
+        border: (theme) => `1.5px dashed ${theme.palette.mode === 'light' ? '#cbd5e1' : theme.palette.divider}`,
+        borderRadius: 2.5,
         backgroundColor: (theme) =>
           theme.palette.mode === 'light' ? '#f8fafc' : 'background.paper',
         display: 'flex',
@@ -44,15 +44,17 @@ export const EmptyState: FC<EmptyStateProps> = ({
     >
       <Box
         sx={{
-          color: 'text.secondary',
-          mb: 1.5,
+          width: 64,
+          height: 64,
+          borderRadius: '50%',
+          bgcolor: 'rgba(13, 148, 136, 0.08)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          mb: 2,
           '& .MuiSvgIcon-root': {
-            fontSize: 48,
-            color: 'primary.light',
-            opacity: 0.8
+            fontSize: 32,
+            color: 'primary.main'
           }
         }}
       >
@@ -62,7 +64,7 @@ export const EmptyState: FC<EmptyStateProps> = ({
       <Typography
         variant='h6'
         color='text.primary'
-        fontWeight={600}
+        fontWeight={700}
         gutterBottom
       >
         {title}
@@ -87,7 +89,7 @@ export const EmptyState: FC<EmptyStateProps> = ({
           size='small'
           onClick={onAction}
           startIcon={actionIcon}
-          sx={{ mt: 1 }}
+          sx={{ mt: 1, borderRadius: 2 }}
         >
           {actionText}
         </Button>

@@ -18,7 +18,8 @@ const Auth: FC<Props> = ({ allowedRoles }) => {
   const can = useWorkerAccess(),
     permission = routePermission(location.pathname);
   const permissionAllowed = permission ? can(permission) : true;
-  const roleAllowed = !!user &&
+  const roleAllowed =
+    !!user &&
     (user.role.name === Roles.OWNER ||
       allowedRoles.includes(user.role.name as Roles));
   const authorized = !!user && permissionAllowed && roleAllowed;
@@ -30,7 +31,7 @@ const Auth: FC<Props> = ({ allowedRoles }) => {
   ) : user?.username ? (
     <Navigate to='/unauthorized' state={{ from: location }} replace />
   ) : (
-    <Navigate to='/register' state={{ from: location }} replace />
+    <Navigate to='/auth/login' state={{ from: location }} replace />
   );
 };
 

@@ -1,6 +1,5 @@
 import { ReactNode } from 'react';
 import { Alert, Button } from '@mui/material';
-import { RouteLoading } from '@/components/ui/RouteLoading';
 import { useMenu } from '@/hooks/useMenu';
 import { useProductionAreas } from '../Restaurant/hooks/useProductionArea';
 import { useTables } from '../Tables/hooks/useTables';
@@ -28,7 +27,6 @@ export default function LegacyWorkspaceData({
   useOnOrderDeleted();
   const queries = [menu, areas, orders, tables];
   const failed = queries.some((query) => query.isError);
-  const missingSnapshot = queries.some((query) => query.data === undefined);
   const failure = (
     <Alert
       severity='error'
@@ -44,8 +42,7 @@ export default function LegacyWorkspaceData({
       navegar a otra sección; no se modificó ninguna operación.
     </Alert>
   );
-  if (missingSnapshot) return failed ? failure : <RouteLoading />;
-  // Background failures must not unmount a form or discard user input.
+  // Auxiliary legacy snapshots load in the background and must never block a route.
   return (
     <>
       {failed && failure}

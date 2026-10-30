@@ -1,7 +1,6 @@
 import { ChangeEvent, FC } from 'react';
 
 import {
-  Typography,
   Paper,
   InputBase,
   IconButton,
@@ -30,19 +29,28 @@ export const InputSearch: FC<Props> = ({
     <>
       <Paper
         component='form'
+        elevation={0}
         sx={{
-          p: '2px 4px',
+          p: '4px 10px',
           display: 'flex',
           alignItems: 'center',
           width: '100%',
-          backgroundColor: 'transparent',
-          border: '1px solid #aaa'
+          backgroundColor: 'background.paper',
+          border: '1.5px solid',
+          borderColor: 'divider',
+          borderRadius: 2,
+          transition: 'all 0.2s ease',
+          boxShadow: '0 1px 2px rgba(15, 23, 42, 0.04)',
+          '&:focus-within': {
+            borderColor: 'primary.main',
+            boxShadow: '0 0 0 3px rgba(13, 148, 136, 0.14)'
+          }
         }}
       >
         <InputBase
           type='text'
           onChange={handleChange}
-          sx={{ ml: 1, flex: 1 }}
+          sx={{ ml: 1, flex: 1, fontSize: '0.875rem' }}
           placeholder={placeholder}
           inputProps={{ 'aria-label': 'Buscar' }}
           onSubmit={(e) => {
@@ -53,18 +61,23 @@ export const InputSearch: FC<Props> = ({
         />
 
         {value && reset && value?.length > 0 && (
-          <IconButton onClick={reset}>
-            <Close />
+          <IconButton onClick={reset} size='small' sx={{ p: 0.5, color: 'text.secondary' }}>
+            <Close fontSize='small' />
           </IconButton>
         )}
 
         <IconButton
           type='button'
-          sx={{ p: '10px' }}
+          size='small'
+          sx={{
+            p: '6px',
+            color: 'primary.main',
+            '&:hover': { bgcolor: 'action.hover' }
+          }}
           aria-label='search'
           onClick={search}
         >
-          {loading ? <CircularProgress size='small' /> : <Search />}
+          {loading ? <CircularProgress size={18} /> : <Search fontSize='small' />}
         </IconButton>
       </Paper>
     </>

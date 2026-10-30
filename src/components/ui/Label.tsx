@@ -11,44 +11,54 @@ interface LabelProps {
 const LabelWrapper = styled('span')(
   ({ theme }) => `
       background-color: ${theme.colors.alpha.black[5]};
-      padding: ${theme.spacing(0.5, 1)};
-      font-size: ${theme.typography.pxToRem(11)};
-      font-weight: ${theme.typography.fontWeightBold};
-      border-radius: ${theme.general.borderRadius};
+      padding: 3px 10px;
+      font-size: 0.725rem;
+      font-weight: 650;
+      line-height: 1.25;
+      letter-spacing: 0.02em;
+      border-radius: 9999px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      max-height: ${theme.spacing(3)};
+      border: 1px solid transparent;
+      white-space: nowrap;
+      transition: all 0.15s ease;
       
       &.MuiLabel {
         &-primary {
-          background-color: ${theme.colors.primary.lighter};
-          color: ${theme.palette.primary.main}
+          background-color: #f0fdfa;
+          color: #0d9488;
+          border-color: rgba(13, 148, 136, 0.25);
         }
         
         &-secondary {
-          background-color: ${theme.colors.secondary.lighter};
-          color: ${theme.palette.secondary.main}
+          background-color: #f8fafc;
+          color: #475569;
+          border-color: rgba(148, 163, 184, 0.25);
         }
         
         &-success {
-          background-color: ${theme.colors.success.lighter};
-          color: ${theme.palette.success.main}
+          background-color: #ecfdf5;
+          color: #059669;
+          border-color: rgba(16, 185, 129, 0.25);
         }
         
         &-warning {
-          background-color: ${theme.colors.warning.lighter};
-          color: ${theme.palette.warning.main}
+          background-color: #fffbeb;
+          color: #d97706;
+          border-color: rgba(245, 158, 11, 0.25);
         }
               
         &-error {
-          background-color: ${theme.colors.error.lighter};
-          color: ${theme.palette.error.main}
+          background-color: #fef2f2;
+          color: #dc2626;
+          border-color: rgba(239, 68, 68, 0.25);
         }
         
         &-info {
-          background-color: ${theme.colors.info.lighter};
-          color: ${theme.palette.info.main}
+          background-color: #f0f9ff;
+          color: #0284c7;
+          border-color: rgba(14, 165, 233, 0.25);
         }
       }
 `

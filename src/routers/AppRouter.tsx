@@ -22,7 +22,7 @@ const Private = lazy(() => import('../pages/Private/Private'));
  * @version v1.1 12-04-2025 Implement useRenewToken hook
  */
 export const AppRouter = () => {
-  const { status, user } = useAppSelector(selectAuth);
+  const { status, user, error } = useAppSelector(selectAuth);
   const { restaurant } = useRestaurantStore((state) => state);
   const location = useLocation();
   useRenewToken();
@@ -30,6 +30,13 @@ export const AppRouter = () => {
   if (status === 'checking') {
     return <SessionCheckStatus />;
   }
+
+  if (
+    status === 'not-authenticated' &&
+    !!error &&
+    location.pathname !== '/auth/login'
+  )
+    return <Navigate to='/auth/login' replace />;
 
   if (
     status === 'authenticated' &&

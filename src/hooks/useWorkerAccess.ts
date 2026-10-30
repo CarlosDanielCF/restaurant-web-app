@@ -4,7 +4,7 @@ export const permissionLabels: Record<string, string> = {
   attention: 'Atención y mesas',
   reservations: 'Reservas',
   delivery: 'Delivery y para llevar',
-  finance: 'Cobros, fiados y rendiciones',
+  finance: 'Cobros y rendiciones',
   reports: 'Reportes autorizados por el rol',
   documents: 'Documentos internos',
   kitchen: 'Cocina',

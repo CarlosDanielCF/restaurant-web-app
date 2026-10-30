@@ -1,5 +1,4 @@
 import { MoreOptions } from '@/components/operational/MoreOptions';
-import ReceiptLongOutlined from '@mui/icons-material/ReceiptLongOutlined';
 import FactCheckOutlined from '@mui/icons-material/FactCheckOutlined';
 import PaymentsOutlined from '@mui/icons-material/PaymentsOutlined';
 import QrCode2Outlined from '@mui/icons-material/QrCode2Outlined';
@@ -8,9 +7,8 @@ import { paymentDistribution } from './displayMoney';
 import { useLiveRefresh } from '@/hooks/useLiveRefresh';
 import { WorkspaceEmpty } from '@/components/operational/WorkspaceEmpty';
 import { operationalLabel } from '../Insights/labels';
-import { DebtCards } from './DebtCards';
 import '../Operations/cycle2.css';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { cents, difference, displayCents, sumMoney } from './displayMoney';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import {
@@ -158,6 +156,8 @@ export function FinancePage() {
       { method: 'CASH', amount: '', receivedAmount: '' }
     ]),
     [manual, setManual] = useState(false),
+    [tipAmount, setTipAmount] = useState(''),
+    [tipMethod, setTipMethod] = useState('CASH'),
     [adminReason, setAdminReason] = useState(''),
     [lineIds, setLineIds] = useState<string[]>([]);
   const [courierCash, setCourierCash] = useState(false),
@@ -187,35 +187,6 @@ export function FinancePage() {
     setCourierId('');
     setLineIds([]);
   }, [selected]);
-  const [people, setPeople] = useState('2');
-  const [showDebts, setShowDebts] = useState(false);
-  const [clientSearch, setClientSearch] = useState('');
-  const [clients, setClients] = useState<
-    { id: string; person: { firstName: string; lastName: string } }[]
-  >([]);
-  useEffect(() => {
-    let active = true;
-    const timer = setTimeout(() => {
-      restauranteApi
-        .get<{ clients: typeof clients }>('/clients', {
-          params: { limit: 100, search: clientSearch }
-        })
-        .then(({ data }) => {
-          if (active) setClients(data.clients);
-        })
-        .catch(() => {
-          if (active) setClients([]);
-        });
-    }, 300);
-    return () => {
-      active = false;
-      clearTimeout(timer);
-    };
-  }, [clientSearch, restaurant?.id]);
-  const installment =
-    !!data?.debts.length &&
-    (data.account.attentionStatus === 'CLOSED' ||
-      (data.account.responsibleUserId !== user?.id && !adminReason.trim()));
   const lock = useRef(false),
     generation = useRef(0);
   const qr = useRestaurantImage(data?.yapeQr);
@@ -223,6 +194,9 @@ export function FinancePage() {
   const own = shifts.find(
     (s) => s.shift.workerId === user?.id && s.shift.status === 'OPEN'
   );
+  const visibleShifts = manager
+    ? shifts
+    : shifts.filter((s) => s.shift.workerId === user?.id);
   const refresh = useCallback(async () => {
     const ticket = ++generation.current;
     try {
@@ -344,6 +318,8 @@ export function FinancePage() {
     ]);
     setPartial(lineIds.length > 0);
     setManual(false);
+    setTipAmount('');
+    setTipMethod('CASH');
     setAdminReason('');
     setPayment(true);
   };
@@ -388,8 +364,8 @@ export function FinancePage() {
           </Button>
         </Stack>
         <Alert severity='info'>
-          Cobros manuales · al completar el pago total se libera la mesa automáticamente. Yape y POS se verifican
-          externamente.
+          Pago completo solo cierra la atención y libera la mesa cuando no
+          queda producción pendiente. Yape y POS se verifican externamente.
         </Alert>
         {!online && (
           <Alert severity='warning'>
@@ -421,23 +397,6 @@ export function FinancePage() {
             {manager ? 'Revisar rendiciones' : 'Mi turno y rendición'}
           </Button>
         </Stack>
-        <details
-          className='service-details'
-          onToggle={(e) => setShowDebts(e.currentTarget.open)}
-        >
-          <summary>Fiados y abonos · consultar cuentas</summary>
-          {showDebts && (
-            <DebtCards
-              accounts={accounts}
-              onSelect={(id) => {
-                setPayment(false);
-                setAction(undefined);
-                setSelected(id);
-                setLineIds([]);
-              }}
-            />
-          )}
-        </details>
         {ready && accounts.length === 0 && (
           <Alert severity='info'>
             No hay cuentas para cobrar. Las atenciones abiertas aparecerán aquí
@@ -513,7 +472,6 @@ export function FinancePage() {
                   SETTLED: 'Saldada',
                   CREDIT: 'Saldo a favor'
                 }[data.account.paymentStatus] || data.account.paymentStatus}
-                . Deuda vigente S/ {data.debtBalance}.
               </Typography>
               <Typography variant='subtitle1' fontWeight={700}>
                 Productos / división del cobro
@@ -547,7 +505,7 @@ export function FinancePage() {
               <Typography variant='h6'>Registrar pago</Typography>
               <Typography variant='body2'>
                 El saldo se valida nuevamente al confirmar. Si el pago queda en
-                saldo 0, la mesa se libera automáticamente.
+                saldo 0, la atención seguirá abierta si aún hay producción por entregar.
               </Typography>
               <Stack direction='row' spacing={1} flexWrap='wrap'>
                 <Button
@@ -555,41 +513,71 @@ export function FinancePage() {
                   variant='contained'
                   onClick={openPayment}
                 >
-                  Registrar {installment ? 'abono' : 'pago'}
+                  Registrar pago
+                </Button>
+                <Button
+                  disabled={disabled}
+                  onClick={() =>
+                    accountAction(
+                      'Descuento sobre consumos originales',
+                      'discounts',
+                      [
+                        amount,
+                        reason,
+                        {
+                          key: 'lineId',
+                          label: 'Producto (vacío: toda la cuenta)',
+                          optional: true,
+                          options: data.account.lines
+                            .filter((l) => l.status === 'ACTIVE')
+                            .map((l) => ({ id: l.id, name: l.productSnapshot.name }))
+                        }
+                      ]
+                    )
+                  }
+                >
+                  Descuento
+                </Button>
+                <Button
+                  disabled={disabled || !own || !data.payments.some((p) => p.collectorId === user?.id)}
+                  onClick={() =>
+                    accountAction(
+                      'Propina voluntaria',
+                      'tips',
+                      [
+                        {
+                          key: 'paymentId',
+                          label: 'Cobro asociado',
+                          options: data.payments
+                            .filter((p) => p.collectorId === user?.id)
+                            .map((p) => ({ id: p.id, name: `${p.method} S/${p.appliedAmount}` }))
+                        },
+                        {
+                          key: 'kind', label: 'Tipo', options: [
+                            { id: 'DIRECT', name: 'Efectivo directo' },
+                            { id: 'DIGITAL_RECEIPT', name: 'Digital recibida' }
+                          ]
+                        },
+                        amount,
+                        { key: 'method', label: 'Método', options: methods },
+                        {
+                          key: 'manuallyConfirmed', label: 'Yape verificado', optional: true,
+                          options: [{ id: 'true', name: 'Sí' }]
+                        }
+                      ],
+                      { shiftId: own?.shift.id }
+                    )
+                  }
+                >
+                  Propina
                 </Button>
               </Stack>
               <MoreOptions
-                title='Descuentos, propinas, fiado y devoluciones'
+                title='Devoluciones y gestión de propinas'
                 defaultOpen={advanced}
                 onToggle={setAdvanced}
               >
                 <Stack direction='row' spacing={1} flexWrap='wrap'>
-                  <Button
-                    disabled={disabled}
-                    onClick={() =>
-                      accountAction(
-                        'Descuento sobre consumos originales',
-                        'discounts',
-                        [
-                          amount,
-                          reason,
-                          {
-                            key: 'lineId',
-                            label: 'Producto (vacío: toda la cuenta)',
-                            optional: true,
-                            options: data.account.lines
-                              .filter((l) => l.status === 'ACTIVE')
-                              .map((l) => ({
-                                id: l.id,
-                                name: l.productSnapshot.name
-                              }))
-                          }
-                        ]
-                      )
-                    }
-                  >
-                    Descuento
-                  </Button>
                   <Button
                     disabled={disabled}
                     onClick={() =>
@@ -637,79 +625,6 @@ export function FinancePage() {
                   >
                     Reembolso
                   </Button>
-                  <Button
-                    disabled={disabled}
-                    onClick={() =>
-                      accountAction(
-                        'Registrar deuda',
-                        'debt',
-                        [
-                          reason,
-                          ...(!data.account.clientId
-                            ? [
-                                {
-                                  key: 'clientId',
-                                  label: 'Cliente identificado',
-                                  options: clients.map((c) => ({
-                                    id: c.id,
-                                    name: `${c.person.firstName} ${c.person.lastName}`
-                                  }))
-                                }
-                              ]
-                            : [])
-                        ],
-                        undefined,
-                        'Requiere cliente identificado. Registre primero cualquier pago inicial. Después cierre la atención con deuda desde Atención.'
-                      )
-                    }
-                  >
-                    Registrar fiado
-                  </Button>
-                  <Button
-                    disabled={disabled || !own}
-                    onClick={() =>
-                      accountAction(
-                        'Propina voluntaria',
-                        'tips',
-                        [
-                          {
-                            key: 'paymentId',
-                            label: 'Cobro del beneficiario',
-                            options: data.payments
-                              .filter((p) => p.collectorId === user?.id)
-                              .map((p) => ({
-                                id: p.id,
-                                name: `${p.method} S/${p.appliedAmount}`
-                              }))
-                          },
-                          {
-                            key: 'kind',
-                            label: 'Tipo',
-                            options: [
-                              { id: 'DIRECT', name: 'Directa al mozo' },
-                              {
-                                id: 'DIGITAL_RECEIPT',
-                                name: 'Digital recibida por restaurante'
-                              }
-                            ]
-                          },
-                          amount,
-                          { key: 'method', label: 'Método', options: methods },
-                          {
-                            key: 'manuallyConfirmed',
-                            label: 'Yape: recepción verificada',
-                            optional: true,
-                            options: [
-                              { id: 'true', name: 'Sí, verificado visualmente' }
-                            ]
-                          }
-                        ],
-                        { shiftId: own?.shift.id }
-                      )
-                    }
-                  >
-                    Propina
-                  </Button>
                   {manager && (
                     <Button
                       disabled={disabled}
@@ -745,88 +660,14 @@ export function FinancePage() {
                     </Button>
                   )}
                 </Stack>
-                {!data.account.clientId && (
-                  <TextField
-                    label='Buscar cliente antes de registrar fiado'
-                    value={clientSearch}
-                    onChange={(e) => setClientSearch(e.target.value)}
-                    helperText='Busque el cliente y luego pulse Registrar fiado. Puede crearlo desde Clientes.'
-                  />
-                )}
                 {!own && (
                   <Alert severity='warning'>
                     Abra su turno para registrar cobros, reembolsos o propinas.
                   </Alert>
                 )}
-                <Stack direction='row' spacing={1} flexWrap='wrap'>
-                  <TextField
-                    size='small'
-                    label='Personas'
-                    value={people}
-                    onChange={(e) => setPeople(e.target.value)}
-                  />
-                  <Button
-                    onClick={async () => {
-                      try {
-                        const { data: r } = await restauranteApi.get<{
-                          amounts: string[];
-                        }>(`${base}/split`, { params: { people } });
-                        setNotice(
-                          `División del saldo: ${r.amounts.map((a) => `S/${a}`).join(' + ')}. Registre cada importe al cobrar.`
-                        );
-                      } catch {
-                        setError('División inválida');
-                      }
-                    }}
-                  >
-                    Dividir saldo
-                  </Button>
-                </Stack>
               </MoreOptions>
-              <Stack direction='row' gap={1} flexWrap='wrap'>
-                <Button
-                  component={Link}
-                  startIcon={<ReceiptLongOutlined />}
-                  to={`/internal-documents?accountId=${selected}`}
-                >
-                  Ver cuenta
-                </Button>
-                <Button
-                  component={Link}
-                  to={`/internal-documents?accountId=${selected}`}
-                  disabled={!data.payments.length}
-                >
-                  Ticket interno
-                </Button>
-              </Stack>
-              <Typography variant='caption'>
-                DOCUMENTO INTERNO · cuenta, emisión y reimpresión.
-              </Typography>
             </div>
             <div className='finance-history'>
-              {!!data.debts.length && (
-                <section className='debt-summary'>
-                  <Typography variant='h6'>Fiados y abonos</Typography>
-                  <Typography>
-                    Cliente:{' '}
-                    {clients.find((c) => c.id === data.account.clientId)?.person
-                      .firstName || data.account.clientId}
-                  </Typography>
-                  {data.debts.map((d) => (
-                    <div className='debt-card' key={d.id}>
-                      <Typography>Deuda original S/ {d.principal}</Typography>
-                      <Typography>Abonado S/ {d.installmentsTotal}</Typography>
-                      <Typography fontWeight={700}>
-                        Saldo S/ {d.outstanding}
-                      </Typography>
-                    </div>
-                  ))}
-                  <Typography variant='caption'>
-                    Los abonos son cobros de deuda, no ventas nuevas. Consulte
-                    el historial de pagos de esta cuenta.
-                  </Typography>
-                </section>
-              )}
               <Typography variant='h6'>Pagos anteriores</Typography>
               {!data.payments.length && (
                 <Typography color='text.secondary'>
@@ -877,13 +718,13 @@ export function FinancePage() {
         >
           {own ? 'Mi turno actual · abierto' : 'Abrir mi turno'}
         </Button>
-        {ready && shifts.length === 0 && (
+        {ready && visibleShifts.length === 0 && (
           <WorkspaceEmpty
             title='Sin turnos registrados'
             description='Al abrir un turno podrás consultar sus cobros, movimientos y rendición.'
           />
         )}
-        {shifts.map((s) => (
+        {visibleShifts.map((s) => (
           <Paper key={s.shift.id} className='shift-card' sx={{ p: 2 }}>
             <Stack spacing={1}>
               <Typography>
@@ -907,10 +748,6 @@ export function FinancePage() {
                     <div>
                       <dt>Recibido del courier</dt>
                       <dd>S/ {s.courierCashReceived || '0.00'}</dd>
-                    </div>
-                    <div>
-                      <dt>Abonos incluidos en cobros</dt>
-                      <dd>S/ {s.installmentsIncludedInPayments}</dd>
                     </div>
                   </dl>
                 </section>
@@ -968,11 +805,6 @@ export function FinancePage() {
                 <summary>
                   Fondos, entregas previas, devoluciones y propinas
                 </summary>
-                <Typography variant='body2'>
-                  Abonos incluidos en los cobros: S/{' '}
-                  {s.installmentsIncludedInPayments}. No se suman nuevamente.
-                  Las deudas no son efectivo a rendir.
-                </Typography>
                 {s.movements?.map((m) => (
                   <Typography key={m.id}>
                     {operationalLabel(m.kind)} · S/ {m.amount} · {m.reason} ·{' '}
@@ -1212,9 +1044,8 @@ export function FinancePage() {
           fullWidth
         >
           <DialogTitle>
-            {installment
-              ? 'Registrar abono'
-              : `Cobrar ${data?.account.tables?.map((t) => t.name).join(' + ') || 'cuenta'}`}
+            Cobrar{' '}
+            {data?.account.tables?.map((t) => t.name).join(' + ') || 'cuenta'}
           </DialogTitle>
           <DialogContent>
             {error && <Alert severity='error'>{error}</Alert>}
@@ -1241,11 +1072,6 @@ export function FinancePage() {
                   >
                     Abrir turno y continuar
                   </Button>
-                </Alert>
-              )}
-              {installment && (
-                <Alert severity='info'>
-                  Abono a deuda existente. No registra una segunda venta.
                 </Alert>
               )}
               {data?.account.version !== payVersion && (
@@ -1371,7 +1197,30 @@ export function FinancePage() {
                   distribución antes de confirmar.
                 </Alert>
               )}
-              {parts.some((p) => p.method === 'YAPE') && (
+              <Stack direction={{ xs: 'column', sm: 'row' }} gap={1}>
+                  <TextField
+                    size='small'
+                    label='Propina opcional S/'
+                    value={tipAmount}
+                    onChange={(e) => setTipAmount(e.target.value)}
+                  />
+                  <TextField
+                    size='small'
+                    select
+                    label='Método de propina'
+                    value={tipMethod}
+                    onChange={(e) => setTipMethod(e.target.value)}
+                    disabled={!tipAmount}
+                  >
+                    {methods.map((method) => (
+                      <MenuItem key={method.id} value={method.id}>
+                        {method.name}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+              </Stack>
+              {(parts.some((p) => p.method === 'YAPE') ||
+                (!!tipAmount && tipMethod === 'YAPE')) && (
                 <>
                   {qr ? (
                     <Box
@@ -1395,13 +1244,15 @@ export function FinancePage() {
                     {qr
                       ? 'Muestre este QR al cliente para que lo escanee. '
                       : ''}
-                    Importe Yape:{' '}
+                    Importe Yape de venta:{' '}
                     {parts
                       .filter((p) => p.method === 'YAPE')
                       .map((p) => `S/${p.amount || '0.00'}`)
                       .join(' + ')}
-                    . Verifica visualmente el pago antes de confirmarlo. El QR
-                    no incorpora este importe.
+                    {tipAmount && tipMethod === 'YAPE'
+                      ? ` · propina S/${tipAmount}`
+                      : ''}
+                    . Verifica visualmente la recepción antes de confirmar.
                   </Typography>
                   <FormControlLabel
                     control={
@@ -1433,14 +1284,6 @@ export function FinancePage() {
                     Agregar método para pago mixto
                   </Button>
                 )}
-                <Button
-                  onClick={() => {
-                    setPayment(false);
-                    setAdvanced(true);
-                  }}
-                >
-                  Más opciones: dividir, propina, fiado o descuento
-                </Button>
               </Stack>
               {manager && (
                 <TextField
@@ -1462,11 +1305,14 @@ export function FinancePage() {
                 !distribution.valid ||
                 data?.account.version !== payVersion ||
                 parts.some((p) => !p.amount || !p.receivedAmount) ||
-                (parts.some((p) => p.method === 'YAPE') && !manual)
+                ((parts.some((p) => p.method === 'YAPE') ||
+                  (!!tipAmount && tipMethod === 'YAPE')) &&
+                  !manual) ||
+                (!!tipAmount && !parts.some((p) => p.method === tipMethod))
               }
               onClick={() =>
                 void run(
-                  `${base}/${installment ? 'installments' : 'payments'}`,
+                  `${base}/payments`,
                   {
                     expectedVersion: payVersion,
                     shiftId: own?.shift.id,
@@ -1477,6 +1323,17 @@ export function FinancePage() {
                         ? { manuallyConfirmed: manual }
                         : {})
                     })),
+                    ...(tipAmount
+                      ? {
+                          tip: {
+                            amount: tipAmount,
+                            method: tipMethod,
+                            ...(tipMethod === 'YAPE'
+                              ? { manuallyConfirmed: manual }
+                              : {})
+                          }
+                        }
+                      : {}),
                     ...(adminReason
                       ? { administrativeReason: adminReason }
                       : {}),

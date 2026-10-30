@@ -26,6 +26,7 @@ import {
 import { Account, Operator, Reservation, Table } from './types';
 import { OperatorSelect, TableChoices } from './AttentionWorkspace';
 import { Run } from './Operations.page';
+import { ClientPhoneLookup } from './ClientPhoneLookup';
 function localInput(iso: string, zone: string) {
   const p = new Intl.DateTimeFormat('sv-SE', {
     timeZone: zone,
@@ -107,6 +108,17 @@ export function ReservationsWorkspace({
               label='Teléfono de la reserva'
               value={draft.phone}
               onChange={(e) => setDraft({ ...draft, phone: e.target.value })}
+            />
+            <ClientPhoneLookup
+              phone={draft.phone}
+              name={draft.name}
+              onSelect={(found) =>
+                setDraft((current) => ({
+                  ...current,
+                  name: found.name,
+                  phone: found.phone
+                }))
+              }
             />
             <TextField
               type='datetime-local'
