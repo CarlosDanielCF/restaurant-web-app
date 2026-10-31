@@ -13,6 +13,7 @@ import {
   Box,
   useTheme,
   CssBaseline,
+  Button,
   IconButton,
   Typography,
   useMediaQuery
@@ -32,8 +33,10 @@ import { SocketContext } from '@/context';
 import { useNotificationSound } from '@/hooks';
 import { useSnackbar } from 'notistack';
 import {
+  activateSystemNotifications,
   initializeSystemNotifications
 } from '@/hooks/systemNotifications';
+import { closeSnackbar, SnackbarKey } from 'notistack';
 
 interface SidebarLayoutProps {
   children?: ReactNode;
@@ -73,8 +76,48 @@ const SidebarLayout: FC<SidebarLayoutProps> = () => {
       )
     )
       return;
-    return initializeSystemNotifications();
-  }, [user, restaurant?.id]);
+    const notificationKey: SnackbarKey = 'system-notification-permission';
+    const status = (
+      event: Event
+    ) => {
+      const { status, message } = (
+        event as CustomEvent<{ status: string; message?: string }>
+      ).detail;
+      if (status === 'subscribed') closeSnackbar(notificationKey);
+      if (status === 'permission-required')
+        enqueueSnackbar('Activa las notificaciones para recibir avisos fuera de Point Restaurant.', {
+          key: notificationKey,
+          variant: 'info',
+          persist: true,
+          action: () => (
+            <Button color='inherit' onClick={() => void activateSystemNotifications(true)}>
+              Activar
+            </Button>
+          )
+        });
+      if (status === 'permission-denied')
+        enqueueSnackbar('Las notificaciones están bloqueadas en este navegador.', {
+          key: notificationKey,
+          variant: 'warning'
+        });
+      if (status === 'error')
+        enqueueSnackbar(`No se pudo registrar este dispositivo${message ? `: ${message}` : '.'}`, {
+          key: notificationKey,
+          variant: 'error',
+          action: () => (
+            <Button color='inherit' onClick={() => void activateSystemNotifications(false)}>
+              Reintentar
+            </Button>
+          )
+        });
+    };
+    window.addEventListener('system-notification-status', status);
+    const cleanup = initializeSystemNotifications();
+    return () => {
+      cleanup();
+      window.removeEventListener('system-notification-status', status);
+    };
+  }, [user, restaurant?.id, enqueueSnackbar]);
 
   useEffect(() => {
     if (mobile) closeSidebar();

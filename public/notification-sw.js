@@ -1,5 +1,16 @@
+self.addEventListener('install', () => self.skipWaiting());
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(self.clients.claim());
+});
+
 self.addEventListener('push', (event) => {
-  const message = event.data?.json();
+  let message;
+  try {
+    message = event.data?.json();
+  } catch (error) {
+    console.error('[Web Push] Payload inválido', error);
+  }
   if (!message) return;
 
   event.waitUntil(

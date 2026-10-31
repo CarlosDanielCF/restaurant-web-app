@@ -6,7 +6,6 @@ import { restauranteApi } from '../../../api';
 import { IFormLogin } from '../../../models';
 import { LoginResponse } from '@/models/dto/auth.dto';
 import { useRestaurantStore } from '@/pages/Private/Common/store/restaurantStore';
-import { disableSystemNotifications } from '@/hooks/systemNotifications';
 
 export const startLogin =
   ({ username, password }: IFormLogin): AppThunk =>
@@ -42,7 +41,6 @@ export const startLogin =
 export const startLogout =
   (msg: string = ''): AppThunk =>
   async (dispatch) => {
-    try { await disableSystemNotifications(); } catch { /* Invalid push endpoints are also cleaned server-side. */ }
     try { await restauranteApi.post('/auth/logout'); } catch { /* Always clear this device even when offline. */ }
     dispatch(onLogout(msg));
     //dispatch(onLogoutChat());
