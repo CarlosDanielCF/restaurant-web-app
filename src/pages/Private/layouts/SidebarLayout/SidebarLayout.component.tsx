@@ -31,6 +31,9 @@ import { selectAuth } from '@/redux';
 import { SocketContext } from '@/context';
 import { useNotificationSound } from '@/hooks';
 import { useSnackbar } from 'notistack';
+import {
+  initializeSystemNotifications
+} from '@/hooks/systemNotifications';
 
 interface SidebarLayoutProps {
   children?: ReactNode;
@@ -63,6 +66,17 @@ const SidebarLayout: FC<SidebarLayoutProps> = () => {
   const restaurant = useRestaurantStore((state) => state.restaurant);
 
   useEffect(() => {
+    if (
+      !user ||
+      ![Roles.WAITER, Roles.OWNER, Roles.ADMIN, Roles.HOST].includes(
+        user.role.name as Roles
+      )
+    )
+      return;
+    return initializeSystemNotifications();
+  }, [user, restaurant?.id]);
+
+  useEffect(() => {
     if (mobile) closeSidebar();
   }, [mobile]);
 
@@ -70,7 +84,14 @@ const SidebarLayout: FC<SidebarLayoutProps> = () => {
     const notify = ({
       data
     }: {
-      data: { table: string; product: string; quantity: number };
+      data: {
+        eventId: string;
+        accountId: string;
+        dispatchId: string;
+        table: string;
+        product: string;
+        quantity: number;
+      };
     }) => {
       void playNotificationSound();
       enqueueSnackbar(
@@ -83,6 +104,23 @@ const SidebarLayout: FC<SidebarLayoutProps> = () => {
       socket?.off('kitchen.exit.ready', notify);
     };
   }, [socket, enqueueSnackbar, playNotificationSound]);
+
+  useEffect(() => {
+    const notifyLowStock = ({
+      data
+    }: {
+      data: { product: string; remaining: number };
+    }) => {
+      enqueueSnackbar(
+        `Stock bajo: ${data.product} tiene ${data.remaining} unidades.`,
+        { variant: 'warning' }
+      );
+    };
+    socket?.on('stock.low', notifyLowStock);
+    return () => {
+      socket?.off('stock.low', notifyLowStock);
+    };
+  }, [socket, enqueueSnackbar]);
 
   return (
     <>

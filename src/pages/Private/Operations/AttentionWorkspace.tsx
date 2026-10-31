@@ -277,6 +277,9 @@ export function AttentionWorkspace({
       total + Number(line.quantity) - Number(line.confirmedQuantity || 0),
     0
   );
+  const orderUnitCount = (account?.lines || [])
+    .filter((line) => line.status === 'ACTIVE')
+    .reduce((total, line) => total + Number(line.quantity), 0);
   const pendingAmount = pendingLines.every(
     (line) => Number(line.confirmedQuantity || 0) === 0
   )
@@ -912,30 +915,208 @@ export function AttentionWorkspace({
           </Box>
         )}
       {account && (
-        <Stack direction='row' justifyContent='space-between' alignItems='center'>
-          <Typography variant='h5' component='h2'>
-            Tomar pedido
-          </Typography>
-          <Button
-            variant='outlined'
-            size='small'
-            onClick={() => selectAccount('')}
-            sx={{
-              borderRadius: 2,
-              borderColor: 'divider',
-              color: 'text.secondary',
-              fontWeight: 600,
-              boxShadow: '0 1px 2px rgba(15, 23, 42, 0.04)',
-              '&:hover': {
-                bgcolor: '#f0fdfa',
-                borderColor: '#99f6e4',
-                color: 'primary.main'
-              }
-            }}
+        <Box sx={{ width: '100%' }}>
+          {/* Desktop/Tablet Header: Exactly preserved */}
+          <Stack
+            direction='row'
+            justifyContent='space-between'
+            alignItems='center'
+            flexWrap='wrap'
+            gap={1}
+            sx={{ display: { xs: 'none', sm: 'flex' } }}
           >
-            Volver a mesas
-          </Button>
-        </Stack>
+            <Typography variant='h5' component='h2'>
+              Tomar pedido
+            </Typography>
+            <Button
+              variant='outlined'
+              size='small'
+              onClick={() => selectAccount('')}
+              sx={{
+                borderRadius: 2,
+                borderColor: 'divider',
+                color: 'text.secondary',
+                fontWeight: 600,
+                boxShadow: '0 1px 2px rgba(15, 23, 42, 0.04)',
+                '&:hover': {
+                  bgcolor: '#f0fdfa',
+                  borderColor: '#99f6e4',
+                  color: 'primary.main'
+                }
+              }}
+            >
+              Volver a mesas
+            </Button>
+          </Stack>
+
+          {/* Mobile Header: Ergonomic Dual Controls + Badge */}
+          <Stack
+            direction='column'
+            spacing={1}
+            className='attention-mobile-header'
+            sx={{ display: { xs: 'flex', sm: 'none' }, width: '100%' }}
+          >
+            <Stack
+              direction='row'
+              justifyContent='space-between'
+              alignItems='center'
+              sx={{ width: '100%' }}
+            >
+              <Stack direction='row' alignItems='center' spacing={1} sx={{ minWidth: 0 }}>
+                <Typography
+                  variant='subtitle1'
+                  component='h2'
+                  sx={{
+                    fontWeight: 800,
+                    fontSize: '1rem',
+                    color: '#0f172a',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis'
+                  }}
+                >
+                  {account.modality === 'TABLE'
+                    ? (account.tables.map((t) => t.name).join(' + ') || 'Mesa')
+                    : modalityLabel[account.modality]}
+                </Typography>
+                <Chip
+                  size='small'
+                  label={account.attentionStatus === 'OPEN' ? 'Abierta' : 'Cerrada'}
+                  color={account.attentionStatus === 'OPEN' ? 'success' : 'default'}
+                  variant='outlined'
+                  sx={{ height: 20, fontSize: '0.68rem', fontWeight: 700 }}
+                />
+              </Stack>
+              <Button
+                variant='outlined'
+                size='small'
+                onClick={() => selectAccount('')}
+                sx={{
+                  borderRadius: 2,
+                  borderColor: '#cbd5e1',
+                  color: '#475569',
+                  fontWeight: 600,
+                  fontSize: '0.78rem',
+                  py: 0.35,
+                  px: 1.2,
+                  minHeight: 32,
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0
+                }}
+              >
+                Volver a mesas
+              </Button>
+            </Stack>
+
+            {/* Dual Segregated Switch: Clear, Tactile, Distinct Active State & N as Badge */}
+            <Box
+              role='tablist'
+              aria-label='Vistas de atención móvil'
+              className='attention-mobile-switch'
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                p: '3px',
+                bgcolor: '#f1f5f9',
+                borderRadius: '10px',
+                border: '1.5px solid #e2e8f0',
+                gap: '4px',
+                width: '100%'
+              }}
+            >
+              <Button
+                role='tab'
+                aria-selected={mobilePane === 'products'}
+                onClick={() => setMobilePane('products')}
+                sx={{
+                  minHeight: 42,
+                  py: 0.75,
+                  px: 1.2,
+                  borderRadius: '8px',
+                  fontWeight: 750,
+                  fontSize: '0.85rem',
+                  textTransform: 'none',
+                  transition: 'all 0.18s ease',
+                  ...(mobilePane === 'products'
+                    ? {
+                        bgcolor: '#0d9488 !important',
+                        color: '#ffffff !important',
+                        boxShadow: '0 2px 6px rgba(13, 148, 136, 0.3)',
+                        '&:hover': { bgcolor: '#0f766e !important' }
+                      }
+                    : {
+                        bgcolor: 'transparent',
+                        color: '#64748b',
+                        '&:hover': { bgcolor: '#e2e8f0', color: '#0f172a' }
+                      })
+                }}
+              >
+                Tomar pedido
+              </Button>
+
+              <Button
+                role='tab'
+                aria-selected={mobilePane === 'order'}
+                onClick={() => setMobilePane('order')}
+                sx={{
+                  minHeight: 42,
+                  py: 0.75,
+                  px: 1.2,
+                  borderRadius: '8px',
+                  fontWeight: 750,
+                  fontSize: '0.85rem',
+                  textTransform: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 0.75,
+                  transition: 'all 0.18s ease',
+                  ...(mobilePane === 'order'
+                    ? {
+                        bgcolor: '#0d9488 !important',
+                        color: '#ffffff !important',
+                        boxShadow: '0 2px 6px rgba(13, 148, 136, 0.3)',
+                        '&:hover': { bgcolor: '#0f766e !important' }
+                      }
+                    : {
+                        bgcolor: 'transparent',
+                        color: '#64748b',
+                        '&:hover': { bgcolor: '#e2e8f0', color: '#0f172a' }
+                      })
+                }}
+              >
+                <span>Ver comanda</span>
+                <Box
+                  component='span'
+                  className='mobile-pane-badge'
+                  sx={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minWidth: 20,
+                    height: 20,
+                    px: 0.65,
+                    borderRadius: '9999px',
+                    fontSize: '0.72rem',
+                    fontWeight: 800,
+                    lineHeight: 1,
+                    ...(mobilePane === 'order'
+                      ? {
+                          bgcolor: '#ffffff',
+                          color: '#0f766e'
+                        }
+                      : {
+                          bgcolor: orderUnitCount > 0 ? '#0d9488' : '#94a3b8',
+                          color: '#ffffff'
+                        })
+                  }}
+                >
+                  {orderUnitCount}
+                </Box>
+              </Button>
+            </Box>
+          </Stack>
+        </Box>
       )}
 
       {!account && (
@@ -1297,10 +1478,10 @@ export function AttentionWorkspace({
             >
               <Button
                 className='mobile-order-close'
-                sx={{ display: { md: 'none' } }}
+                sx={{ display: { xs: 'flex', md: 'none' } }}
                 onClick={() => setMobilePane('products')}
               >
-                Cerrar pedido y seguir en productos
+                ← Volver a la carta / Tomar pedido
               </Button>
               <Card className='current-order-card'>
                 <CardContent>

@@ -1067,3 +1067,195 @@
   padding-top: 0;
   padding-bottom: 0;
 }
+
+/* ==========================================================================
+   Mobile Polish for /attention: Dual Switcher, Comanda in 390x844 & 844x390
+   ========================================================================== */
+
+/* Mobile Switch & Header (<= 599px) */
+@media (max-width: 599px) {
+  .attention-mobile-header {
+    margin-bottom: 8px !important;
+  }
+
+  .attention-mobile-switch {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 4px !important;
+    padding: 3px !important;
+    background: #f1f5f9 !important;
+    border: 1.5px solid #e2e8f0 !important;
+    border-radius: 10px !important;
+  }
+
+  .attention-mobile-switch .MuiButton-root {
+    min-height: 42px !important;
+    font-size: 0.85rem !important;
+    font-weight: 750 !important;
+    border-radius: 8px !important;
+    text-transform: none !important;
+    touch-action: manipulation !important;
+  }
+
+  .mobile-pane-badge {
+    min-width: 20px !important;
+    height: 20px !important;
+    padding: 0 6px !important;
+    border-radius: 9999px !important;
+    font-size: 0.72rem !important;
+    font-weight: 800 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  /* Comanda ergonomic layout in 390x844 */
+  .attention-service[data-mobile-pane=\'order\'] .current-order {
+    padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px)) !important;
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+
+  .attention-service .current-order-card {
+    border-radius: 14px !important;
+    border: 1.5px solid #e2e8f0 !important;
+    border-top: 4px solid #0d9488 !important;
+    background: #ffffff !important;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05) !important;
+  }
+
+  .attention-service .current-order-card > .MuiCardContent-root {
+    padding: 12px 10px !important;
+  }
+
+  .attention-service .current-order-card .MuiCard-root {
+    margin-bottom: 8px !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 10px !important;
+    background: #f8fafc !important;
+  }
+
+  .attention-service .current-order-card .MuiCard-root > .MuiCardContent-root {
+    padding: 10px 10px !important;
+    padding-bottom: 10px !important;
+  }
+
+  .attention-service .current-order-card .MuiCard-root .MuiButton-root {
+    min-height: 36px !important;
+    font-size: 0.78rem !important;
+    font-weight: 700 !important;
+    border-radius: 8px !important;
+    touch-action: manipulation !important;
+  }
+
+  /* Shortcut button inside comanda view to return to products */
+  .attention-service .current-order .mobile-order-close {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 42px !important;
+    border-radius: 10px !important;
+    font-weight: 750 !important;
+    font-size: 0.85rem !important;
+    background: #f0fdfa !important;
+    border: 1.5px solid #99f6e4 !important;
+    color: #0f766e !important;
+    margin-bottom: 6px !important;
+  }
+
+  /* Order Total & Action Section: prominent & easy to find */
+  .attention-service .order-total {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    padding: 14px 12px !important;
+    border-radius: 14px !important;
+    border: 1.5px solid #ccfbf1 !important;
+    background: #ffffff !important;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06) !important;
+    margin-top: 10px !important;
+  }
+
+  .attention-service .order-total > .MuiTypography-h5,
+  .attention-service .order-total > .MuiTypography-h6 {
+    font-size: 1.3rem !important;
+    font-weight: 850 !important;
+    color: #0f172a !important;
+    margin: 0 !important;
+  }
+
+  /* Full-width production confirmation button (Enviar a cocina) */
+  .attention-service .order-production {
+    width: 100% !important;
+    margin-top: 4px !important;
+  }
+
+  .attention-service .order-production .MuiButton-root {
+    width: 100% !important;
+    min-height: 48px !important;
+    font-size: 0.95rem !important;
+    font-weight: 800 !important;
+    border-radius: 10px !important;
+    touch-action: manipulation !important;
+  }
+
+  /* Cobrar button: prominent turquoise gradient, 100% width, 48px height */
+  .attention-service .order-total > .MuiButton-root {
+    width: 100% !important;
+    min-height: 48px !important;
+    font-size: 1rem !important;
+    font-weight: 800 !important;
+    border-radius: 10px !important;
+    background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%) !important;
+    box-shadow: 0 4px 14px rgba(13, 148, 136, 0.3) !important;
+    color: #ffffff !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    touch-action: manipulation !important;
+  }
+
+  .attention-service .order-total > .MuiButton-root:hover {
+    background: linear-gradient(135deg, #0f766e 0%, #115e59 100%) !important;
+  }
+}
+
+/* Landscape Mode (e.g. 844x390): Compact vertical height */
+@media (max-height: 450px) and (orientation: landscape) {
+  .operations-workspace {
+    padding-top: 4px !important;
+  }
+
+  .operations-heading {
+    display: none !important;
+  }
+
+  .operations-workspace:has(.has-account) .operations-metrics {
+    display: none !important;
+  }
+
+  .attention-mobile-header {
+    margin-bottom: 4px !important;
+  }
+
+  .attention-mobile-switch {
+    min-height: 36px !important;
+    padding: 2px !important;
+  }
+
+  .attention-mobile-switch .MuiButton-root {
+    min-height: 34px !important;
+    font-size: 0.8rem !important;
+    padding: 2px 6px !important;
+  }
+
+  .attention-service .order-total {
+    position: static !important;
+    margin-top: 8px !important;
+    padding: 10px 12px !important;
+  }
+
+  .attention-service[data-mobile-pane=\'order\'] .current-order {
+    padding-bottom: 20px !important;
+  }
+}
