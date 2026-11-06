@@ -312,10 +312,26 @@
 /* Charts Layout Grid */
 .dashboard-charts-grid {
   display: grid;
-  grid-template-columns: 1.35fr 1fr;
+  grid-template-columns: 1.15fr .8fr 1.15fr;
   gap: 14px;
   width: 100%;
 }
+
+.command-report-card {
+  border: 2px solid #0d9488 !important;
+  border-radius: 12px !important;
+  padding: 14px !important;
+  box-shadow: 0 4px 14px rgba(13, 148, 136, .1) !important;
+  min-width: 0;
+  overflow: hidden;
+}
+.command-report-title { display:flex; gap:10px; align-items:flex-start; color:#0f766e; margin-bottom:12px; }
+.command-report-title h6 { color:#0f172a; line-height:1.1; }
+.command-filters { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-bottom:10px; }
+.command-report-summary { display:flex; justify-content:space-between; gap:8px; margin-top:12px; padding:8px 4px; font-size:.78rem; color:#334155; }
+.command-table-wrap { width:100%; overflow:auto; border:1px solid #e2e8f0; border-radius:8px; }
+.command-table-wrap .MuiTableCell-root { white-space:nowrap; padding:6px 8px; font-size:.72rem; }
+.command-table-wrap .MuiTableHead-root { background:#ecfeff; }
 
 .dash-chart-card,
 .dash-section-card {
@@ -898,9 +914,12 @@
     grid-template-columns: 1fr;
   }
 }
+@media (max-width: 1450px) and (min-width: 1101px) { .dashboard-charts-grid { grid-template-columns:1.25fr 1fr; } .command-report-card { grid-column:1 / -1; } }
 
 /* Mobile & Small Screen (max-width: 699px) */
 @media (max-width: 699px) {
+  .command-filters { grid-template-columns:1fr; }
+  .command-report-summary { flex-direction:column; }
   .dashboard-kpi-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;

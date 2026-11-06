@@ -53,6 +53,7 @@ import {
 import { ReportPeriodControls } from './ReportPeriodControls';
 import { Stock, Page } from '../Supplies/types';
 import './insights.css';
+import { CommandReportPanel } from './CommandReportPanel';
 
 ChartJS.register(
   CategoryScale,
@@ -730,6 +731,7 @@ export function ManagerDashboard({ previewRoleSelector }: Props) {
                   </div>
                 </div>
               </Card>
+              <CommandReportPanel range={appliedRange} timeZone={timeZone} />
             </div>
 
             {/* Ranking + Stock + Operational Alerts */}
