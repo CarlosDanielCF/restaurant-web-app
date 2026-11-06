@@ -3,7 +3,7 @@ import FactCheckOutlined from '@mui/icons-material/FactCheckOutlined';
 import PaymentsOutlined from '@mui/icons-material/PaymentsOutlined';
 import QrCode2Outlined from '@mui/icons-material/QrCode2Outlined';
 import CreditCardOutlined from '@mui/icons-material/CreditCardOutlined';
-import { paymentDistribution } from './displayMoney';
+import { normalizePaymentParts, paymentDistribution } from './displayMoney';
 import { useLiveRefresh } from '@/hooks/useLiveRefresh';
 import { WorkspaceEmpty } from '@/components/operational/WorkspaceEmpty';
 import { operationalLabel } from '../Insights/labels';
@@ -1317,7 +1317,7 @@ export function FinancePage() {
                     expectedVersion: payVersion,
                     shiftId: own?.shift.id,
                     ...(courierCash ? { courierId } : {}),
-                    payments: parts.map((p) => ({
+                    payments: normalizePaymentParts(parts).map((p) => ({
                       ...p,
                       ...(p.method === 'YAPE'
                         ? { manuallyConfirmed: manual }

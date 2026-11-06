@@ -60,7 +60,7 @@ test('mixed 30 card plus 28 cash on 58 keeps exact remaining and 2 change', () =
   assert.equal(invalid.exceeds, true);
   assert.equal(invalid.remaining, '0.00');
 });
-test('partial allowed; invalid, zero, negative, cash short and noncash change rejected', () => {
+test('partial allowed; invalid, zero, negative and cash short rejected', () => {
   const make = (amount, receivedAmount = amount, method = 'CASH') => [
     { method, amount, receivedAmount }
   ];
@@ -73,9 +73,30 @@ test('partial allowed; invalid, zero, negative, cash short and noncash change re
     make('-1'),
     make('NaN'),
     make('5', '4'),
-    make('5', '6', 'CARD'),
     make('1.001')
   ])
     assert.equal(exportsObject.paymentDistribution('58.00', p).valid, false);
   assert.equal(difference('60.00', '58.00'), '2.00');
+});
+
+test('partial card and mixed payments normalize hidden received amount', () => {
+  const card = [
+    { method: 'CARD', amount: '20.00', receivedAmount: '58.00' }
+  ];
+  const normalized = exportsObject.normalizePaymentParts(card);
+  assert.equal(normalized[0].receivedAmount, '20.00');
+  assert.equal(exportsObject.paymentDistribution('58.00', card).valid, true);
+  assert.equal(
+    exportsObject.paymentDistribution('58.00', [
+      ...card,
+      { method: 'CASH', amount: '10.00', receivedAmount: '20.00' }
+    ]).remaining,
+    '28.00'
+  );
+  assert.equal(
+    exportsObject.normalizePaymentParts([
+      { method: 'CASH', amount: '10.00', receivedAmount: '20.00' }
+    ])[0].receivedAmount,
+    '20.00'
+  );
 });

@@ -24,11 +24,22 @@ export function sumMoney(values: string[]): string {
   );
 }
 
+export function normalizePaymentParts<
+  T extends { amount: string; receivedAmount: string; method: string }
+>(parts: T[]): T[] {
+  return parts.map((part) =>
+    part.method === 'CASH'
+      ? part
+      : { ...part, receivedAmount: part.amount }
+  );
+}
+
 /** Exact presentation validation; never treats an overpayment as a valid negative balance. */
 export function paymentDistribution(
   balance: string,
   parts: { amount: string; receivedAmount: string; method: string }[]
 ) {
+  parts = normalizePaymentParts(parts);
   const due = cents(balance);
   const amounts = parts.map((p) => cents(p.amount));
   const total = amounts.reduce<bigint>(
