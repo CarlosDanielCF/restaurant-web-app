@@ -141,7 +141,7 @@ export const CreateProduct = () => {
     const productData: CreateProductDto = {
       ...data,
       productionAreaId:
-        data.productionAreaId === '' ? undefined : data.productionAreaId
+        data.productionAreaId === '' ? undefined : Number(data.productionAreaId)
     };
 
     mutateAsync(productData).then((product) => {

@@ -84,6 +84,8 @@ export const FormProduct: FC<Props> = ({ product }) => {
       categoryId: product.category.id,
       productionAreaId: product.productionArea?.id,
       productionRouting: product.productionRouting || 'PRODUCTION',
+      kind: product.kind,
+      trackStock: product.trackStock,
       unitCost: product.unitCost,
       quantity: product.quantity,
       isActive: product.isActive,
@@ -106,15 +108,15 @@ export const FormProduct: FC<Props> = ({ product }) => {
   });
 
   const onSubmit = (data: UpdateProductDto) => {
-  const productData: UpdateProductDto = {
-    ...data,
-    productionAreaId:
-      data.productionAreaId && Number(data.productionAreaId) > 0
-        ? Number(data.productionAreaId)
-        : undefined
-  };
+    const productData: UpdateProductDto = {
+      ...data,
+      productionAreaId:
+        data.productionAreaId && Number(data.productionAreaId) > 0
+          ? Number(data.productionAreaId)
+          : undefined
+    };
 
-  mutateAsync(productData)
+    mutateAsync(productData)
       .then((updatedProduct) => {
         reset(getUpdateProductDto(updatedProduct));
         dispatch(updateProduct(updatedProduct));
@@ -197,6 +199,72 @@ export const FormProduct: FC<Props> = ({ product }) => {
                             }
                           })}
                           helperText={errors.name?.message}
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <TextField
+                          label='Precio'
+                          fullWidth
+                          type='number'
+                          inputProps={{ min: 0, step: 0.01 }}
+                          {...register('price', {
+                            required: 'Este campo es requerido',
+                            min: {
+                              value: 0,
+                              message: 'El precio no puede ser negativo'
+                            },
+                            valueAsNumber: true
+                          })}
+                          helperText={errors.price?.message}
+                          error={!!errors.price}
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <Controller
+                          name='status'
+                          control={control}
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              select
+                              label='Disponibilidad'
+                              fullWidth
+                            >
+                              <MenuItem value={ProductStatus.AVAILABLE}>
+                                Disponible
+                              </MenuItem>
+                              <MenuItem value={ProductStatus.OUT_OF_STOCK}>
+                                Agotado
+                              </MenuItem>
+                              <MenuItem value={ProductStatus.OUT_OF_SEASON}>
+                                Fuera de temporada
+                              </MenuItem>
+                            </TextField>
+                          )}
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <TextField
+                          label='Costo unitario'
+                          fullWidth
+                          type='number'
+                          inputProps={{ min: 0, step: 0.01 }}
+                          {...register('unitCost', {
+                            min: 0,
+                            valueAsNumber: true
+                          })}
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <TextField
+                          label='Cantidad disponible'
+                          fullWidth
+                          type='number'
+                          inputProps={{ min: 0, step: 0.001 }}
+                          {...register('quantity', {
+                            min: 0,
+                            valueAsNumber: true
+                          })}
                         />
                       </Grid>
                       <Grid item xs={12}>

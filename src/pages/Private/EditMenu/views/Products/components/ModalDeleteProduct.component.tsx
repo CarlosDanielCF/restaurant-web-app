@@ -32,7 +32,11 @@ export const ModalDeleteProduct = NiceModal.create<Props>(({ product }) => {
   const dispatch = useAppDispatch();
 
   const submitDeleteProduct = async () => {
-    await mutateAsync({ id: product!.id, isActive: false }).then((product) => {
+    await mutateAsync({
+      id: product.id,
+      isActive: false,
+      expectedVersion: product.version
+    }).then((product) => {
       dispatch(updateProduct(product));
       closeModal();
     });

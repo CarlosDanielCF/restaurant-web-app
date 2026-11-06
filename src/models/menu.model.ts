@@ -64,6 +64,9 @@ export enum ProductStatusSpanish {
 export interface IProduct {
   productionRouting?: 'PRODUCTION' | 'DIRECT';
   id: string;
+  version: number;
+  kind: 'FOOD' | 'DRINK';
+  trackStock: boolean;
   name: string;
   price: number;
   description: string;

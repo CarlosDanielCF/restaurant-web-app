@@ -69,7 +69,11 @@ export const ProductCard: FC<Props> = ({ producto }) => {
 
   const enableProduct = async () => {
     popupState.close();
-    await mutateAsync({ id: producto.id, isActive: true }).then((product) => {
+    await mutateAsync({
+      id: producto.id,
+      isActive: true,
+      expectedVersion: producto.version
+    }).then((product) => {
       dispatch(updateProduct(product));
     });
   };
