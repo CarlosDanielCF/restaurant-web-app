@@ -3,8 +3,10 @@ import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 import {
   CommandDetail,
   CommandRow,
+  commandStatus,
   commandTotals,
-  commandType
+  commandType,
+  paymentStatus
 } from './commandReport';
 
 export function downloadCommandReport(
@@ -74,7 +76,7 @@ export function downloadCommandReport(
         r.waiter,
         String(r.orders),
         `S/ ${r.total}`,
-        `${r.attentionStatus} / ${r.paymentStatus}`
+        `${commandStatus(r.attentionStatus)} / ${paymentStatus(r.paymentStatus)}`
       ])
     ])
       .widths([55, 45, '*', '*', 38, 55, 70])

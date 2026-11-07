@@ -12,7 +12,8 @@ vm.runInNewContext(
   ).outputText,
   scope
 );
-const { commandTotals, commandType } = scope.exports;
+const { commandStatus, commandTotals, commandType, paymentStatus } =
+  scope.exports;
 
 test('command totals add each account once and preserve partial balances', () => {
   const totals = commandTotals([
@@ -24,6 +25,14 @@ test('command totals add each account once and preserve partial balances', () =>
     paid: 150.5,
     balance: 50
   });
+});
+
+test('command and payment states are presented in Spanish', () => {
+  assert.equal(commandStatus('OPEN'), 'Abierta');
+  assert.equal(commandStatus('CLOSED'), 'Cerrada');
+  assert.equal(paymentStatus('SETTLED'), 'Pagado');
+  assert.equal(paymentStatus('PARTIAL'), 'Parcial');
+  assert.equal(paymentStatus('UNPAID'), 'Pendiente');
 });
 
 test('table, takeaway and delivery modalities use report labels', () => {

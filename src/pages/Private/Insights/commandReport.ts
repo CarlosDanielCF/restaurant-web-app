@@ -62,6 +62,11 @@ export const commandType = (modality: string) =>
     : modality === 'TAKE_AWAY'
       ? 'Para llevar'
       : 'Delivery';
+export const commandStatus = (status: string) =>
+  ({ OPEN: 'Abierta', CLOSED: 'Cerrada' })[status] || status;
+export const paymentStatus = (status: string) =>
+  ({ SETTLED: 'Pagado', PARTIAL: 'Parcial', UNPAID: 'Pendiente' })[status] ||
+  status;
 export const commandTotals = (rows: CommandRow[]) =>
   rows.reduce(
     (a, r) => ({

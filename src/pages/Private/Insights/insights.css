@@ -325,6 +325,9 @@
   min-width: 0;
   overflow: hidden;
 }
+.command-report-card .MuiButton-contained { background:#0d9488; }
+.command-report-card .MuiButton-contained:hover { background:#0f766e; }
+.command-report-card .MuiButton-outlined { color:#0f766e; border-color:#5eead4; }
 .command-report-title { display:flex; gap:10px; align-items:flex-start; color:#0f766e; margin-bottom:12px; }
 .command-report-title h6 { color:#0f172a; line-height:1.1; }
 .command-filters { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-bottom:10px; }

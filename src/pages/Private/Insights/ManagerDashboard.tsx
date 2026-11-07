@@ -429,7 +429,7 @@ export function ManagerDashboard({ previewRoleSelector }: Props) {
   );
 
   return (
-    <Container maxWidth='xl' className='final-page pos-overview point-insights'>
+    <Container maxWidth={false} className='final-page pos-overview point-insights'>
       <Stack spacing={2}>
         {/* Header toolbar */}
         <Stack

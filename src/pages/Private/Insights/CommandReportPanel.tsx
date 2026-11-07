@@ -30,7 +30,9 @@ import {
   CommandResult,
   CommandRow,
   commandTotals,
-  commandType
+  commandStatus,
+  commandType,
+  paymentStatus
 } from './commandReport';
 type Option = { id: string; name: string };
 export function CommandReportPanel({
@@ -189,7 +191,7 @@ export function CommandReportPanel({
               <TableCell>{r.orders}</TableCell>
               <TableCell>S/ {r.total}</TableCell>
               <TableCell>
-                <Chip size='small' label={r.attentionStatus} />
+                <Chip size='small' label={commandStatus(r.attentionStatus)} />
               </TableCell>
               <TableCell>
                 <Chip
@@ -201,7 +203,7 @@ export function CommandReportPanel({
                         ? 'warning'
                         : 'default'
                   }
-                  label={r.paymentStatus}
+                  label={paymentStatus(r.paymentStatus)}
                 />
               </TableCell>
               <TableCell>
