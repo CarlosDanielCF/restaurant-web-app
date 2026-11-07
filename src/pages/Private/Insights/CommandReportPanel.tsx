@@ -35,6 +35,18 @@ import {
   paymentStatus
 } from './commandReport';
 type Option = { id: string; name: string };
+const requestParams = (
+  range: DateRange,
+  filters: { modality: string; userId: string; status: string; tableId: string },
+  page: number
+) => ({
+  ...range,
+  ...Object.fromEntries(
+    Object.entries(filters).filter(([, value]) => Boolean(value))
+  ),
+  page,
+  limit: 100
+});
 export function CommandReportPanel({
   range,
   timeZone
@@ -77,7 +89,7 @@ export function CommandReportPanel({
     setError('');
     restauranteApi
       .get<CommandResult>('/operational-reports/commands', {
-        params: { ...reportRange, ...filters, page: 1, limit: 100 }
+        params: requestParams(reportRange, filters, 1)
       })
       .then((r) => active && setData(r.data))
       .catch(
@@ -111,7 +123,7 @@ export function CommandReportPanel({
     for (let page = 2; page <= Math.ceil(data.total / 100); page += 1) {
       const response = await restauranteApi.get<CommandResult>(
         '/operational-reports/commands',
-        { params: { ...reportRange, ...filters, page, limit: 100 } }
+        { params: requestParams(reportRange, filters, page) }
       );
       rows.push(...response.data.rows);
     }
